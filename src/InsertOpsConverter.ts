@@ -1,5 +1,5 @@
 
-import { InsertOpDenormalizer } from './InsertOpDenormalizer';
+//import { InsertOpDenormalizer } from './InsertOpDenormalizer';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { flattenArray } from './funcs-misc';
 import { Embed, EmbedType } from './Embed';
@@ -17,14 +17,14 @@ class InsertOpsConverter {
             return [];
         }
 
-        var denormalizedOps = flattenArray(deltaOps.map(InsertOpDenormalizer.denormalize));
+        //var denormalizedOps = flattenArray(deltaOps.map(InsertOpDenormalizer.denormalize));
 
         var results: DeltaInsertOp[] = [];
 
         var insertVal, attributes;
 
-        for (var op of denormalizedOps) {
-            if (!op.insert) {
+        for (var op of deltaOps) {
+            if (!op || typeof op !== 'object' || !op.insert) {
                 continue;
             }
 

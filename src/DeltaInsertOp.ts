@@ -30,6 +30,34 @@ class DeltaInsertOp {
         return (<Embed>this.insert).type === EmbedType.Video;
     }
 
+    isTextWithNewLine() {
+        if (!this.isText()) {
+            return false;
+        }
+        return (<string>this.insert).indexOf(NewLine) > -1;
+    }
+
+    splitByLastNewLine(): [DeltaInsertOp, DeltaInsertOp | null] | null {
+        if (!this.isText()) {
+            return null;
+        }
+        var insertVal = (<string>this.insert);
+        var lastNlIndex = insertVal.lastIndexOf(NewLine);
+        if (lastNlIndex === -1) {
+            return null;
+        }
+
+        var contentUntilNewLine = insertVal.substr(0, lastNlIndex);
+        var contentAfterNewLine = insertVal.substr(lastNlIndex + 1);
+        var op2 = contentAfterNewLine ? 
+            new DeltaInsertOp(contentAfterNewLine, this.attributes) : null;
+       
+        return [
+            new DeltaInsertOp(contentUntilNewLine, this.attributes),
+            op2
+        ];
+    }
+
     isNewLine() {
         return typeof this.insert === 'string' && this.insert === NewLine;
     }

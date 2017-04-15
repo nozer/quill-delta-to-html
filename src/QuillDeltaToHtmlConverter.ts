@@ -13,13 +13,13 @@ interface IQuillDeltaToHtmlConverterOptions {
     classPrefix?: string,
     orderedListTag?: string,
     bulletListTag?: string,
-    genericBlockTag?: string,
+    paragraphTag?: string,
     encodeHtml?: boolean
 }
 
 class QuillDeltaToHtmlConverter {
     private options: IQuillDeltaToHtmlConverterOptions;
-    private deltaOps: DeltaInsertOp[];
+    private rawDeltaOps: any[] = [];
     private converterOptions: IOpToHtmlConverterOptions;
 
     constructor(deltaOps: any[], options?: IQuillDeltaToHtmlConverterOptions) {
@@ -28,15 +28,17 @@ class QuillDeltaToHtmlConverter {
             classPrefix: 'ql',
             orderedListTag: 'ol',
             bulletListTag: 'ul',
-            genericBlockTag: 'p',
+            paragraphTag: 'p',
             encodeHtml: true
         }, options);
 
-        this.deltaOps = InsertOpsConverter.convert(deltaOps);
         this.converterOptions = {
             classPrefix: this.options.classPrefix,
-            encodeHtml: this.options.encodeHtml
+            encodeHtml: this.options.encodeHtml,
+            paragraphTag: this.options.paragraphTag
         };
+
+        this.rawDeltaOps = deltaOps;
     }
 
     getListTag(op: DeltaInsertOp): string {
@@ -46,6 +48,8 @@ class QuillDeltaToHtmlConverter {
     }
 
     convert() {
+        var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
+
         // holds the list tags(ol, ul) that are opened and needs closing
         var tagStack: string[] = [];
 
@@ -64,7 +68,7 @@ class QuillDeltaToHtmlConverter {
             shouldEndAllTags ? tagStack.map(endTag) : endTag();
         };
 
-        var groupedOps = OpGroup.groupDenormalizedOps(this.deltaOps);
+        var groupedOps = OpGroup.groupOps(deltaOps);
         var len = groupedOps.length;
         var group, prevGroup, html;
         for (var i = 0; i < len; i++) {
@@ -112,10 +116,10 @@ class QuillDeltaToHtmlConverter {
         return opConverter.getHtml();
     }
 
-    renderInlineGroup(ops: any) {
-        return makeStartTag(this.options.genericBlockTag)
+    renderInlineGroup(ops: DeltaInsertOp[]) {
+        return makeStartTag(this.options.paragraphTag)
             + this.renderInlines(ops)
-            + makeEndTag(this.options.genericBlockTag);
+            + makeEndTag(this.options.paragraphTag);
     }
 
     renderInlines(ops: DeltaInsertOp[]): string {

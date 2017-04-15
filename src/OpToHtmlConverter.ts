@@ -8,7 +8,13 @@ import { IOpAttributes } from './IOpAttributes';
 
 interface IOpToHtmlConverterOptions {
     classPrefix?: string,
-    encodeHtml?: boolean
+    encodeHtml?: boolean,
+    paragraphTag?: string
+}
+
+interface ITagKeyValue {
+    key: string,
+    value: string
 }
 
 class OpToHtmlConverter {
@@ -17,18 +23,19 @@ class OpToHtmlConverter {
     private options: IOpToHtmlConverterOptions;
 
     // Saved for fast lookup in multiple calls 
-    private _cssClasses: null | string[] = null;
-    private _cssStyles: null | string[] = null;
+    private _cssClasses: string[] = null;
+    private _cssStyles: string[] = null;
 
     constructor(op: DeltaInsertOp, options?: IOpToHtmlConverterOptions) {
         this.op = op;
         this.options = Object.assign({}, { 
             classPrefix: 'ql',
-            encodeHtml: true
+            encodeHtml: true,
+            paragraphTag: 'p'
         }, options);
     }
 
-    prefixClass(className: any): string {
+    prefixClass(className: string): string {
         if (!this.options.classPrefix) {
             return className + '';
         }
@@ -41,10 +48,7 @@ class OpToHtmlConverter {
     }
 
     getHtmlParts(): { opening: string, closing: string, content: string } {
-        if (this.op.isNewLine() && !this.op.isContainerBlock()) {
-            return { opening: '<br />', closing: '', content: '' };
-        }
-
+        
         let tags = this.getTags(), attrs = this.getTagAttributes();
         
         let beginTags = [], endTags = [];
@@ -59,7 +63,7 @@ class OpToHtmlConverter {
 
         return {
             opening: beginTags.join(''),
-            content: this.getContent(),
+            content: this.getContent(), //.replace(/\n/g, '</p><p>'),
             closing: endTags.join('')
         };
     }
@@ -95,7 +99,7 @@ class OpToHtmlConverter {
     }
 
 
-    getCssStyles() {
+    getCssStyles(): string[] {
         if (this._cssStyles !== null) {
             return this._cssStyles;
         }
@@ -107,12 +111,12 @@ class OpToHtmlConverter {
             .map((item) => preferSecond(item) + ':' + attrs[item[0]]);
     }
 
-    getTagAttributes(): any[] {
+    getTagAttributes(): ITagKeyValue[] {
         if (this.op.attributes.code) {
             return [];
         }
 
-        const makeAttr = (k: string, v: any) => ({ key: k, value: v });
+        const makeAttr = (k: string, v: string): ITagKeyValue => ({ key: k, value: v });
 
         var classes = this.getCssClasses();
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];

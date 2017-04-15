@@ -28,15 +28,20 @@ class OpGroup implements IInlineOpGroup, IDataBlockOp, IBlockWrappedOpGroup {
         this.ops = ops;
     }
 
-    // Returns the list of ops that will be rendered in a block
-    static getOpsUntilNewLineOrBlockOp(currentIndex: number, ops: DeltaInsertOp[]) {
+    static getOpsForBlock(currentIndex: number, ops: DeltaInsertOp[]) {
         var result = {
             ops: [] as DeltaInsertOp[],
             lastIndex: currentIndex
         };
         for (var i = currentIndex - 1; i >= 0; i--) {
             var op = ops[i];
-            if (op.isNewLine() || op.isDataBlock() || op.isContainerBlock()) {
+            if (op.isDataBlock() || op.isContainerBlock()) {
+                break;
+            }
+            if (op.isTextWithNewLine()) {
+                var splitOps = op.splitByLastNewLine();
+                ops[i] = splitOps[0];
+                splitOps[1] && result.ops.push(splitOps[1]);
                 break;
             }
             result.lastIndex = i;
@@ -46,7 +51,7 @@ class OpGroup implements IInlineOpGroup, IDataBlockOp, IBlockWrappedOpGroup {
         return result;
     }
 
-    static groupDenormalizedOps(ops: DeltaInsertOp[]): OpGroup[] {
+    static groupOps(ops: DeltaInsertOp[]): OpGroup[] {
 
         let result: OpGroup[] = [];
         let inlines: DeltaInsertOp[] = [];
@@ -63,7 +68,7 @@ class OpGroup implements IInlineOpGroup, IDataBlockOp, IBlockWrappedOpGroup {
             let op = ops[i];
             if (op.isContainerBlock()) {
                 commitAndResetInlines();
-                let opsResult = OpGroup.getOpsUntilNewLineOrBlockOp(i, ops);
+                let opsResult = OpGroup.getOpsForBlock(i, ops);
                 i = opsResult.lastIndex;
                 result.push(new OpGroup(op,  opsResult.ops));
 
