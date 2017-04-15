@@ -1,5 +1,4 @@
 
-//import { InsertOpDenormalizer } from './InsertOpDenormalizer';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { flattenArray } from './funcs-misc';
 import { Embed, EmbedType } from './Embed';
@@ -16,8 +15,6 @@ class InsertOpsConverter {
         if (!Array.isArray(deltaOps)) {
             return [];
         }
-
-        //var denormalizedOps = flattenArray(deltaOps.map(InsertOpDenormalizer.denormalize));
 
         var results: DeltaInsertOp[] = [];
 
