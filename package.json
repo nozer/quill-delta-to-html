@@ -1,0 +1,33 @@
+{
+  "name": "quill-delta-to-html",
+  "version": "0.1.0",
+  "description": "Converts Quill's delta ops to HTML",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/mocha": "^2.2.40",
+    "@types/node": "^7.0.12",
+    "mocha": "^3.2.0",
+    "ts-node": "^3.0.2",
+    "typescript": "^2.2.2"
+  },
+  "scripts": {
+    "watch": "tsc --watch ",
+    "test": "./node_modules/mocha/bin/mocha --compilers ts:ts-node/register -b \"./test/**/*.ts\"  || true "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nozer/quill-delta-to-html.git"
+  },
+  "keywords": [
+    "quill",
+    "delta",
+    "html"
+  ],
+  "author": "Nihat Özer <nihatforweb@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nozer/quill-delta-to-html/issues"
+  },
+  "homepage": "https://github.com/nozer/quill-delta-to-html#readme"
+}
