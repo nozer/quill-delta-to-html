@@ -10,33 +10,24 @@ import { OpGroup } from './OpGroup';
 
 
 interface IQuillDeltaToHtmlConverterOptions {
-    classPrefix?: string,
     orderedListTag?: string,
     bulletListTag?: string,
-    paragraphTag?: string,
-    encodeHtml?: boolean
+    converter?: OpToHtmlConverter
 }
 
 class QuillDeltaToHtmlConverter {
     private options: IQuillDeltaToHtmlConverterOptions;
     private rawDeltaOps: any[] = [];
-    private converterOptions: IOpToHtmlConverterOptions;
 
-    constructor(deltaOps: any[], options?: IQuillDeltaToHtmlConverterOptions) {
+    constructor(
+            deltaOps: any[], 
+            options?: IQuillDeltaToHtmlConverterOptions) {
 
         this.options = Object.assign({
-            classPrefix: 'ql',
             orderedListTag: 'ol',
             bulletListTag: 'ul',
-            paragraphTag: 'p',
-            encodeHtml: true
+            converter: new OpToHtmlConverter()
         }, options);
-
-        this.converterOptions = {
-            classPrefix: this.options.classPrefix,
-            encodeHtml: this.options.encodeHtml,
-            paragraphTag: this.options.paragraphTag
-        };
 
         this.rawDeltaOps = deltaOps;
     }
@@ -86,11 +77,11 @@ class QuillDeltaToHtmlConverter {
                 htmlArr.push(html);
 
             } else if (group.op && group.op.isDataBlock()) {
-                html = this.renderDataBlock(group.op);
+                html = this.options.converter.getHtml(group.op)
                 htmlArr.push(html);
 
             } else if (!group.op && group.ops) {
-                html = this.renderInlineGroup(group.ops);
+                html = this.renderInlines(group.ops);
                 htmlArr.push(html);
             }
         }
@@ -101,32 +92,16 @@ class QuillDeltaToHtmlConverter {
 
     renderContainerBlock(op: DeltaInsertOp, ops: DeltaInsertOp[]) {
 
-        var opConverter = new OpToHtmlConverter(op, this.converterOptions);
+        var htmlParts = this.options.converter.getHtmlParts(op);
 
-        var htmlParts = opConverter.getHtmlParts();
-
-        return htmlParts.opening
-            + this.renderInlines(ops)
-            + htmlParts.closing;
+        return htmlParts.openingTag + this.renderInlines(ops) + htmlParts.closingTag;
     }
 
-    renderDataBlock(op: DeltaInsertOp) {
-
-        var opConverter = new OpToHtmlConverter(op, this.converterOptions);
-        return opConverter.getHtml();
-    }
-
-    renderInlineGroup(ops: DeltaInsertOp[]) {
-        return makeStartTag(this.options.paragraphTag)
-            + this.renderInlines(ops)
-            + makeEndTag(this.options.paragraphTag);
-    }
 
     renderInlines(ops: DeltaInsertOp[]): string {
         
         return ops.reduce(function (arr: Array<string>, op: DeltaInsertOp) {
-            var opConverter = new OpToHtmlConverter(op, this.converterOptions);
-            arr.push(opConverter.getHtml());
+            arr.push(this.options.converter.getHtml(op));
             return arr;
         }.bind(this), [])
             .join('');

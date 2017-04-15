@@ -9,7 +9,8 @@ import { IOpAttributes } from './IOpAttributes';
 interface IOpToHtmlConverterOptions {
     classPrefix?: string,
     encodeHtml?: boolean,
-    paragraphTag?: string
+    paragraphTag?: string,
+    styledTextTag?: string
 }
 
 interface ITagKeyValue {
@@ -19,19 +20,14 @@ interface ITagKeyValue {
 
 class OpToHtmlConverter {
 
-    private op: DeltaInsertOp;
     private options: IOpToHtmlConverterOptions;
 
-    // Saved for fast lookup in multiple calls 
-    private _cssClasses: string[] = null;
-    private _cssStyles: string[] = null;
-
-    constructor(op: DeltaInsertOp, options?: IOpToHtmlConverterOptions) {
-        this.op = op;
-        this.options = Object.assign({}, { 
+    constructor(options?: IOpToHtmlConverterOptions) {
+        options = Object.assign({}, { 
             classPrefix: 'ql',
             encodeHtml: true,
-            paragraphTag: 'p'
+            paragraphTag: 'p',
+            styledTextTag: 'span'
         }, options);
     }
 
@@ -42,14 +38,19 @@ class OpToHtmlConverter {
         return this.options.classPrefix + '-' + className;
     }
 
-    getHtml(): string {
-        var parts = this.getHtmlParts();
-        return parts.opening + parts.content + parts.closing;
+    getHtml(op: DeltaInsertOp): string {
+        var parts = this.getHtmlParts(op);
+        return parts.openingTag + parts.content + parts.closingTag;
     }
 
-    getHtmlParts(): { opening: string, closing: string, content: string } {
+    getHtmlParts(op: DeltaInsertOp): { openingTag: string, closingTag: string, content: string } {
         
-        let tags = this.getTags(), attrs = this.getTagAttributes();
+        let tags = this.getTags(op), attrs = this.getTagAttributes(op);
+        if (!tags.length && this.options.styledTextTag) {
+            if (attrs.some((a) => a.key === 'css' || a.key === 'style')) {
+                tags.push(this.options.styledTextTag);
+            }
+        }
         
         let beginTags = [], endTags = [];
 
@@ -62,76 +63,71 @@ class OpToHtmlConverter {
         endTags.reverse();
 
         return {
-            opening: beginTags.join(''),
-            content: this.getContent(), //.replace(/\n/g, '</p><p>'),
-            closing: endTags.join('')
+            openingTag: beginTags.join(''),
+            content: this.getContent(op), //.replace(/\n/g, '</p><p>'),
+            closingTag: endTags.join('')
         };
     }
 
-    getContent(): string {
-        if (this.op.isContainerBlock()) {
+    getContent(op: DeltaInsertOp): string {
+        if (op.isContainerBlock()) {
             return '';
         }
         var content = '';
-        if (this.op.isFormula()) {
-            content = (<Embed>this.op.insert).value;
-        } else if (this.op.isText()) {
-            content = <string>this.op.insert;
+        if (op.isFormula()) {
+            content = (<Embed>op.insert).value;
+        } else if (op.isText()) {
+            content = <string>op.insert;
         } 
         return this.options.encodeHtml && encodeHtml(content) || content;
     }
 
-    getCssClasses(): string[] {
-        if (this._cssClasses !== null) {
-            return this._cssClasses;
-        }
-        var attrs: any = this.op.attributes;
+    getCssClasses(op: DeltaInsertOp): string[] {
+        
+        var attrs: any = op.attributes;
 
         type Str2StrType = { (x: string): string };
 
-        return this._cssClasses = ['indent', 'align', 'direction', 'font', 'size']
+        return ['indent', 'align', 'direction', 'font', 'size']
             .filter((prop) => !!attrs[prop])
             .map((prop) => prop + '-' + attrs[prop])
-            .concat(this.op.isFormula() ? 'formula' : [])
-            .concat(this.op.isVideo() ? 'video' : [])
-            .concat(this.op.isImage() ? 'image' : [])
+            .concat(op.isFormula() ? 'formula' : [])
+            .concat(op.isVideo() ? 'video' : [])
+            .concat(op.isImage() ? 'image' : [])
             .map(<Str2StrType>this.prefixClass.bind(this));
     }
 
 
-    getCssStyles(): string[] {
-        if (this._cssStyles !== null) {
-            return this._cssStyles;
-        }
+    getCssStyles(op: DeltaInsertOp): string[] {
         
-        var attrs: any = this.op.attributes;
+        var attrs: any = op.attributes;
 
-        return this._cssStyles = [['background', 'background-color'], ['color']]
+        return [['background', 'background-color'], ['color']]
             .filter((item) => !!attrs[item[0]])
             .map((item) => preferSecond(item) + ':' + attrs[item[0]]);
     }
 
-    getTagAttributes(): ITagKeyValue[] {
-        if (this.op.attributes.code) {
+    getTagAttributes(op: DeltaInsertOp): Array<ITagKeyValue> {
+        if (op.attributes.code) {
             return [];
         }
 
         const makeAttr = (k: string, v: string): ITagKeyValue => ({ key: k, value: v });
 
-        var classes = this.getCssClasses();
+        var classes = this.getCssClasses(op);
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
 
-        if (this.op.isImage()) {
-            let src = scrubUrl((<Embed>this.op.insert).value);
+        if (op.isImage()) {
+            let src = scrubUrl((<Embed>op.insert).value);
             return tagAttrs.concat(makeAttr('src', src));
         }
 
-        if (this.op.isFormula() || this.op.isContainerBlock()) {
+        if (op.isFormula() || op.isContainerBlock()) {
             return tagAttrs;
         }
 
-        if (this.op.isVideo()) {
-            let src = scrubUrl((<Embed>this.op.insert).value);
+        if (op.isVideo()) {
+            let src = scrubUrl((<Embed>op.insert).value);
             return tagAttrs.concat(
                 makeAttr('frameborder', '0'),
                 makeAttr('allowfullscreen', 'true'),
@@ -139,16 +135,16 @@ class OpToHtmlConverter {
             );
         }
 
-        var styles = this.getCssStyles();
+        var styles = this.getCssStyles(op);
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
 
         return tagAttrs
             .concat(styleAttr)
-            .concat(this.op.isLink() ? makeAttr('href', this.op.attributes.link) : []);
+            .concat(op.isLink() ? makeAttr('href', op.attributes.link) : []);
     }
 
-    getTags(): string[] {
-        var attrs: any = this.op.attributes;
+    getTags(op: DeltaInsertOp): string[] {
+        var attrs: any = op.attributes;
 
         // code 
         if (attrs.code) {
@@ -156,10 +152,10 @@ class OpToHtmlConverter {
         }
 
         // embeds
-        if (this.op.isEmbed()) {
-            return [this.op.isVideo() ? 'iframe'
-                : this.op.isImage() ? 'img'
-                    : this.op.isFormula() ? 'span'
+        if (op.isEmbed()) {
+            return [op.isVideo() ? 'iframe'
+                : op.isImage() ? 'img'
+                    : op.isFormula() ? 'span'
                         : 'unknown'
             ]
         }
@@ -173,7 +169,7 @@ class OpToHtmlConverter {
         }
 
         // inlines  
-        var inlineTags = [['link', 'a'], ['script'],
+        return [['link', 'a'], ['script'],
         ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u']
         ]
             .filter((item: any[]) => !!attrs[item[0]])
@@ -182,11 +178,6 @@ class OpToHtmlConverter {
                     (attrs[item[0]] === ScriptType.Sub ? 'sub' : 'sup')
                     : preferSecond(item);
             });
-        if (!inlineTags.length && 
-            (this.getCssStyles().length || this.getCssClasses().length)){
-            return ['span'];
-        }
-        return inlineTags;
     }
 
 
