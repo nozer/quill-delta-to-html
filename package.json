@@ -2,7 +2,7 @@
   "name": "quill-delta-to-html",
   "version": "0.1.0",
   "description": "Converts Quill's delta ops to HTML",
-  "main": "index.js",
+  "main": "dist/commonjs/main.js",
   "dependencies": {},
   "devDependencies": {
     "@types/mocha": "^2.2.40",

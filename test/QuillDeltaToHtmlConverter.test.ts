@@ -83,17 +83,17 @@ describe('QuillDeltaToHtmlConverter', function () {
             it('should render plain new line string', function () {
                 var ops = [new DeltaInsertOp("\n")];
                 var qdc = new QuillDeltaToHtmlConverter([]);
-                assert.equal(qdc.renderInlines(ops), '<p><br/></p>');
+                assert.equal(qdc.renderInlines(ops), '<p></p>');
             });
 
             it('should render styled new line string', function () {
                 var ops = [new DeltaInsertOp("\n", {font: 'arial'})];
                 var qdc = new QuillDeltaToHtmlConverter([]);
                 assert.equal(qdc.renderInlines(ops), 
-                    '<p><br/></p>');
+                    '<p></p>');
 
                 var qdc = new QuillDeltaToHtmlConverter([], {paragraphTag: ''});
-                assert.equal(qdc.renderInlines(ops),  '<br/>');
+                assert.equal(qdc.renderInlines(ops),  '');
             });
 
             it('should render when first line is new line', function () {
@@ -105,7 +105,7 @@ describe('QuillDeltaToHtmlConverter', function () {
             it('should render when last line is new line', function () {
                 var ops = [ new DeltaInsertOp("aa"), new DeltaInsertOp("\n")];
                 var qdc = new QuillDeltaToHtmlConverter([]);
-                assert.equal(qdc.renderInlines(ops), '<p>aa<br/></p>');
+                assert.equal(qdc.renderInlines(ops), '<p>aa</p>');
             });
 
             it('should render mixed lines', function () {
@@ -236,7 +236,7 @@ describe('QuillDeltaToHtmlConverter', function () {
                     return '';
                 });
                 qdc.afterInlineGroupRender((html) => {
-                    assert.ok(html.indexOf('lo<br/>') > -1);
+                    assert.ok(html.indexOf('lo') > -1);
                     jobstatus[1] = true;
                     return html;
                 });

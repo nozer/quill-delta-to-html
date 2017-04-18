@@ -1,5 +1,5 @@
 
-var QuillDeltaToHtmlConverter = require('./dist/commonjs/QuillDeltaToHtmlConverter').default;
+var QuillDeltaToHtmlConverter = require('./dist/commonjs/main');
 
 var ops = [
     {insert: 'hello', attributes: {color: '#f00'}}
