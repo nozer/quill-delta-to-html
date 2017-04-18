@@ -6,7 +6,7 @@
         "preserveConstEnums": true,
         "sourceMap": false,
         "target": "es5",
-        "outDir": "build/",
+        "outDir": "dist/commonjs/",
         "lib": [
             "es6"
         ],

@@ -25,4 +25,12 @@ const AlignType = {
     Right: "right" as AlignType
 }
 
-export { NewLine, ListType, ScriptType, DirectionType, AlignType };
+type DataType = "text" | "image" | "video" | "formula";
+const DataType = {
+    Image: "image" as DataType,
+    Video: "video" as DataType,
+    Formula: "formula" as DataType,
+    Text: "text" as DataType
+};
+
+export { NewLine, ListType, ScriptType, DirectionType, AlignType, DataType };

@@ -3,7 +3,7 @@ import 'mocha';
 import * as assert from 'assert';
 
 import {DeltaInsertOp} from './../src/DeltaInsertOp';
-import {Embed} from './../src/Embed';
+import {InsertData} from './../src/InsertData';
 import { InsertOpsConverter } from "./../src/InsertOpsConverter";
 
 var data = [
@@ -46,6 +46,7 @@ describe('InsertOpsConverter', function () {
         
         it('should transform raw delta ops to DeltaInsertOp[]', function () {
             var objs = InsertOpsConverter.convert(data[0].ops);
+            console.log(objs);
             assert.equal(objs[0] instanceof DeltaInsertOp, true);
             assert.equal(objs[objs.length -1] instanceof DeltaInsertOp, true);
             //console.log(objs);
@@ -62,9 +63,7 @@ describe('InsertOpsConverter', function () {
             ["fdsf", {image: 'ff'}, {video: ''}, {formula: ''}].forEach((v, i) => {
                 var act = InsertOpsConverter.convertInsertVal(v);
                 assert.notEqual(act, null);
-                i === 0 && assert.equal(typeof act, 'string');
-                i > 0 && assert.ok(act instanceof Embed)
-
+                assert.ok(act instanceof InsertData);
             });
         });
     });

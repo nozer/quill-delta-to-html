@@ -2,24 +2,24 @@
 import 'mocha';
 import * as assert from "assert";
 
-import {Embed, EmbedType} from './../src/Embed';
+import {InsertData} from './../src/InsertData';
 import {DeltaInsertOp} from './../src/DeltaInsertOp';
 
 describe('DeltaInsertOp', function() {
 
     describe('constructor()', function() {
         it('should instantiate', function() {
-            var embed = new Embed(EmbedType.Image, "https://");
+            var embed = new InsertData("image", "https://");
             var t = new DeltaInsertOp(embed);
             assert.equal(t instanceof DeltaInsertOp, true);
-            assert.equal(t.insert instanceof Embed, true);
+            assert.equal(t.insert instanceof InsertData, true);
             assert.equal(t.attributes instanceof Object, true);
 
             t = new DeltaInsertOp("test");
-            assert.deepEqual(typeof t.insert, 'string');
+            assert.deepEqual(t.insert.value, 'test');
 
-            t = new DeltaInsertOp(new Embed(EmbedType.Formula, "x=data"));
-            assert.equal((<Embed>t.insert).value, "x=data");
+            t = new DeltaInsertOp(new InsertData("formula", "x=data"));
+            assert.equal(t.insert.value, "x=data");
         });
     });
 
@@ -38,18 +38,25 @@ describe('DeltaInsertOp', function() {
             var op = new DeltaInsertOp("test", {header: 1});
             assert.equal(op.isDataBlock(), false);
 
-            op = new DeltaInsertOp(new Embed(EmbedType.Video,"http://"));
+            op = new DeltaInsertOp(new InsertData("video","http://"));
             assert.equal(op.isDataBlock(), true);
         });
     });
 
-    describe('isNewLine()', function() {
-        it('should return true if op text is just newline character', function() {
-            var op = new DeltaInsertOp("\n");
-            assert.equal(op.isNewLine(), true);
+    describe('isInline()', function() {
+        it('should return true if op is an inline', function() {
+            var op = new DeltaInsertOp("\n", {});
+            assert.equal(op.isInline(), true);
+        });
+    });
 
-            op = new DeltaInsertOp("\n ");
-            assert.equal(op.isNewLine(), false);
+    describe('isJustNewline()', function() {
+        it('should return true if op is a list', function() {
+            var op = new DeltaInsertOp("\n", {});
+            assert.equal(op.isJustNewline(), true);
+
+            op = new DeltaInsertOp("\n\n ", {list: "ordered"});
+            assert.equal(op.isJustNewline(), false);
         });
     });
 
@@ -94,30 +101,30 @@ describe('DeltaInsertOp', function() {
         });
     });
 
-    describe('isEmbed()/isText()', function() {
+    describe('isText()', function() {
         it('should correctly identify insert type', function() {
             var op = new DeltaInsertOp("\n", {list: 'bullet'});
-            assert.equal(op.isEmbed(), false);
+            assert.equal(op.isVideo(), false);
             assert.equal(op.isText(), true);
 
-            op = new DeltaInsertOp(new Embed("image", "d"), {list: "ordered"});
-            assert.equal(op.isEmbed(), true);
+            op = new DeltaInsertOp(new InsertData("image", "d"), {list: "ordered"});
+            assert.equal(op.isImage(), true);
             assert.equal(op.isText(), false);
         });
     });
 
     describe('isVideo()/isImage()/isFormula()', function() {
         it('should correctly identify embed type', function() {
-            var op = new DeltaInsertOp(new Embed("video", ""));
+            var op = new DeltaInsertOp(new InsertData("video", ""));
             assert.equal(op.isVideo(), true);
             assert.equal(op.isFormula(), false);
             assert.equal(op.isImage(), false);
 
-            op = new DeltaInsertOp(new Embed("image", "d"));
+            op = new DeltaInsertOp(new InsertData("image", "d"));
             assert.equal(op.isImage(), true);
             assert.equal(op.isFormula(), false);
 
-            op = new DeltaInsertOp(new Embed("formula", "d"));
+            op = new DeltaInsertOp(new InsertData("formula", "d"));
             assert.equal(op.isVideo(), false);
             assert.equal(op.isFormula(), true);
         });
@@ -125,7 +132,7 @@ describe('DeltaInsertOp', function() {
 
     describe('isLink()', function() {
         it('should correctly identify if op is a link', function() {
-            var op = new DeltaInsertOp(new Embed("video", ""), {link: 'http://'});
+            var op = new DeltaInsertOp(new InsertData("video", ""), {link: 'http://'});
             assert.equal(op.isLink(), false);
             
 

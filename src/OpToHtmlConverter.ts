@@ -1,16 +1,14 @@
 
 import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
-import { Embed, EmbedType } from './Embed';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ScriptType } from './value-types';
-import { preferSecond, scrubUrl } from './funcs-misc';
+import { preferSecond, scrubUrl, assign } from './funcs-misc';
 import { IOpAttributes } from './IOpAttributes';
 
 interface IOpToHtmlConverterOptions {
     classPrefix?: string,
     encodeHtml?: boolean,
-    paragraphTag?: string,
-    styledTextTag?: string
+    paragraphTag?: string
 }
 
 interface ITagKeyValue {
@@ -18,16 +16,21 @@ interface ITagKeyValue {
     value: string
 }
 
+interface IHtmlParts {
+    openingTag: string,
+    content: string,
+    closingTag: string,
+}
+
 class OpToHtmlConverter {
 
     private options: IOpToHtmlConverterOptions;
 
     constructor(options?: IOpToHtmlConverterOptions) {
-        options = Object.assign({}, { 
+        this.options = assign({}, { 
             classPrefix: 'ql',
             encodeHtml: true,
-            paragraphTag: 'p',
-            styledTextTag: 'span'
+            paragraphTag: 'p'
         }, options);
     }
 
@@ -43,28 +46,27 @@ class OpToHtmlConverter {
         return parts.openingTag + parts.content + parts.closingTag;
     }
 
-    getHtmlParts(op: DeltaInsertOp): { openingTag: string, closingTag: string, content: string } {
+    getHtmlParts(op: DeltaInsertOp): IHtmlParts {
         
         let tags = this.getTags(op), attrs = this.getTagAttributes(op);
-        if (!tags.length && this.options.styledTextTag) {
-            if (attrs.some((a) => a.key === 'css' || a.key === 'style')) {
-                tags.push(this.options.styledTextTag);
-            }
+        
+        if (!tags.length && attrs.length) {
+            tags.push('span');
         }
         
         let beginTags = [], endTags = [];
 
-        var isAttrsConsumed = false;
         for (var tag of tags) {
-            beginTags.push(makeStartTag(tag, !isAttrsConsumed && attrs || null));
+            beginTags.push(makeStartTag(tag,  attrs));
             endTags.push(tag === 'img' ? '' : makeEndTag(tag));
-            isAttrsConsumed = true;
+            // consumed in first tag
+            attrs = null;
         }
         endTags.reverse();
 
         return {
             openingTag: beginTags.join(''),
-            content: this.getContent(op), //.replace(/\n/g, '</p><p>'),
+            content: this.getContent(op), 
             closingTag: endTags.join('')
         };
     }
@@ -73,12 +75,8 @@ class OpToHtmlConverter {
         if (op.isContainerBlock()) {
             return '';
         }
-        var content = '';
-        if (op.isFormula()) {
-            content = (<Embed>op.insert).value;
-        } else if (op.isText()) {
-            content = <string>op.insert;
-        } 
+        var content = op.isFormula() || op.isText() ? op.insert.value : '';
+        
         return this.options.encodeHtml && encodeHtml(content) || content;
     }
 
@@ -118,8 +116,7 @@ class OpToHtmlConverter {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
 
         if (op.isImage()) {
-            let src = scrubUrl((<Embed>op.insert).value);
-            return tagAttrs.concat(makeAttr('src', src));
+            return tagAttrs.concat(makeAttr('src', scrubUrl(op.insert.value)));
         }
 
         if (op.isFormula() || op.isContainerBlock()) {
@@ -127,11 +124,10 @@ class OpToHtmlConverter {
         }
 
         if (op.isVideo()) {
-            let src = scrubUrl((<Embed>op.insert).value);
             return tagAttrs.concat(
                 makeAttr('frameborder', '0'),
                 makeAttr('allowfullscreen', 'true'),
-                makeAttr('src', src)
+                makeAttr('src', scrubUrl(op.insert.value))
             );
         }
 
@@ -152,7 +148,7 @@ class OpToHtmlConverter {
         }
 
         // embeds
-        if (op.isEmbed()) {
+        if (!op.isText()) {
             return [op.isVideo() ? 'iframe'
                 : op.isImage() ? 'img'
                     : op.isFormula() ? 'span'
@@ -161,7 +157,8 @@ class OpToHtmlConverter {
         }
 
         // blocks 
-        var blocks = [['blockquote'], ['code-block', 'pre'], ['list', 'li'], ['header']];
+        var blocks = [['blockquote'], ['code-block', 'pre'], ['list', 'li'], ['header'],
+                        ['align', 'p'], ['direction', 'p'], ['indent', 'p']];
         for (var item of blocks) {
             if (attrs[item[0]]) {
                 return item[0] === 'header' ? ['h' + attrs[item[0]]] : [preferSecond(item)];
@@ -183,4 +180,4 @@ class OpToHtmlConverter {
 
 }
 
-export { OpToHtmlConverter, IOpToHtmlConverterOptions };
+export { OpToHtmlConverter, IOpToHtmlConverterOptions, IHtmlParts };

@@ -1,16 +1,18 @@
 
-import { NewLine, ListType } from './value-types';
+import { NewLine, ListType, DataType } from './value-types';
 import { IOpAttributes } from './IOpAttributes';
-import { Embed, EmbedType } from './Embed';
-import { TInsert } from './TInsert';
+import { InsertData } from './InsertData';
 import { tokenizeWithNewLines } from './funcs-misc';
 
 class DeltaInsertOp {
 
-    readonly insert: TInsert;
+    readonly insert: InsertData;
     readonly attributes: IOpAttributes;
 
-    constructor(insertVal: TInsert, attributes?: IOpAttributes) {
+    constructor(insertVal: InsertData | string, attributes?: IOpAttributes) {
+        if (!(insertVal instanceof InsertData)) {
+            insertVal = new InsertData(DataType.Text, insertVal + '');
+        }
         this.insert = insertVal;
         this.attributes = attributes || {};
     }
@@ -23,43 +25,19 @@ class DeltaInsertOp {
     }
 
     isDataBlock() {
-        if (!(this.insert instanceof Embed)) {
-            return false;
-        }
-
-        return (<Embed>this.insert).type === EmbedType.Video;
+        return this.isVideo();
     }
 
-    isTextWithNewLine() {
-        if (!this.isText()) {
-            return false;
-        }
-        return (<string>this.insert).indexOf(NewLine) > -1;
+    isInline() {
+        return !(this.isContainerBlock() || this.isDataBlock());
     }
 
-    splitByLastNewLine(): [DeltaInsertOp, DeltaInsertOp | null] | null {
-        if (!this.isText()) {
-            return null;
-        }
-        var insertVal = (<string>this.insert);
-        var lastNlIndex = insertVal.lastIndexOf(NewLine);
-        if (lastNlIndex === -1) {
-            return null;
-        }
-
-        var contentUntilNewLine = insertVal.substr(0, lastNlIndex);
-        var contentAfterNewLine = insertVal.substr(lastNlIndex + 1);
-        var op2 = contentAfterNewLine ? 
-            new DeltaInsertOp(contentAfterNewLine, this.attributes) : null;
-       
-        return [
-            new DeltaInsertOp(contentUntilNewLine, this.attributes),
-            op2
-        ];
+    isCodeBlock() {
+        return !!this.attributes['code-block'];
     }
 
-    isNewLine() {
-        return typeof this.insert === 'string' && this.insert === NewLine;
+    isJustNewline() {
+        return this.insert.value === NewLine;
     }
 
     isList() {
@@ -78,24 +56,20 @@ class DeltaInsertOp {
         return this.attributes.list === op.attributes.list;
     }
 
-    isEmbed() {
-        return this.insert instanceof Embed;
-    }
-
     isText() {
-        return typeof this.insert === 'string';
+        return this.insert.type === DataType.Text;
     }
 
     isImage() {
-        return this.isEmbed() && (<Embed>this.insert).type === EmbedType.Image;
+        return this.insert.type === DataType.Image;
     }
     
     isFormula() {
-        return this.isEmbed() && (<Embed>this.insert).type === EmbedType.Formula;
+        return this.insert.type === DataType.Formula;
     }
 
     isVideo() {
-        return this.isEmbed() && (<Embed>this.insert).type === EmbedType.Video;
+        return this.insert.type === DataType.Video;
     }
 
     isLink() {

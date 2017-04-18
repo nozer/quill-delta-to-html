@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ"
+        crossorigin="anonymous">
+    <link href="https://cdn.quilljs.com/1.2.3/quill.snow.css" rel="stylesheet"></link>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css" integrity="sha384-wITovz90syo1dJWVh32uuETPVEtGigN07tkttEqPv+uR2SE/mbQcG7ATL28aI9H0" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js" integrity="sha384-/y1Nn9+QQAipbNQWU65krzJralCnuOasHncUFXGkdwntGeSvQicrYkiUBwsgUqc1" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/default.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col">
+                <div id="quill-toolbar"></div>
+                <div id="quill-editor"></div>
+            </div>
+            <div class="col  ">
+                <div class="ql-container ql-snow">
+                    <div id="converted-view" class="ql-editor"
+                        style="margin-top:69px;border-top:1px solid #cecece;"></div>
+                 </div>
+            </div>
+        </div>
+    </div>
+    <script src="dist/browser/QuillDeltaToHtmlConverter.bundle.js"></script>
+    <script src="https://cdn.quilljs.com/1.2.3/quill.js"></script>
+    <script>
+        var toolbarOptions = [
+            ['bold', 'italic', 'underline', 'strike',
+                {
+                    'script': 'sub'
+                }, {
+                    'script': 'super'
+                },
+                {
+                    'color': []
+                }, {
+                    'background': []
+                }, 'code'
+            ],
+            [{
+                'font': []
+            }, {
+                'size': ['small', false, 'large', 'huge']
+            }],
+
+            ['link', 'image', 'video', 'formula'],
+            ['blockquote', 'code-block', {
+                    'header': 1
+                },
+                {
+                    'list': 'ordered'
+                }, {
+                    'list': 'bullet'
+                }
+            ],
+            [{
+                'indent': '-1'
+            }, {
+                'indent': '+1'
+            }, {
+                'direction': 'rtl'
+            }, {
+                'align': []
+            }],
+            ['clean']
+        ];
+        var quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            placeholder: 'type here...',
+            formula: true,
+            syntax: true,
+            modules: {
+                toolbar: toolbarOptions
+            }
+        });
+
+        quill.on('text-change', function (v) {
+            var delta = quill.getContents();
+            console.log(delta);
+            var qdc = new window.QuillDeltaToHtmlConverter(delta.ops);
+            var html = qdc.convert();
+            console.log(html);
+            document.getElementById('converted-view').innerHTML = html;
+            
+        });
+
+    </script>
+   
+</body>
+
+</html>

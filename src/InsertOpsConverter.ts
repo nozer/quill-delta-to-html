@@ -1,9 +1,9 @@
 
 import { DeltaInsertOp } from './DeltaInsertOp';
-import { flattenArray } from './funcs-misc';
-import { Embed, EmbedType } from './Embed';
-import { TInsert } from './TInsert';
+import { DataType } from './value-types';
+import { InsertData } from './InsertData';
 import { OpAttributeSanitizer } from './OpAttributeSanitizer';
+import { InsertOpDenormalizer } from './InsertOpDenormalizer';
 
 /**
  * Converts raw delta insert ops to array of denormalized DeltaInsertOp objects 
@@ -16,11 +16,13 @@ class InsertOpsConverter {
             return [];
         }
 
+        var denormalizedOps = [].concat.apply([], 
+            deltaOps.map(InsertOpDenormalizer.denormalize));
         var results: DeltaInsertOp[] = [];
 
         var insertVal, attributes;
 
-        for (var op of deltaOps) {
+        for (var op of denormalizedOps) {
             if (!op || typeof op !== 'object' || !op.insert) {
                 continue;
             }
@@ -37,21 +39,21 @@ class InsertOpsConverter {
         return results;
     }
 
-    static convertInsertVal(insertPropVal: any): TInsert | null {
+    static convertInsertVal(insertPropVal: any): InsertData | null {
         if (typeof insertPropVal === 'string') {
-            return insertPropVal;
+            return new InsertData(DataType.Text, insertPropVal);
         }
 
         if (!insertPropVal || typeof insertPropVal !== 'object') {
             return null;
         }
 
-        return EmbedType.Image in insertPropVal ?
-            new Embed(EmbedType.Image, insertPropVal[EmbedType.Image])
-            : EmbedType.Video in insertPropVal ?
-                new Embed(EmbedType.Video, insertPropVal[EmbedType.Video])
-                : EmbedType.Formula in insertPropVal ?
-                    new Embed(EmbedType.Formula, insertPropVal[EmbedType.Formula])
+        return DataType.Image in insertPropVal ?
+            new InsertData(DataType.Image, insertPropVal[DataType.Image])
+            : DataType.Video in insertPropVal ?
+                new InsertData(DataType.Video, insertPropVal[DataType.Video])
+                : DataType.Formula in insertPropVal ?
+                    new InsertData(DataType.Formula, insertPropVal[DataType.Formula])
                     : null;
     }
 }

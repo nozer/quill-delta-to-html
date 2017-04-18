@@ -1,6 +1,6 @@
 
 import { NewLine } from './value-types';
-import { tokenizeWithNewLines } from './funcs-misc';
+import { tokenizeWithNewLines, assign } from './funcs-misc';
 
 /**
  * Denormalization is splitting a text insert operation that has new lines into multiple 
@@ -15,10 +15,10 @@ import { tokenizeWithNewLines } from './funcs-misc';
  * Denormalized:
  *  [
  *      {insert: 'hello', attributes: {bold: true}},
- *      {insert: '\n'},
- *      {insert: '\n'},
+ *      {insert: '\n', attributes: {bold: true}},
+ *      {insert: '\n', attributes: {bold: true}},
  *      {insert: 'how are you?', attributes: {bold: true}},
- *      {insert: '\n'}
+ *      {insert: '\n', attributes: {bold: true}}
  *  ]
  */
 
@@ -39,13 +39,13 @@ class InsertOpDenormalizer {
             return [op];
         }
 
-        let nlObj = { insert: NewLine };
+        let nlObj = assign({}, op, { insert: NewLine });
 
         return newlinedArray.map((line: string) => {
             if (line === NewLine) {
                 return nlObj;
             }
-            return Object.assign({}, op, {
+            return assign({}, op, {
                 insert: line
             });
         });

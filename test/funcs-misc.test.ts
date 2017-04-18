@@ -3,14 +3,13 @@ import * as assert from 'assert';
 
 import {
     tokenizeWithNewLines,
-    flattenArray,
     preferSecond,
-    scrubUrl
+    scrubUrl,
+    assign,
+    groupConsecutiveElementsWhile
 } from "./../src/funcs-misc";
 
-import {
-    nonStringSamples
-} from "./_helper";
+import { nonStringSamples } from "./data/nonStringSamples";
 
 
 describe('funcs module', function () {
@@ -29,23 +28,6 @@ describe('funcs module', function () {
         });
     });
    
-    describe('flattenArray()', function () {
-        it('[] should equal to []', () => {
-            var v = flattenArray([]);
-            assert.deepEqual(v, []);
-        });
-
-        it('[2] should equal to [2]', () => {
-            var v = flattenArray([2]);
-            assert.deepEqual(v, [2]);
-        });
-
-        it('[2, [3]] should equal to [2, 3]', () => {
-            var v = flattenArray([2, [3]]);
-            assert.deepEqual(v, [2, 3]);
-        });
-    });
-
     describe('tokenizeWithNewLines()', function () {
         describe('when given a non-string arg', function () {
             it("should return it as an array ", () => {
@@ -82,5 +64,22 @@ describe('funcs module', function () {
         });
     });
 
+    describe('assign(target, source, source2, ...)', function() {
+        it('should copy properties from sources to target, later overriding earlier', function() {
+            var s1 = {level: 1, name: 'Joe'};
+            var s2 = {level: 2}
+            var o = assign({}, s1, s2);
+            assert.equal(o.level, 2);
+            assert.equal(o.name , 'Joe');
+            assert.ok(assign(s1, null).level === 1);
+        });
+    });
 
+    describe('groupConsecutiveElementsWhile)', function() {
+        it('should move consecutive elements matching predicate into an arr', function() {
+            var arr = [1, "ha", 3, "ha", "ha"]; 
+            var grp = groupConsecutiveElementsWhile(arr, (v) => typeof v === 'string');
+            assert.deepEqual(grp, [1, ["ha"], 3, ["ha", "ha"]]);
+        });
+    });
 });

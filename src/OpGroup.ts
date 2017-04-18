@@ -1,5 +1,7 @@
 
 import {DeltaInsertOp} from './DeltaInsertOp';
+import {NewLine} from './value-types';
+import {groupConsecutiveElementsWhile, flattenArray} from './funcs-misc';
 
 interface IInlineOpGroup  {
     // all inline ops 
@@ -18,33 +20,33 @@ interface IBlockWrappedOpGroup {
     ops: DeltaInsertOp[]
 }
 
+interface IOpsSequence {
+    ops: DeltaInsertOp[],
+    lastUnprocessedIndex: number
+}
+
 class OpGroup implements IInlineOpGroup, IDataBlockOp, IBlockWrappedOpGroup {
 
-    readonly op: DeltaInsertOp;
-    readonly ops: DeltaInsertOp[];
+    op: DeltaInsertOp;
+    ops: DeltaInsertOp[];
 
     constructor(op: DeltaInsertOp = null, ops: DeltaInsertOp[] = null) {
         this.op = op;
         this.ops = ops;
     }
 
-    static getOpsForBlock(currentIndex: number, ops: DeltaInsertOp[]) {
+    static getOpsSequenceWhile(startIndex: number, ops: DeltaInsertOp[], 
+                            predicate: (op: DeltaInsertOp) => boolean): IOpsSequence {
         var result = {
             ops: [] as DeltaInsertOp[],
-            lastIndex: currentIndex
+            lastUnprocessedIndex: startIndex
         };
-        for (var i = currentIndex - 1; i >= 0; i--) {
+        for (var i = startIndex - 1; i >= 0; i--) {
             var op = ops[i];
-            if (op.isDataBlock() || op.isContainerBlock()) {
+            if (!predicate(op)) {
                 break;
             }
-            if (op.isTextWithNewLine()) {
-                var splitOps = op.splitByLastNewLine();
-                ops[i] = splitOps[0];
-                splitOps[1] && result.ops.push(splitOps[1]);
-                break;
-            }
-            result.lastIndex = i;
+            result.lastUnprocessedIndex = i;
             result.ops.push(op);
         }
         result.ops.reverse();
@@ -54,34 +56,49 @@ class OpGroup implements IInlineOpGroup, IDataBlockOp, IBlockWrappedOpGroup {
     static groupOps(ops: DeltaInsertOp[]): OpGroup[] {
 
         let result: OpGroup[] = [];
-        let inlines: DeltaInsertOp[] = [];
 
-        const commitAndResetInlines = () => {
-            if (!inlines.length) { return; }
-            inlines.reverse();
-            result.push(new OpGroup(null, inlines) );
-            inlines = [];
+        const canBeInBlock = (op: DeltaInsertOp) => {
+            return !(op.isJustNewline() || op.isDataBlock() || op.isContainerBlock());
         };
+        const isInlineData = (op: DeltaInsertOp) => op.isInline(); 
 
         let lastInd = ops.length - 1;
+        let opsResult: IOpsSequence;
         for (var i = lastInd; i >= 0; i--) {
             let op = ops[i];
-            if (op.isContainerBlock()) {
-                commitAndResetInlines();
-                let opsResult = OpGroup.getOpsForBlock(i, ops);
-                i = opsResult.lastIndex;
-                result.push(new OpGroup(op,  opsResult.ops));
-
-            } else if (op.isDataBlock()) {
-                commitAndResetInlines();
+            
+            if (op.isDataBlock()) {
                 result.push(new OpGroup(op));
+
+            } else if (op.isContainerBlock()) {
+
+                opsResult = OpGroup.getOpsSequenceWhile(i, ops, canBeInBlock);
+                result.push(new OpGroup(op, opsResult.ops));
+                i = opsResult.lastUnprocessedIndex;
             } else {
-                inlines.push(op);
+
+                opsResult = OpGroup.getOpsSequenceWhile(i, ops, isInlineData);
+                result.push(new OpGroup(null, opsResult.ops.concat(op)));
+                i = opsResult.lastUnprocessedIndex;
             }
         }
-        commitAndResetInlines();
         result.reverse();
-        return result;
+
+        return OpGroup.moveConsecutiveCodeblockOpsToFirstGroup(result);
+    }
+    
+    static moveConsecutiveCodeblockOpsToFirstGroup(groups: OpGroup[]) {
+        var codeblocksGrouped = groupConsecutiveElementsWhile(groups, (g: OpGroup) => {
+            return g.op && g.op.isCodeBlock();
+        });
+        
+        return codeblocksGrouped.map(function(elm: any){
+            if (!Array.isArray(elm)) {
+                return elm;
+            }
+            elm[0].ops = flattenArray(elm.map((g: OpGroup) => g.ops));
+            return elm[0];
+        });
     }
 }
 

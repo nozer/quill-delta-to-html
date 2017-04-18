@@ -1,4 +1,13 @@
 
-const nonStringSamples:any[] = [null, undefined, false, 3, [], {x:2}, new Date()];
 
-export {nonStringSamples};
+function callWhenAlltrue(statuses: boolean[], cb: any) {
+  
+    var interval: NodeJS.Timer;
+    interval = setInterval(function(){
+        var isdone = statuses.reduce((pv:any, v:any)=> pv && v, true);
+        
+        if(isdone) { clearInterval(interval); cb(); };
+    }, 10);
+}
+
+export {callWhenAlltrue};

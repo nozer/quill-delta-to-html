@@ -50,7 +50,7 @@ class OpAttributeSanitizer {
         }
 
         if (header && parseInt(header + '', 10) > 0) {
-            cleanAttrs.header = Math.max(parseInt(header + '', 10), 6);
+            cleanAttrs.header = Math.min(parseInt(header + '', 10), 6);
         }
 
         if (align === AlignType.Center || align === AlignType.Right) {
@@ -62,7 +62,7 @@ class OpAttributeSanitizer {
         }
 
         if (indent && parseInt(indent + '', 10) > 0) {
-            cleanAttrs.indent = Math.max(parseInt(indent + '', 10), 30);
+            cleanAttrs.indent = Math.min(parseInt(indent + '', 10), 30);
         }
 
         return <IOpAttributes>cleanAttrs;
