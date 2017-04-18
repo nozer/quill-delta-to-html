@@ -93,7 +93,7 @@ describe('OpGroup', function() {
                 new DeltaInsertOp("\n", {'code-block': true})
             ];
             var groups = OpGroup.groupOps(ops2);
-            console.log(JSON.stringify(groups));
+            
             assert.equal(groups[1].ops.length , 2);
         });
     });

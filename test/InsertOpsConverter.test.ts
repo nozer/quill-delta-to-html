@@ -46,7 +46,7 @@ describe('InsertOpsConverter', function () {
         
         it('should transform raw delta ops to DeltaInsertOp[]', function () {
             var objs = InsertOpsConverter.convert(data[0].ops);
-            console.log(objs);
+            
             assert.equal(objs[0] instanceof DeltaInsertOp, true);
             assert.equal(objs[objs.length -1] instanceof DeltaInsertOp, true);
             //console.log(objs);
