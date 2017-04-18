@@ -1,0 +1,8 @@
+language: node_js
+node_js:
+  '7'
+before_install:
+  npm install -g typescript@2
+  npm install -g ts-node@3.0
+script:
+  npm test
