@@ -4,7 +4,7 @@ import * as assert from 'assert';
 
 import {DeltaInsertOp} from './../src/DeltaInsertOp';
 import {OpToHtmlConverter} from './../src/OpToHtmlConverter'; 
-import QuillDeltaToHtmlConverter from "./../src/QuillDeltaToHtmlConverter";
+import { QuillDeltaToHtmlConverter } from "./../src/QuillDeltaToHtmlConverter";
 import {callWhenAlltrue} from './_helper';
 
 import {delta1} from './data/delta1';
@@ -33,8 +33,8 @@ describe('QuillDeltaToHtmlConverter', function () {
 
         it('should render html', function(){
             var qdc = new QuillDeltaToHtmlConverter(ops2);
+            
             var html = qdc.convert();
-            console.log(html);
             assert.equal(html.indexOf('<pre>this is code') > -1, true);
         });
     });
@@ -68,16 +68,12 @@ describe('QuillDeltaToHtmlConverter', function () {
                 var qdc = new QuillDeltaToHtmlConverter([]);
                 var inlines = qdc.renderInlines(ops);
                 assert.equal(inlines, ['<p>Hello', 
-                    '<em> my </em></p><p> name is joey</p>'].join(''));
+                    '<em> my </em><br/> name is joey</p>'].join(''));
 
                 qdc = new QuillDeltaToHtmlConverter([], {paragraphTag: 'div'});
                 var inlines = qdc.renderInlines(ops);
                 assert.equal(inlines, 
-                    '<div>Hello<em> my </em></div><div> name is joey</div>');
-
-                qdc = new QuillDeltaToHtmlConverter([], {makeParagraphPerLine:false});
-                var inlines = qdc.renderInlines(ops);
-                assert.equal(inlines, '<p>Hello<em> my </em><br/> name is joey</p>');
+                    '<div>Hello<em> my </em><br/> name is joey</div>');
 
                 qdc = new QuillDeltaToHtmlConverter([], {paragraphTag:''});
                 var inlines = qdc.renderInlines(ops);
@@ -94,23 +90,22 @@ describe('QuillDeltaToHtmlConverter', function () {
                 var ops = [new DeltaInsertOp("\n", {font: 'arial'})];
                 var qdc = new QuillDeltaToHtmlConverter([]);
                 assert.equal(qdc.renderInlines(ops), 
-                    '<p><span class="ql-font-arial"><br/></span></p>');
+                    '<p><br/></p>');
 
                 var qdc = new QuillDeltaToHtmlConverter([], {paragraphTag: ''});
-                assert.equal(qdc.renderInlines(ops), 
-                    '<span class="ql-font-arial"><br/></span>');
+                assert.equal(qdc.renderInlines(ops),  '<br/>');
             });
 
             it('should render when first line is new line', function () {
                 var ops = [new DeltaInsertOp("\n"), new DeltaInsertOp("aa")];
                 var qdc = new QuillDeltaToHtmlConverter([]);
-                assert.equal(qdc.renderInlines(ops), '<p><br/></p><p>aa</p>');
+                assert.equal(qdc.renderInlines(ops), '<p><br/>aa</p>');
             });
 
             it('should render when last line is new line', function () {
                 var ops = [ new DeltaInsertOp("aa"), new DeltaInsertOp("\n")];
                 var qdc = new QuillDeltaToHtmlConverter([]);
-                assert.equal(qdc.renderInlines(ops), '<p>aa</p>');
+                assert.equal(qdc.renderInlines(ops), '<p>aa<br/></p>');
             });
 
             it('should render mixed lines', function () {
@@ -121,29 +116,11 @@ describe('QuillDeltaToHtmlConverter', function () {
                 assert.equal(qdc.renderInlines(ops), '<p>aabb</p>');
 
                 var ops0 = [nlop, ops[0], nlop, ops[1]]
-                assert.equal(qdc.renderInlines(ops0), '<p><br/></p><p>aa</p><p>bb</p>');
-
-                var ops00 = [nlop, ops[0], nlop, nlop];
-                assert.equal(qdc.renderInlines(ops00), '<p><br/></p><p>aa</p><p><br/></p>');
-
-                var ops00 = [nlop,ops[1], nlop];
-                assert.equal(qdc.renderInlines(ops00), '<p><br/></p><p>bb</p>');
-
-                var ops1 = [ops[0], nlop, ops[1]]
-                assert.equal(qdc.renderInlines(ops1), '<p>aa</p><p>bb</p>');
-
-                var ops2 = [ops[0], nlop, nlop, ops[1]]
-                assert.equal(qdc.renderInlines(ops2), '<p>aa</p><p><br/></p><p>bb</p>');
-
-                var ops3 = [ops[0], nlop, nlop, nlop, ops[1]]
-                assert.equal(qdc.renderInlines(ops3), 
-                    '<p>aa</p><p><br/></p><p><br/></p><p>bb</p>');
+                assert.equal(qdc.renderInlines(ops0), '<p><br/>aa<br/>bb</p>');
 
                 var ops4 = [ops[0], stylednlop, stylednlop, stylednlop, ops[1]]
                 assert.equal(qdc.renderInlines(ops4), 
-                    ['<p>aa</p><p><em style="color:#333"><br/></em></p>',
-                    '<p><em style="color:#333"><br/></em></p>',
-                    '<p>bb</p>'].join(''));
+                    ['<p>aa<br/><br/><br/>bb</p>'].join(''));
             });
 
         });
@@ -259,7 +236,7 @@ describe('QuillDeltaToHtmlConverter', function () {
                     return '';
                 });
                 qdc.afterInlineGroupRender((html) => {
-                    assert.ok(html.indexOf('lo</p>') > -1);
+                    assert.ok(html.indexOf('lo<br/>') > -1);
                     jobstatus[1] = true;
                     return html;
                 });

@@ -15,7 +15,6 @@ var QuillDeltaToHtmlConverter = (function () {
             orderedListTag: 'ol',
             bulletListTag: 'ul',
             paragraphTag: 'p',
-            makeParagraphPerLine: true,
             encodeHtml: true,
             classPrefix: 'ql'
         }, options);
@@ -101,55 +100,25 @@ var QuillDeltaToHtmlConverter = (function () {
                 ops.map(function (op) { return op.insert.value; }).join(value_types_1.NewLine)
                 + htmlParts.closingTag;
         }
-        var inlines = this.renderInlines(ops, true);
+        var inlines = this.renderInlines(ops, false);
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
     };
-    QuillDeltaToHtmlConverter.prototype.renderInlines = function (ops, renderingWithinBlock) {
-        if (renderingWithinBlock === void 0) { renderingWithinBlock = false; }
+    QuillDeltaToHtmlConverter.prototype.renderInlines = function (ops, wrapInParagraphTag) {
+        var _this = this;
+        if (wrapInParagraphTag === void 0) { wrapInParagraphTag = true; }
         var nlRx = /\n/g;
-        var pStart, pEnd;
-        var pStartOuter = pStart = funcs_html_1.makeStartTag(this.options.paragraphTag);
-        var pEndOuter = pEnd = funcs_html_1.makeEndTag(this.options.paragraphTag);
-        if (!this.options.makeParagraphPerLine || renderingWithinBlock) {
-            pStart = '';
-            pEnd = '';
-        }
-        if (renderingWithinBlock) {
-            pStartOuter = '';
-            pEndOuter = '';
-        }
-        var lastIndex = ops.length - 1;
-        var replaced_html, html, isPrevNl, isNextNl;
-        return ops.reduce(function (result, op, i) {
-            html = this.converter.getHtml(op);
-            if (!op.isJustNewline()) {
-                result.push(html);
-                return result;
-            }
-            replaced_html = html.replace(nlRx, BrTag);
-            if (0 === lastIndex) {
-                result.push(replaced_html);
-                return result;
-            }
-            var endStart = pEnd + pStart;
-            if (i === 0) {
-                result.push(replaced_html + endStart);
-            }
-            else if (i < lastIndex) {
-                isPrevNl = ops[i - 1].isJustNewline();
-                isNextNl = ops[i + 1].isJustNewline();
-                if (!isPrevNl && !isNextNl) {
-                    result.push(endStart || BrTag);
+        var pStart = wrapInParagraphTag ? funcs_html_1.makeStartTag(this.options.paragraphTag) : '';
+        var pEnd = wrapInParagraphTag ? funcs_html_1.makeEndTag(this.options.paragraphTag) : '';
+        var opsLen = ops.length - 1;
+        var html = pStart
+            + ops.map(function (op, i) {
+                if (i === opsLen && op.isJustNewline()) {
+                    return '';
                 }
-                else if (isNextNl) {
-                    result.push(endStart + replaced_html);
-                }
-                else if (isPrevNl) {
-                    result.push(endStart || BrTag);
-                }
-            }
-            return result;
-        }.bind(this), [pStartOuter]).concat(pEndOuter).join('');
+                return _this.converter.getHtml(op).replace(nlRx, BrTag);
+            }).join('')
+            + pEnd;
+        return html;
     };
     QuillDeltaToHtmlConverter.prototype.shouldBeginList = function (prevOp, currOp) {
         if (!currOp) {
@@ -204,4 +173,4 @@ var QuillDeltaToHtmlConverter = (function () {
     };
     return QuillDeltaToHtmlConverter;
 }());
-exports.default = QuillDeltaToHtmlConverter;
+exports.QuillDeltaToHtmlConverter = QuillDeltaToHtmlConverter;

@@ -83,7 +83,7 @@
 
         quill.on('text-change', function (v) {
             var delta = quill.getContents();
-            console.log(delta);
+            console.log(delta.ops);
             var qdc = new window.QuillDeltaToHtmlConverter(delta.ops);
             var html = qdc.convert();
             console.log(html);

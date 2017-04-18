@@ -1,14 +1,13 @@
 
 import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
-import { ScriptType } from './value-types';
+import { ScriptType, NewLine } from './value-types';
 import { preferSecond, scrubUrl, assign } from './funcs-misc';
 import { IOpAttributes } from './IOpAttributes';
 
 interface IOpToHtmlConverterOptions {
     classPrefix?: string,
-    encodeHtml?: boolean,
-    paragraphTag?: string
+    encodeHtml?: boolean
 }
 
 interface ITagKeyValue {
@@ -30,7 +29,6 @@ class OpToHtmlConverter {
         this.options = assign({}, { 
             classPrefix: 'ql',
             encodeHtml: true,
-            paragraphTag: 'p'
         }, options);
     }
 
@@ -48,6 +46,10 @@ class OpToHtmlConverter {
 
     getHtmlParts(op: DeltaInsertOp): IHtmlParts {
         
+        if (op.isJustNewline() && !op.isContainerBlock()) {
+            return {openingTag: '', closingTag: '', content: NewLine};
+        }
+
         let tags = this.getTags(op), attrs = this.getTagAttributes(op);
         
         if (!tags.length && attrs.length) {

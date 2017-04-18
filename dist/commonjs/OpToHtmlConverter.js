@@ -8,7 +8,6 @@ var OpToHtmlConverter = (function () {
         this.options = funcs_misc_1.assign({}, {
             classPrefix: 'ql',
             encodeHtml: true,
-            paragraphTag: 'p'
         }, options);
     }
     OpToHtmlConverter.prototype.prefixClass = function (className) {
@@ -22,6 +21,9 @@ var OpToHtmlConverter = (function () {
         return parts.openingTag + parts.content + parts.closingTag;
     };
     OpToHtmlConverter.prototype.getHtmlParts = function (op) {
+        if (op.isJustNewline() && !op.isContainerBlock()) {
+            return { openingTag: '', closingTag: '', content: value_types_1.NewLine };
+        }
         var tags = this.getTags(op), attrs = this.getTagAttributes(op);
         if (!tags.length && attrs.length) {
             tags.push('span');

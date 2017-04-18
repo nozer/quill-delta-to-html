@@ -12,7 +12,6 @@ interface IQuillDeltaToHtmlConverterOptions {
     orderedListTag?: string,
     bulletListTag?: string,
     paragraphTag?: string,
-    makeParagraphPerLine?: boolean,
     classPrefix?: string,
     encodeHtml?: boolean
 }
@@ -36,7 +35,6 @@ class QuillDeltaToHtmlConverter {
             orderedListTag: 'ol',
             bulletListTag: 'ul',
             paragraphTag: 'p',
-            makeParagraphPerLine: true,
             encodeHtml: true,
             classPrefix: 'ql'
         }, options);
@@ -88,6 +86,7 @@ class QuillDeltaToHtmlConverter {
         var groupedOps = OpGroup.groupOps(deltaOps);
         var len = groupedOps.length;
         var group, prevGroup, html, prevOp;
+
         const prevOpFn = (pg:OpGroup) => pg.op || pg.ops && pg.ops.length && pg.ops[pg.ops.length-1];
         for (var i = 0; i < len; i++) {
             group = groupedOps[i];
@@ -142,65 +141,24 @@ class QuillDeltaToHtmlConverter {
              + htmlParts.closingTag;
         }
 
-        var inlines = this.renderInlines(ops, true);
+        var inlines = this.renderInlines(ops, false);
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
     }
 
-    renderInlines(ops: DeltaInsertOp[], renderingWithinBlock: boolean = false): string {
-
+    renderInlines(ops: DeltaInsertOp[], wrapInParagraphTag = true) {
         var nlRx = /\n/g;
-        var pStart: string, pEnd: string; 
-        var pStartOuter = pStart = makeStartTag(this.options.paragraphTag);
-        var pEndOuter = pEnd = makeEndTag(this.options.paragraphTag);
-
-        if (!this.options.makeParagraphPerLine || renderingWithinBlock) {
-            pStart = '';
-            pEnd = '';
-        }
-
-        if (renderingWithinBlock) {
-            pStartOuter = ''; 
-            pEndOuter = '';
-        }
-
-        // styled when first line, last line, nl before
-        var lastIndex = ops.length - 1;
-        var replaced_html, html, isPrevNl: boolean, isNextNl: boolean;
-        return ops.reduce(function(result: string[], op: DeltaInsertOp, i: number){
-
-            html = this.converter.getHtml(op);
-
-            if (!op.isJustNewline()) {
-                result.push(html);
-                return result;
-            } 
-
-            replaced_html = html.replace(nlRx, BrTag);
-
-            if (0 === lastIndex) {
-                result.push(replaced_html);
-                return result;
-            }
-        
-            var endStart = pEnd + pStart;
-
-            if (i === 0) {
-                result.push( replaced_html + endStart);
-            } else if ( i < lastIndex) {
-                isPrevNl = ops[i - 1].isJustNewline(); 
-                isNextNl = ops[i + 1].isJustNewline();
-                if (!isPrevNl && !isNextNl) {
-                    result.push( endStart || BrTag);
-                } else if (isNextNl) {
-                    result.push(endStart + replaced_html );
-                } else if (isPrevNl) {
-                    result.push(endStart || BrTag)
-                }
-            }
-           
-            return result;
-        }.bind(this), [pStartOuter]).concat(pEndOuter).join('');
-        
+        var pStart = wrapInParagraphTag ? makeStartTag(this.options.paragraphTag) : '';
+        var pEnd = wrapInParagraphTag ? makeEndTag(this.options.paragraphTag) : '';
+        var opsLen = ops.length - 1;
+        var html =  pStart
+                    + ops.map((op: DeltaInsertOp, i: number) => {
+                        if (i === opsLen && op.isJustNewline()) {
+                            return '';
+                        }
+                        return this.converter.getHtml(op).replace(nlRx, BrTag)
+                    }).join('')
+                    + pEnd;
+        return html;
     }
 
     shouldBeginList(prevOp: DeltaInsertOp, currOp: DeltaInsertOp) {
@@ -266,4 +224,4 @@ class QuillDeltaToHtmlConverter {
 
 }
 
-export default QuillDeltaToHtmlConverter;
+export { QuillDeltaToHtmlConverter };

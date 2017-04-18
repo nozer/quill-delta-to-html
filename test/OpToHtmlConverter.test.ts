@@ -224,10 +224,10 @@ describe('OpToHtmlConverter', function () {
                 assert.equal(act, result);
 
                 var op = new DeltaInsertOp("\n", {bold: true});
-                assert.equal(c1.getHtml(op), '<strong>\n</strong>');
+                assert.equal(c1.getHtml(op), '\n');
 
                 var op = new DeltaInsertOp("\n", {color: '#fff'});
-                assert.equal(c1.getHtml(op), '<span style="color:#fff">\n</span>');
+                assert.equal(c1.getHtml(op), '\n');
             });
         });
         

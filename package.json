@@ -13,7 +13,7 @@
   },
   "scripts": {
     "browserbundle": "browserify ./dist/commonjs/QuillDeltaToHtmlConverter.js -o ./dist/browser/QuillDeltaToHtmlConverter.bundle.js -s QuillDeltaToHtmlConverter ",
-    "browser": "npm run browserbundle && echo '; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.default; ' >>  ./dist/browser/QuillDeltaToHtmlConverter.bundle.js ",
+    "browser": "npm run browserbundle && echo '; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter; ' >>  ./dist/browser/QuillDeltaToHtmlConverter.bundle.js ",
     "watch": "tsc --watch ",
     "test": "./node_modules/mocha/bin/mocha --compilers ts:ts-node/register -b \"./test/**/*.ts\"  || true "
   },
