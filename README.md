@@ -32,7 +32,7 @@ var html = converter.convert();
 
 ## Configuration ## 
 
-You may customize the rendering by passing a configuration object to `QuillDeltaToHtmlConverter`. Table below lists the configuration options with defaults.
+`QuillDeltaToHtmlConverter` accepts a few configuration options as shown below:
 
 |Option | Default | Description 
 |---|---|---|
