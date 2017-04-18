@@ -37,6 +37,20 @@ describe('QuillDeltaToHtmlConverter', function () {
             var html = qdc.convert();
             assert.equal(html.indexOf('<pre>this is code') > -1, true);
         });
+
+        it('should open and close list tags', function(){
+            var ops4 = [
+                {insert: "mr\n"},
+                {insert: "hello"},
+                {insert: "\n", attributes: {list: 'ordered'}},
+                {insert: "there"},
+                {insert: "\n", attributes: {list: 'bullet'}},
+            ]
+            var qdc = new QuillDeltaToHtmlConverter(ops4);
+            var html = qdc.convert();
+            assert.equal(html.indexOf('<p>mr') > -1, true);
+            assert.equal(html.indexOf('</ol><ul><li>there') > -1, true);
+        });
     });
 
     describe('getListTag()', function () {
@@ -48,6 +62,9 @@ describe('QuillDeltaToHtmlConverter', function () {
 
             var op = new DeltaInsertOp("d", {list: 'bullet'});
             assert.equal(qdc.getListTag(op), 'ul');
+
+            var op = new DeltaInsertOp("d");
+            assert.equal(qdc.getListTag(op), '');
 
         });
     });
@@ -209,6 +226,12 @@ describe('QuillDeltaToHtmlConverter', function () {
                 });
                 qdc.convert();
                 callWhenAlltrue(jobstatus1, done);
+
+                var c1 = new QuillDeltaToHtmlConverter([
+                    {insert:'\n',attributes: {blockquote:true}}]);
+                c1.beforeContainerBlockRender((op) => 'xyz');
+                var h= c1.convert();
+                assert.ok(h.indexOf('xyz') > -1);
             });
 
             it('should call before/afterDataBlockRender', function(done){
@@ -225,6 +248,12 @@ describe('QuillDeltaToHtmlConverter', function () {
                 });
                 qdc.convert();
                 callWhenAlltrue(jobstatus, done);
+
+                 var c1 = new QuillDeltaToHtmlConverter([
+                    {insert:{video:'http'}}]);
+                c1.beforeDataBlockRender((op) => 'xyz');
+                var h= c1.convert();
+                assert.ok(h.indexOf('xyz') > -1);
                 
             });
 

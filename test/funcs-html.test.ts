@@ -33,6 +33,8 @@ describe('html module', function () {
             ];
             act = makeStartTag('p', attrs);
             assert.equal(act, '<p class=" cl1 cl2" style="color:#333">');
+
+            assert.equal(makeStartTag("p", [{key:'checked'}]), '<p checked>');
         });
     });
 

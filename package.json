@@ -7,7 +7,9 @@
   "devDependencies": {
     "@types/mocha": "^2.2.40",
     "@types/node": "^7.0.12",
+    "coveralls": "^2.13.0",
     "mocha": "^3.2.0",
+    "nyc": "^10.2.0",
     "ts-node": "^3.0.2",
     "typescript": "^2.2.2"
   },
@@ -15,7 +17,8 @@
     "browserbundle": "browserify ./dist/commonjs/QuillDeltaToHtmlConverter.js -o ./dist/browser/QuillDeltaToHtmlConverter.bundle.js -s QuillDeltaToHtmlConverter ",
     "browser": "npm run browserbundle && echo '; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter; ' >>  ./dist/browser/QuillDeltaToHtmlConverter.bundle.js ",
     "watch": "tsc --watch ",
-    "test": "./node_modules/mocha/bin/mocha --compilers ts:ts-node/register -b \"./test/**/*.ts\"  || true "
+    "test": "./node_modules/nyc/bin/nyc.js ./node_modules/mocha/bin/mocha --compilers ts:ts-node/register -b \"./test/**/*.ts\"  ",
+    "coverage" : "./node_modules/nyc/bin/nyc.js report --reporter=text-lcov | coveralls "
   },
   "repository": {
     "type": "git",
@@ -31,5 +34,25 @@
   "bugs": {
     "url": "https://github.com/nozer/quill-delta-to-html/issues"
   },
-  "homepage": "https://github.com/nozer/quill-delta-to-html#readme"
+  "homepage": "https://github.com/nozer/quill-delta-to-html#readme",
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "typings",
+      "src/main.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "json",
+      "html"
+    ],
+    "all": true
+  }
 }

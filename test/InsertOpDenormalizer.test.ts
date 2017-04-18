@@ -31,6 +31,11 @@ describe('InsertOpDenormalizer', function () {
             act = InsertOpDenormalizer.denormalize(op3);
             assert.equal(act.length, 2);
             assert.equal(act[1].insert, "\n");
+
+            act = InsertOpDenormalizer.denormalize(null);
+            assert.deepEqual(act, []);
+            act = InsertOpDenormalizer.denormalize("..");
+            assert.deepEqual(act, []);
         });
     });
 });

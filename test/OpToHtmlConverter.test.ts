@@ -228,6 +228,9 @@ describe('OpToHtmlConverter', function () {
 
                 var op = new DeltaInsertOp("\n", {color: '#fff'});
                 assert.equal(c1.getHtml(op), '\n');
+
+                var op = new DeltaInsertOp(new InsertData("image", "http://"));
+                assert.equal(c1.getHtml(op), '<img class="ql-image" src="http://"/>');
             });
         });
         

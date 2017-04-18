@@ -3,6 +3,7 @@ import 'mocha';
 import * as assert from 'assert';
 
 import {OpAttributeSanitizer} from './../src/OpAttributeSanitizer';
+import {ListType, AlignType, DirectionType} from './../src/value-types'; 
 
 describe('OpAttributeSanitizer', function () {
 
@@ -48,11 +49,11 @@ describe('OpAttributeSanitizer', function () {
             size: 'x.large',
             link: 'http://<',
             script: 'supper',
-            list: 'ordered',
+            list: ListType.Ordered,
             header: '3',
             indent: 40,
-            direction: 'rtl',
-            align: 'center'
+            direction: DirectionType.Rtl,
+            align: AlignType.Center
         };
         it('should return sanitized attributes', function() {
             assert.deepEqual(OpAttributeSanitizer.sanitize(attrs), {

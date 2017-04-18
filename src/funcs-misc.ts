@@ -20,12 +20,12 @@ function preferSecond(arg: any[]) {
  *  Splits by new line character ("\n") by putting new line characters into the 
  *  array as well. Ex: "hello\n\nworld\n " => ["hello", "\n", "\n", "world", "\n", " "]
  */
-function tokenizeWithNewLines(str: any, newLine = "\n") {
-    if (typeof str !== 'string' || str === newLine) {
+function tokenizeWithNewLines(str: any) {
+    if (typeof str !== 'string' || str === NewLine) {
         return [str];
     }
 
-    var lines = str.split(newLine);
+    var lines = str.split(NewLine);
 
     if (lines.length === 1) {
         return lines;
@@ -37,9 +37,9 @@ function tokenizeWithNewLines(str: any, newLine = "\n") {
 
         if (ind !== lastIndex) {
             if (line !== "") {
-                pv = pv.concat(line, newLine);
+                pv = pv.concat(line, NewLine);
             } else {
-                pv.push(newLine);
+                pv.push(NewLine);
             }
         } else if (line !== "") {
             pv.push(line);

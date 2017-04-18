@@ -87,37 +87,38 @@ class QuillDeltaToHtmlConverter {
         var len = groupedOps.length;
         var group, prevGroup, html, prevOp;
 
-        const prevOpFn = (pg:OpGroup) => pg.op || pg.ops && pg.ops.length && pg.ops[pg.ops.length-1];
+        const prevOpFn = (pg: OpGroup) => pg.op || pg.ops && pg.ops.length && pg.ops[pg.ops.length - 1];
         for (var i = 0; i < len; i++) {
             group = groupedOps[i];
             prevGroup = i > 0 ? groupedOps[i - 1] : null;
-            prevOp = prevGroup && prevOpFn(prevGroup); 
+            prevOp = prevGroup && prevOpFn(prevGroup);
             if (this.shouldEndList(prevOp, group.op)) {
                 endListTag();
             }
 
-            if (group.op && group.op.isContainerBlock()) {
-                if (this.shouldBeginList(prevOp, group.op)) {
-                    beginListTag(this.getListTag(group.op));
+            if (group.op) {
+                if (group.op.isContainerBlock()) {
+                    if (this.shouldBeginList(prevOp, group.op)) {
+                        beginListTag(this.getListTag(group.op));
+                    }
+                    html = callCustomRenderCb('beforeContainerBlockRender', [group.op, group.ops]);
+                    if (!html) {
+                        html = this.renderContainerBlock(group.op, group.ops);
+                        html = callCustomRenderCb('afterContainerBlockRender', [html]);
+                    }
+
+                    htmlArr.push(html);
+
+                } else if (group.op.isDataBlock()) {
+                    html = callCustomRenderCb('beforeDataBlockRender', [group.op]);
+                    if (!html) {
+                        html = this.converter.getHtml(group.op);
+                        html = callCustomRenderCb('afterDataBlockRender', [html]);
+                    }
+
+                    htmlArr.push(html);
                 }
-                html = callCustomRenderCb('beforeContainerBlockRender', [group.op, group.ops]);
-                if (!html) {
-                    html = this.renderContainerBlock(group.op, group.ops);
-                    html = callCustomRenderCb('afterContainerBlockRender', [html]);
-                }
-
-                htmlArr.push(html);
-
-            } else if (group.op && group.op.isDataBlock()) {
-                html = callCustomRenderCb('beforeDataBlockRender', [group.op]);
-                if (!html) {
-                    html = this.converter.getHtml(group.op);
-                    html = callCustomRenderCb('afterDataBlockRender', [html]);
-                }
-
-                htmlArr.push(html);
-
-            } else if (!group.op && group.ops) {
+            } else if (group.ops) {
                 html = callCustomRenderCb('beforeInlineGroupRender', [group.ops]);
                 if (!html) {
                     html = this.renderInlines(group.ops);
@@ -134,11 +135,11 @@ class QuillDeltaToHtmlConverter {
     renderContainerBlock(op: DeltaInsertOp, ops: DeltaInsertOp[]) {
 
         var htmlParts = this.converter.getHtmlParts(op);
-        
+
         if (op.isCodeBlock()) {
-            return htmlParts.openingTag + 
-                ops.map((op) => op.insert.value ).join(NewLine)
-             + htmlParts.closingTag;
+            return htmlParts.openingTag +
+                ops.map((op) => op.insert.value).join(NewLine)
+                + htmlParts.closingTag;
         }
 
         var inlines = this.renderInlines(ops, false);
@@ -150,19 +151,19 @@ class QuillDeltaToHtmlConverter {
         var pStart = wrapInParagraphTag ? makeStartTag(this.options.paragraphTag) : '';
         var pEnd = wrapInParagraphTag ? makeEndTag(this.options.paragraphTag) : '';
         var opsLen = ops.length - 1;
-        var html =  pStart
-                    + ops.map((op: DeltaInsertOp, i: number) => {
-                        if (i === opsLen && op.isJustNewline()) {
-                            return '';
-                        }
-                        return this.converter.getHtml(op).replace(nlRx, BrTag)
-                    }).join('')
-                    + pEnd;
+        var html = pStart
+            + ops.map((op: DeltaInsertOp, i: number) => {
+                if (i === opsLen && op.isJustNewline()) {
+                    return '';
+                }
+                return this.converter.getHtml(op).replace(nlRx, BrTag)
+            }).join('')
+            + pEnd;
         return html;
     }
 
     shouldBeginList(prevOp: DeltaInsertOp, currOp: DeltaInsertOp) {
-        if(!currOp) {
+        if (!currOp) {
             return false;
         }
         // if previous one is not list but current one is, then yes

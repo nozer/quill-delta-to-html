@@ -23,7 +23,7 @@ class InsertOpsConverter {
         var insertVal, attributes;
 
         for (var op of denormalizedOps) {
-            if (!op || typeof op !== 'object' || !op.insert) {
+            if (!op.insert) {
                 continue;
             }
 

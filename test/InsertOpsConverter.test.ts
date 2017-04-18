@@ -49,6 +49,9 @@ describe('InsertOpsConverter', function () {
             
             assert.equal(objs[0] instanceof DeltaInsertOp, true);
             assert.equal(objs[objs.length -1] instanceof DeltaInsertOp, true);
+            assert.deepEqual(InsertOpsConverter.convert(null), []);
+            assert.deepEqual(InsertOpsConverter.convert([{insert:''}]), []);
+            assert.deepEqual(InsertOpsConverter.convert([{insert:{cake: ''}}]), []);
             //console.log(objs);
         });
     });

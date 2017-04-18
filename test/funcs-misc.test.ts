@@ -18,6 +18,8 @@ describe('funcs module', function () {
         it('should return second element in an array, otherwise first', function() {
             assert.equal(preferSecond([1,3]), 3);
             assert.equal(preferSecond([5]), 5);
+            assert.equal(preferSecond([]), null);
+
         });
     });
 
@@ -35,6 +37,10 @@ describe('funcs module', function () {
                     var act = tokenizeWithNewLines(v);
                     assert.deepEqual(act, [v]);
                 });
+
+                assert.deepEqual(tokenizeWithNewLines("hello\nthere"), [
+                    "hello","\n", 'there'
+                ]);
             });
         });
 
@@ -72,6 +78,7 @@ describe('funcs module', function () {
             assert.equal(o.level, 2);
             assert.equal(o.name , 'Joe');
             assert.ok(assign(s1, null).level === 1);
+            assert.throws(() => assign(null, 2));
         });
     });
 

@@ -6,3 +6,5 @@ before_install:
   npm install -g ts-node@3.0
 script:
   npm test
+after_success:
+  npm run coverage 
