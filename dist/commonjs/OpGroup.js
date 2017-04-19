@@ -1,69 +1,78 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var funcs_misc_1 = require("./funcs-misc");
-;
-;
+var DeltaInsertOp_1 = require("./DeltaInsertOp");
+require("./extensions/Array");
 var OpGroup = (function () {
     function OpGroup(op, ops) {
-        if (op === void 0) { op = null; }
         if (ops === void 0) { ops = null; }
         this.op = op;
         this.ops = ops;
     }
-    OpGroup.getOpsSequenceWhile = function (startIndex, ops, predicate) {
-        var result = {
-            ops: [],
-            lastUnprocessedIndex: startIndex
-        };
-        for (var i = startIndex - 1; i >= 0; i--) {
-            var op = ops[i];
-            if (!predicate(op)) {
-                break;
-            }
-            result.lastUnprocessedIndex = i;
-            result.ops.push(op);
-        }
-        result.ops.reverse();
-        return result;
-    };
-    OpGroup.groupOps = function (ops) {
+    OpGroup.pairOpsWithTheirBlock = function (ops) {
         var result = [];
         var canBeInBlock = function (op) {
-            return !(op.isJustNewline() || op.isDataBlock() || op.isContainerBlock());
+            return !(op.isJustNewline() || op.isVideo() || op.isContainerBlock());
         };
         var isInlineData = function (op) { return op.isInline(); };
         var lastInd = ops.length - 1;
-        var opsResult;
+        var opsSlice;
         for (var i = lastInd; i >= 0; i--) {
             var op = ops[i];
-            if (op.isDataBlock()) {
+            if (op.isVideo()) {
                 result.push(new OpGroup(op));
             }
             else if (op.isContainerBlock()) {
-                opsResult = OpGroup.getOpsSequenceWhile(i, ops, canBeInBlock);
-                result.push(new OpGroup(op, opsResult.ops));
-                i = opsResult.lastUnprocessedIndex;
+                opsSlice = ops._sliceFromReverseWhile(i - 1, canBeInBlock);
+                result.push(new OpGroup(op, opsSlice.elements));
+                i = opsSlice.sliceStartsAt > -1 ? opsSlice.sliceStartsAt : i;
             }
             else {
-                opsResult = OpGroup.getOpsSequenceWhile(i, ops, isInlineData);
-                result.push(new OpGroup(null, opsResult.ops.concat(op)));
-                i = opsResult.lastUnprocessedIndex;
+                opsSlice = ops._sliceFromReverseWhile(i - 1, isInlineData);
+                result.push(new OpGroup(null, opsSlice.elements.concat(op)));
+                i = opsSlice.sliceStartsAt > -1 ? opsSlice.sliceStartsAt : i;
             }
         }
         result.reverse();
-        return OpGroup.moveConsecutiveCodeblockOpsToFirstGroup(result);
+        return result;
     };
-    OpGroup.moveConsecutiveCodeblockOpsToFirstGroup = function (groups) {
-        var codeblocksGrouped = funcs_misc_1.groupConsecutiveElementsWhile(groups, function (g) {
-            return g.op && g.op.isCodeBlock();
+    OpGroup.groupConsecutiveSameStyleBlocks = function (groups, blocksOf) {
+        if (blocksOf === void 0) { blocksOf = {
+            header: true,
+            codeBlocks: true,
+            blockquotes: true
+        }; }
+        return groups._groupConsecutiveElementsWhile(function (g, gPrev) {
+            return blocksOf.codeBlocks && OpGroup.areBothCodeblocks(g, gPrev)
+                || blocksOf.blockquotes && OpGroup.areBothBlockquotesWithSameAdi(g, gPrev)
+                || blocksOf.header && OpGroup.areBothSameHeadersWithSameAdi(g, gPrev);
         });
-        return codeblocksGrouped.map(function (elm) {
+    };
+    OpGroup.reduceConsecutiveSameStyleBlocksToOne = function (groups) {
+        var newLineOp = DeltaInsertOp_1.DeltaInsertOp.createNewLineOp();
+        return groups.map(function (elm) {
             if (!Array.isArray(elm)) {
                 return elm;
             }
-            elm[0].ops = funcs_misc_1.flattenArray(elm.map(function (g) { return g.ops; }));
+            var groupsLastInd = elm.length - 1;
+            elm[0].ops = elm.map(function (g, i) {
+                if (!g.ops.length) {
+                    return [newLineOp];
+                }
+                return g.ops.concat(i < groupsLastInd ? [newLineOp] : []);
+            })._flatten();
             return elm[0];
         });
+    };
+    OpGroup.areBothCodeblocks = function (g1, gOther) {
+        return g1.op && gOther.op && g1.op.isCodeBlock() && gOther.op.isCodeBlock();
+    };
+    OpGroup.areBothSameHeadersWithSameAdi = function (g1, gOther) {
+        return g1.op && gOther.op && g1.op.isSameHeaderAs(gOther.op)
+            && g1.op.hasSameAdiAs(gOther.op);
+    };
+    OpGroup.areBothBlockquotesWithSameAdi = function (g, gOther) {
+        return g.op && gOther.op && g.op.isBlockquote() && gOther.op.isBlockquote()
+            && g.op.hasSameAdiAs(gOther.op);
     };
     return OpGroup;
 }());

@@ -2,7 +2,6 @@
 import { NewLine, ListType, DataType } from './value-types';
 import { IOpAttributes } from './IOpAttributes';
 import { InsertData } from './InsertData';
-import { tokenizeWithNewLines } from './funcs-misc';
 
 class DeltaInsertOp {
 
@@ -17,19 +16,38 @@ class DeltaInsertOp {
         this.attributes = attributes || {};
     }
 
+    static createNewLineOp() {
+        return new DeltaInsertOp(NewLine);
+    }
+
     isContainerBlock() {
         var attrs = this.attributes;
         return !!(
-            attrs.blockquote || attrs.list || attrs['code-block'] || 
+            attrs.blockquote || attrs.list || attrs['code-block'] ||
             attrs.header || attrs.align || attrs.direction || attrs.indent);
     }
 
-    isDataBlock() {
-        return this.isVideo();
+    isBlockquote(): boolean {
+        return this.attributes.blockquote;
+    }
+
+    isHeader():boolean { 
+        return !!this.attributes.header;
+    }
+
+    isSameHeaderAs(op: DeltaInsertOp): boolean {
+        return op.attributes.header === this.attributes.header && this.isHeader();
+    }
+
+    // adi: alignment direction indentation 
+    hasSameAdiAs(op: DeltaInsertOp) {
+        return this.attributes.align === op.attributes.align
+            && this.attributes.direction === op.attributes.direction
+            && this.attributes.indent === op.attributes.indent
     }
 
     isInline() {
-        return !(this.isContainerBlock() || this.isDataBlock());
+        return !(this.isContainerBlock() || this.isVideo());
     }
 
     isCodeBlock() {
@@ -53,7 +71,7 @@ class DeltaInsertOp {
     }
 
     isSameListAs(op: DeltaInsertOp): boolean {
-        return this.attributes.list === op.attributes.list;
+        return this.attributes.list === op.attributes.list && !!op.attributes.list;
     }
 
     isText() {
@@ -63,7 +81,7 @@ class DeltaInsertOp {
     isImage() {
         return this.insert.type === DataType.Image;
     }
-    
+
     isFormula() {
         return this.insert.type === DataType.Formula;
     }
@@ -75,7 +93,7 @@ class DeltaInsertOp {
     isLink() {
         return this.isText() && !!this.attributes.link;
     }
-    
+
 }
 
 export { DeltaInsertOp }; 

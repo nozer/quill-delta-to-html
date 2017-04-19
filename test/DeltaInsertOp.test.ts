@@ -33,13 +33,15 @@ describe('DeltaInsertOp', function() {
         });
     });
 
-    describe('isDataBlock()', function() {
-        it('should successfully check if the op is a data block', function() {
-            var op = new DeltaInsertOp("test", {header: 1});
-            assert.equal(op.isDataBlock(), false);
+    describe('hasSameAdiAs()', function() {
+        it('should successfully if two ops have same align indent and direction', function() {
+            var op1 = new DeltaInsertOp("\n", {align: 'right', indent: 2});
+            var op2 = new DeltaInsertOp("\n", {align: 'right', indent: 2});
+            console.log(op1, op2); 
+            assert.ok(op1.hasSameAdiAs(op2));
 
-            op = new DeltaInsertOp(new InsertData("video","http://"));
-            assert.equal(op.isDataBlock(), true);
+            var op2 = new DeltaInsertOp("\n", {align: 'right', indent: 3});
+            assert.ok(!op1.hasSameAdiAs(op2));
         });
     });
 

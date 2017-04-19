@@ -2,12 +2,16 @@
 import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ScriptType, NewLine } from './value-types';
-import { preferSecond, scrubUrl, assign } from './funcs-misc';
+import './extensions/String';
+import './extensions/Object';
 import { IOpAttributes } from './IOpAttributes';
+import './extensions/Array';
+
 
 interface IOpToHtmlConverterOptions {
     classPrefix?: string,
-    encodeHtml?: boolean
+    encodeHtml?: boolean,
+    listItemTag?: string
 }
 
 interface ITagKeyValue {
@@ -26,9 +30,10 @@ class OpToHtmlConverter {
     private options: IOpToHtmlConverterOptions;
 
     constructor(options?: IOpToHtmlConverterOptions) {
-        this.options = assign({}, { 
+        this.options = Object._assign({}, { 
             classPrefix: 'ql',
             encodeHtml: true,
+            listItemTag: 'li'
         }, options);
     }
 
@@ -104,7 +109,7 @@ class OpToHtmlConverter {
 
         return [['background', 'background-color'], ['color']]
             .filter((item) => !!attrs[item[0]])
-            .map((item) => preferSecond(item) + ':' + attrs[item[0]]);
+            .map((item: any[]) => item._preferSecond() + ':' + attrs[item[0]]);
     }
 
     getTagAttributes(op: DeltaInsertOp): Array<ITagKeyValue> {
@@ -118,7 +123,7 @@ class OpToHtmlConverter {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
 
         if (op.isImage()) {
-            return tagAttrs.concat(makeAttr('src', scrubUrl(op.insert.value)));
+            return tagAttrs.concat(makeAttr('src', (op.insert.value + '')._scrubUrl()));
         }
 
         if (op.isFormula() || op.isContainerBlock()) {
@@ -129,7 +134,7 @@ class OpToHtmlConverter {
             return tagAttrs.concat(
                 makeAttr('frameborder', '0'),
                 makeAttr('allowfullscreen', 'true'),
-                makeAttr('src', scrubUrl(op.insert.value))
+                makeAttr('src', (op.insert.value + '')._scrubUrl())
             );
         }
 
@@ -159,11 +164,12 @@ class OpToHtmlConverter {
         }
 
         // blocks 
-        var blocks = [['blockquote'], ['code-block', 'pre'], ['list', 'li'], ['header'],
+        var blocks = [['blockquote'], ['code-block', 'pre'], 
+                    ['list', this.options.listItemTag ], ['header'],
                         ['align', 'p'], ['direction', 'p'], ['indent', 'p']];
         for (var item of blocks) {
             if (attrs[item[0]]) {
-                return item[0] === 'header' ? ['h' + attrs[item[0]]] : [preferSecond(item)];
+                return item[0] === 'header' ? ['h' + attrs[item[0]]] : [item._preferSecond()];
             }
         }
 
@@ -175,7 +181,7 @@ class OpToHtmlConverter {
             .map((item) => {
                 return item[0] === 'script' ?
                     (attrs[item[0]] === ScriptType.Sub ? 'sub' : 'sup')
-                    : preferSecond(item);
+                    : item._preferSecond();
             });
     }
 

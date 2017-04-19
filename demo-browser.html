@@ -27,6 +27,17 @@
                  </div>
             </div>
         </div>
+        
+        <div class="row pt-3">
+            <div class="col"></div>
+            <div class="col">
+                Open developer <code>console</code> to see deltas and generated html. 
+                <br />
+                You can pass config options for <code>QuillDeltaToHtmlConverter</code> 
+                used here by setting <code>window.opts_ = { /* config object */}</code> to a 
+                configuration object
+            </div>
+        </div>
     </div>
     <script src="dist/browser/QuillDeltaToHtmlConverter.bundle.js"></script>
     <script src="https://cdn.quilljs.com/1.2.3/quill.js"></script>
@@ -84,7 +95,7 @@
         quill.on('text-change', function (v) {
             var delta = quill.getContents();
             console.log(delta.ops);
-            var qdc = new window.QuillDeltaToHtmlConverter(delta.ops);
+            var qdc = new window.QuillDeltaToHtmlConverter(delta.ops, window.opts_ || {});
             var html = qdc.convert();
             console.log(html);
             document.getElementById('converted-view').innerHTML = html;

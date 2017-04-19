@@ -2,12 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var funcs_html_1 = require("./funcs-html");
 var value_types_1 = require("./value-types");
-var funcs_misc_1 = require("./funcs-misc");
+require("./extensions/String");
+require("./extensions/Object");
+require("./extensions/Array");
 var OpToHtmlConverter = (function () {
     function OpToHtmlConverter(options) {
-        this.options = funcs_misc_1.assign({}, {
+        this.options = Object._assign({}, {
             classPrefix: 'ql',
             encodeHtml: true,
+            listItemTag: 'li'
         }, options);
     }
     OpToHtmlConverter.prototype.prefixClass = function (className) {
@@ -63,7 +66,7 @@ var OpToHtmlConverter = (function () {
         var attrs = op.attributes;
         return [['background', 'background-color'], ['color']]
             .filter(function (item) { return !!attrs[item[0]]; })
-            .map(function (item) { return funcs_misc_1.preferSecond(item) + ':' + attrs[item[0]]; });
+            .map(function (item) { return item._preferSecond() + ':' + attrs[item[0]]; });
     };
     OpToHtmlConverter.prototype.getTagAttributes = function (op) {
         if (op.attributes.code) {
@@ -73,13 +76,13 @@ var OpToHtmlConverter = (function () {
         var classes = this.getCssClasses(op);
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (op.isImage()) {
-            return tagAttrs.concat(makeAttr('src', funcs_misc_1.scrubUrl(op.insert.value)));
+            return tagAttrs.concat(makeAttr('src', (op.insert.value + '')._scrubUrl()));
         }
         if (op.isFormula() || op.isContainerBlock()) {
             return tagAttrs;
         }
         if (op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', funcs_misc_1.scrubUrl(op.insert.value)));
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (op.insert.value + '')._scrubUrl()));
         }
         var styles = this.getCssStyles(op);
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
@@ -99,12 +102,13 @@ var OpToHtmlConverter = (function () {
                             : 'unknown'
             ];
         }
-        var blocks = [['blockquote'], ['code-block', 'pre'], ['list', 'li'], ['header'],
+        var blocks = [['blockquote'], ['code-block', 'pre'],
+            ['list', this.options.listItemTag], ['header'],
             ['align', 'p'], ['direction', 'p'], ['indent', 'p']];
         for (var _i = 0, blocks_1 = blocks; _i < blocks_1.length; _i++) {
             var item = blocks_1[_i];
             if (attrs[item[0]]) {
-                return item[0] === 'header' ? ['h' + attrs[item[0]]] : [funcs_misc_1.preferSecond(item)];
+                return item[0] === 'header' ? ['h' + attrs[item[0]]] : [item._preferSecond()];
             }
         }
         return [['link', 'a'], ['script'],
@@ -114,7 +118,7 @@ var OpToHtmlConverter = (function () {
             .map(function (item) {
             return item[0] === 'script' ?
                 (attrs[item[0]] === value_types_1.ScriptType.Sub ? 'sub' : 'sup')
-                : funcs_misc_1.preferSecond(item);
+                : item._preferSecond();
         });
     };
     return OpToHtmlConverter;

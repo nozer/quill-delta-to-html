@@ -1,7 +1,7 @@
 
 import { IOpAttributes } from './IOpAttributes';
 import { ListType, AlignType, DirectionType, ScriptType } from './value-types';
-import { scrubUrl } from './funcs-misc';
+import './extensions/String';
 
 class OpAttributeSanitizer {
 
@@ -38,7 +38,7 @@ class OpAttributeSanitizer {
         }
 
         if (link) {
-            cleanAttrs.link = scrubUrl(link);
+            cleanAttrs.link = (link + '')._scrubUrl();
         }
 
         if (script === ScriptType.Sub || ScriptType.Super === script) {
@@ -48,9 +48,9 @@ class OpAttributeSanitizer {
         if (list === ListType.Bullet || list === ListType.Ordered) {
             cleanAttrs.list = list;
         }
-
-        if (header && parseInt(header + '', 10) > 0) {
-            cleanAttrs.header = Math.min(parseInt(header + '', 10), 6);
+        
+        if (header && Number(header)) {
+            cleanAttrs.header = Math.min(Number(header), 6);
         }
 
         if (align === AlignType.Center || align === AlignType.Right) {
@@ -61,8 +61,8 @@ class OpAttributeSanitizer {
             cleanAttrs.direction = direction;
         }
 
-        if (indent && parseInt(indent + '', 10) > 0) {
-            cleanAttrs.indent = Math.min(parseInt(indent + '', 10), 30);
+        if (indent && Number(indent)) {
+            cleanAttrs.indent = Math.min(Number(indent), 30);
         }
 
         return <IOpAttributes>cleanAttrs;

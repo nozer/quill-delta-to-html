@@ -67,6 +67,14 @@ describe('OpAttributeSanitizer', function () {
                 direction: 'rtl',
                 align: 'center'
             });
+
+            assert.deepEqual(OpAttributeSanitizer.sanitize({header: '1'}), {header: 1});
+            assert.deepEqual(OpAttributeSanitizer.sanitize({align: AlignType.Center}), 
+                {align: "center"});
+            assert.deepEqual(OpAttributeSanitizer.sanitize({direction: DirectionType.Rtl}), 
+                {align: "rtl"});
+            assert.deepEqual(OpAttributeSanitizer.sanitize({indent: '2'}), 
+                {indent: 2});
         });
     });
 });

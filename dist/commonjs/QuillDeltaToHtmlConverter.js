@@ -4,23 +4,27 @@ var InsertOpsConverter_1 = require("./InsertOpsConverter");
 var OpToHtmlConverter_1 = require("./OpToHtmlConverter");
 var OpGroup_1 = require("./OpGroup");
 var funcs_html_1 = require("./funcs-html");
-var funcs_misc_1 = require("./funcs-misc");
-var value_types_1 = require("./value-types");
+require("./extensions/Object");
 var BrTag = '<br/>';
 var QuillDeltaToHtmlConverter = (function () {
     function QuillDeltaToHtmlConverter(deltaOps, options) {
         this.rawDeltaOps = [];
         this.callbacks = {};
-        this.options = funcs_misc_1.assign({
+        this.options = Object._assign({
             orderedListTag: 'ol',
             bulletListTag: 'ul',
+            listItemTag: 'li',
             paragraphTag: 'p',
             encodeHtml: true,
-            classPrefix: 'ql'
+            classPrefix: 'ql',
+            multiLineBlockquote: true,
+            multiLineHeader: true,
+            multiLineCodeblock: true
         }, options);
         this.converter = new OpToHtmlConverter_1.OpToHtmlConverter({
             encodeHtml: this.options.encodeHtml,
-            classPrefix: this.options.classPrefix
+            classPrefix: this.options.classPrefix,
+            listItemTag: this.options.listItemTag
         });
         this.rawDeltaOps = deltaOps;
     }
@@ -51,7 +55,13 @@ var QuillDeltaToHtmlConverter = (function () {
             }
             return cbName.indexOf('after') === 0 ? args[0] : undefined;
         }.bind(this);
-        var groupedOps = OpGroup_1.OpGroup.groupOps(deltaOps);
+        var pairedOps = OpGroup_1.OpGroup.pairOpsWithTheirBlock(deltaOps);
+        var groupedSameStyleBlocks = OpGroup_1.OpGroup.groupConsecutiveSameStyleBlocks(pairedOps, {
+            blockquotes: !!this.options.multiLineBlockquote,
+            header: !!this.options.multiLineHeader,
+            codeBlocks: !!this.options.multiLineCodeblock
+        });
+        var groupedOps = OpGroup_1.OpGroup.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
         var len = groupedOps.length;
         var group, prevGroup, html, prevOp;
         var prevOpFn = function (pg) { return pg.op || pg.ops && pg.ops.length && pg.ops[pg.ops.length - 1]; };
@@ -62,26 +72,28 @@ var QuillDeltaToHtmlConverter = (function () {
             if (this.shouldEndList(prevOp, group.op)) {
                 endListTag();
             }
-            if (group.op && group.op.isContainerBlock()) {
-                if (this.shouldBeginList(prevOp, group.op)) {
-                    beginListTag(this.getListTag(group.op));
+            if (group.op) {
+                if (group.op.isContainerBlock()) {
+                    if (this.shouldBeginList(prevOp, group.op)) {
+                        beginListTag(this.getListTag(group.op));
+                    }
+                    html = callCustomRenderCb('beforeBlockRender', [group.op, group.ops]);
+                    if (!html) {
+                        html = this.renderContainerBlock(group.op, group.ops);
+                        html = callCustomRenderCb('afterBlockRender', [html]);
+                    }
+                    htmlArr.push(html);
                 }
-                html = callCustomRenderCb('beforeContainerBlockRender', [group.op, group.ops]);
-                if (!html) {
-                    html = this.renderContainerBlock(group.op, group.ops);
-                    html = callCustomRenderCb('afterContainerBlockRender', [html]);
+                else {
+                    html = callCustomRenderCb('beforeBlockRender', [group.op]);
+                    if (!html) {
+                        html = this.converter.getHtml(group.op);
+                        html = callCustomRenderCb('afterBlockRender', [html]);
+                    }
+                    htmlArr.push(html);
                 }
-                htmlArr.push(html);
             }
-            else if (group.op && group.op.isDataBlock()) {
-                html = callCustomRenderCb('beforeDataBlockRender', [group.op]);
-                if (!html) {
-                    html = this.converter.getHtml(group.op);
-                    html = callCustomRenderCb('afterDataBlockRender', [html]);
-                }
-                htmlArr.push(html);
-            }
-            else if (!group.op && group.ops) {
+            else {
                 html = callCustomRenderCb('beforeInlineGroupRender', [group.ops]);
                 if (!html) {
                     html = this.renderInlines(group.ops);
@@ -97,7 +109,7 @@ var QuillDeltaToHtmlConverter = (function () {
         var htmlParts = this.converter.getHtmlParts(op);
         if (op.isCodeBlock()) {
             return htmlParts.openingTag +
-                ops.map(function (op) { return op.insert.value; }).join(value_types_1.NewLine)
+                ops.map(function (op) { return op.insert.value; }).join('')
                 + htmlParts.closingTag;
         }
         var inlines = this.renderInlines(ops, false);
@@ -141,14 +153,9 @@ var QuillDeltaToHtmlConverter = (function () {
         }
         return false;
     };
-    QuillDeltaToHtmlConverter.prototype.beforeContainerBlockRender = function (cb) {
+    QuillDeltaToHtmlConverter.prototype.beforeBlockRender = function (cb) {
         if (typeof cb === 'function') {
-            this.callbacks['beforeContainerBlockRender_cb'] = cb;
-        }
-    };
-    QuillDeltaToHtmlConverter.prototype.beforeDataBlockRender = function (cb) {
-        if (typeof cb === 'function') {
-            this.callbacks['beforeDataBlockRender_cb'] = cb;
+            this.callbacks['beforeBlockRender_cb'] = cb;
         }
     };
     QuillDeltaToHtmlConverter.prototype.beforeInlineGroupRender = function (cb) {
@@ -156,14 +163,9 @@ var QuillDeltaToHtmlConverter = (function () {
             this.callbacks['beforeInlineGroupRender_cb'] = cb;
         }
     };
-    QuillDeltaToHtmlConverter.prototype.afterContainerBlockRender = function (cb) {
+    QuillDeltaToHtmlConverter.prototype.afterBlockRender = function (cb) {
         if (typeof cb === 'function') {
-            this.callbacks['afterContainerBlockRender_cb'] = cb;
-        }
-    };
-    QuillDeltaToHtmlConverter.prototype.afterDataBlockRender = function (cb) {
-        if (typeof cb === 'function') {
-            this.callbacks['afterDataBlockRender_cb'] = cb;
+            this.callbacks['afterBlockRender_cb'] = cb;
         }
     };
     QuillDeltaToHtmlConverter.prototype.afterInlineGroupRender = function (cb) {

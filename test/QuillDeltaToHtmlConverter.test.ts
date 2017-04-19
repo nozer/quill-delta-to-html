@@ -177,6 +177,8 @@ describe('QuillDeltaToHtmlConverter', function () {
                 var pop = new DeltaInsertOp("\n", {list: 'bullet'});
                 var nop = new DeltaInsertOp("\n", {list: 'bullet', indent: 1});
                 assert.ok(!qdc.shouldBeginList(pop, nop));
+
+                assert.ok(!qdc.shouldBeginList(nop, null));
             });
         });
 
@@ -211,16 +213,20 @@ describe('QuillDeltaToHtmlConverter', function () {
             ]
             var qdc = new QuillDeltaToHtmlConverter(ops);
             
-            it('should call before/afterContainerBlockRender', function(done){
+            it('should call before/afterBlockRender for blocks', function(done){
                 var jobstatus1 = [false, false];
-                qdc.beforeContainerBlockRender((op, ops) => {
-                    assert.ok(op.attributes.blockquote);
-                    assert.ok(ops.length === 2);
+                qdc.beforeBlockRender((op, ops) => {
+                    if (ops) {
+                        assert.ok(op.attributes.blockquote);
+                        assert.ok(ops.length === 2);
+                    } else {
+                        assert.ok(op.insert.type === 'video');
+                    }
                     jobstatus1[0] = true;
                     return '';
                 });
-                qdc.afterContainerBlockRender((html) => {
-                    assert.ok(html.indexOf('fine') > -1);
+                qdc.afterBlockRender((html) => {
+                    assert.ok(!(html.indexOf('fine') > -1) || !(html.indexOf('iframe') > -1));
                     jobstatus1[1] = true;
                     return html;
                 });
@@ -229,33 +235,11 @@ describe('QuillDeltaToHtmlConverter', function () {
 
                 var c1 = new QuillDeltaToHtmlConverter([
                     {insert:'\n',attributes: {blockquote:true}}]);
-                c1.beforeContainerBlockRender((op) => 'xyz');
+                c1.beforeBlockRender((op) => 'xyz');
                 var h= c1.convert();
                 assert.ok(h.indexOf('xyz') > -1);
             });
 
-            it('should call before/afterDataBlockRender', function(done){
-                var jobstatus = [false, false];
-                qdc.beforeDataBlockRender((op) => {
-                    assert.ok(op.insert.type === 'video');
-                    jobstatus[0] = true;
-                    return '';
-                });
-                qdc.afterDataBlockRender((html) => {
-                    assert.ok(html.indexOf('<iframe') > -1);
-                    jobstatus[1] = true;
-                    return html;
-                });
-                qdc.convert();
-                callWhenAlltrue(jobstatus, done);
-
-                 var c1 = new QuillDeltaToHtmlConverter([
-                    {insert:{video:'http'}}]);
-                c1.beforeDataBlockRender((op) => 'xyz');
-                var h= c1.convert();
-                assert.ok(h.indexOf('xyz') > -1);
-                
-            });
 
             it('should call before/afterInlineGroupRender', function(done){
                 var jobstatus = [false, false];
@@ -274,6 +258,34 @@ describe('QuillDeltaToHtmlConverter', function () {
                     assert.ok(v.indexOf('blockquote>how') > -1);
                     done();
                 });
+            });
+
+            it('should use my custom html if I return from before* call back', function(){
+                var jobstatus = [false, false];
+                var c = new QuillDeltaToHtmlConverter([
+                    {insert: {video: "http"}}, {insert: 'aa'}]);
+                c.beforeBlockRender((op) => {
+                    return '<my custom video html>';
+                });
+                c.beforeInlineGroupRender((op) => {
+                    return "my html";
+                });
+                var v = c.convert();
+                assert.ok(v.indexOf('<my') > - 1 && v.indexOf('my html') > -1);
+            });
+
+            it('should register and use callbacks if they are functions', function(){
+                var jobstatus = [false, false];
+                var c = new QuillDeltaToHtmlConverter([
+                    {insert: {video: "http"}}, {insert: 'aa'}]);
+                var dummy = (): any => null;
+                c.beforeBlockRender(dummy());
+                c.beforeInlineGroupRender(dummy());
+                c.afterBlockRender(dummy());
+                c.afterInlineGroupRender(dummy());
+
+                var v = c.convert();
+                assert.ok(v.indexOf('<iframe') > - 1 && v.indexOf('aa') > -1);
                 
             });
         });

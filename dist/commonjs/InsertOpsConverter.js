@@ -17,7 +17,7 @@ var InsertOpsConverter = (function () {
         var insertVal, attributes;
         for (var _i = 0, denormalizedOps_1 = denormalizedOps; _i < denormalizedOps_1.length; _i++) {
             var op = denormalizedOps_1[_i];
-            if (!op || typeof op !== 'object' || !op.insert) {
+            if (!op.insert) {
                 continue;
             }
             insertVal = InsertOpsConverter.convertInsertVal(op.insert);

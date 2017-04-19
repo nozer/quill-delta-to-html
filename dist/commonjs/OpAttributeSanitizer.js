@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
-var funcs_misc_1 = require("./funcs-misc");
+require("./extensions/String");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
@@ -28,7 +28,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.size = size;
         }
         if (link) {
-            cleanAttrs.link = funcs_misc_1.scrubUrl(link);
+            cleanAttrs.link = (link + '')._scrubUrl();
         }
         if (script === value_types_1.ScriptType.Sub || value_types_1.ScriptType.Super === script) {
             cleanAttrs.script = script;
@@ -36,8 +36,8 @@ var OpAttributeSanitizer = (function () {
         if (list === value_types_1.ListType.Bullet || list === value_types_1.ListType.Ordered) {
             cleanAttrs.list = list;
         }
-        if (header && parseInt(header + '', 10) > 0) {
-            cleanAttrs.header = Math.min(parseInt(header + '', 10), 6);
+        if (header && Number(header)) {
+            cleanAttrs.header = Math.min(Number(header), 6);
         }
         if (align === value_types_1.AlignType.Center || align === value_types_1.AlignType.Right) {
             cleanAttrs.align = align;
@@ -45,8 +45,8 @@ var OpAttributeSanitizer = (function () {
         if (direction === value_types_1.DirectionType.Rtl) {
             cleanAttrs.direction = direction;
         }
-        if (indent && parseInt(indent + '', 10) > 0) {
-            cleanAttrs.indent = Math.min(parseInt(indent + '', 10), 30);
+        if (indent && Number(indent)) {
+            cleanAttrs.indent = Math.min(Number(indent), 30);
         }
         return cleanAttrs;
     };

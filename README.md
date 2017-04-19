@@ -38,9 +38,13 @@ var html = converter.convert();
 |---|---|---|
 |orderedListTag| 'ol' | Parent tag for ordered list elements |
 |bulletListTag| 'ul' | Parent tag for bullet list elements|
+|listItemTag| 'li' | Tag for list item, in case you just wanna use `div` etc|
 |paragraphTag| 'p' | Tag to wrap inline html elements|
 |encodeHtml| true | If true, `<, >, /, ', ", &` characters in content will be encoded.|
 |classPrefix| 'ql' | A css class name to prefix class generating styles such as `size`, `font`, etc. |
+|multiLineBlockquote| true | Instead of rendering multiple `blockquote` elements for quotes that are consecutive and have same styles, it renders them into only one|
+|multiLineHeader| true | Same deal as `multiLineBlockquote` for headers|
+|multiLineCodeblock| true | Same deal as `multiLineBlockquote` for code-blocks|
 
 ## Events ##
 
@@ -56,30 +60,18 @@ If you subscribe to any `before` event and return `non-falsy` value, correspondi
 
 ```javascript
 
-// containerOp refers to the block operation that is wrapping around child operations
-converter.beforeContainerBlockRender(function(containerOp, childOpsArray){
+// op refers to the block operation that is wrapping around child operations
+// for video, childOpsArray will be null
+converter.beforeBlockRender(function(op, childOpsArray){
     // ... generate your own html 
     // return your html
 });
-converter.afterContainerBlockRender(function(htmlForThisGroup){
+converter.afterBlockRender(function(htmlForThisGroup){
     // modify if you wish
     // return the html
 });
 
-
-// dataBlockOp refers to an operation that has its own data and also block.
-// For now, only video type is a "data block" operation
-converter.beforeDataBlockRender(function(dataBlockOp){
-    // ... generate your own html 
-    // return your html
-});
-converter.afterDataBlockRender(function(html){
-    // modify if you wish
-    // return the html
-});
-
-// ops refers to a group of inline operations that are not in a block. 
-//  Those that are in a block, are rendered in ...ContainerBlockRender events
+// opsArray refers to a group of inline operations that are not video or not in a block. 
 converter.beforeInlineGroupRender(function(opsArray){
     // ... generate your own html 
     // return your html
@@ -117,10 +109,10 @@ Your callbacks may be called multiple times. Imagine an entry where user...
 
 In this case, 
 
-    1 - containerBlock event will be called with relevant block op and child ops
-    2 - inlineGroup will be called with ops in this section
-    3 - dataBlock will be called
-    4 - containerBlock will be called again
+    1 - block event will be called with relevant block op and child ops
+    2 - inlineGroup event will be called with ops in this section
+    3 - block event will be called again 
+    4 - block will be called once more
     5 - inlineGroup will be called again as well. 
 
 

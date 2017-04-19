@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var value_types_1 = require("./value-types");
 function flattenArray(arr) {
     if (!Array.isArray(arr)) {
         return arr;
@@ -14,12 +15,11 @@ function preferSecond(arg) {
     return arg.length >= 2 ? arg[1] : arg[0];
 }
 exports.preferSecond = preferSecond;
-function tokenizeWithNewLines(str, newLine) {
-    if (newLine === void 0) { newLine = "\n"; }
-    if (typeof str !== 'string' || str === newLine) {
+function tokenizeWithNewLines(str) {
+    if (typeof str !== 'string' || str === value_types_1.NewLine) {
         return [str];
     }
-    var lines = str.split(newLine);
+    var lines = str.split(value_types_1.NewLine);
     if (lines.length === 1) {
         return lines;
     }
@@ -27,10 +27,10 @@ function tokenizeWithNewLines(str, newLine) {
     return lines.reduce(function (pv, line, ind) {
         if (ind !== lastIndex) {
             if (line !== "") {
-                pv = pv.concat(line, newLine);
+                pv = pv.concat(line, value_types_1.NewLine);
             }
             else {
-                pv.push(newLine);
+                pv.push(value_types_1.NewLine);
             }
         }
         else if (line !== "") {
@@ -67,24 +67,17 @@ exports.assign = assign;
 ;
 function groupConsecutiveElementsWhile(arr, predicate) {
     var groups = [];
-    var groupedElementIndexes = [];
-    var isConsecutive = function (index) {
-        return groupedElementIndexes.length
-            && (groupedElementIndexes[groupedElementIndexes.length - 1] + 1) === index;
-    };
+    var currElm;
     for (var i = 0; i < arr.length; i++) {
-        if (predicate(arr[i])) {
-            if (!isConsecutive(i)) {
-                groups.push([]);
-            }
+        currElm = arr[i];
+        if (i > 0 && predicate(currElm, arr[i - 1])) {
             var g = groups[groups.length - 1];
-            g.push(arr[i]);
-            groupedElementIndexes.push(i);
+            g.push(currElm);
         }
         else {
-            groups.push(arr[i]);
+            groups.push([currElm]);
         }
     }
-    return groups;
+    return groups.map(function (g) { return g.length === 1 ? g[0] : g; });
 }
 exports.groupConsecutiveElementsWhile = groupConsecutiveElementsWhile;
