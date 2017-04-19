@@ -7,6 +7,8 @@ Converts [Quill's](https://quilljs.com) [Delta](https://quilljs.com/docs/delta/)
 
 If you need to render Quill's delta as HTML on the server (such as for SEO purposes), this library should help you. 
 
+You can try a live demo of the conversion by opening the `demo-browser.html` file after cloning the repo.
+
 ## Quickstart ## 
 
 Installation
