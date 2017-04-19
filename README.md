@@ -42,7 +42,7 @@ var html = converter.convert();
 |paragraphTag| 'p' | Tag to wrap inline html elements|
 |encodeHtml| true | If true, `<, >, /, ', ", &` characters in content will be encoded.|
 |classPrefix| 'ql' | A css class name to prefix class generating styles such as `size`, `font`, etc. |
-|multiLineBlockquote| true | Instead of rendering multiple `blockquote` elements for quotes that are consecutive and have same styles, it renders them into only one|
+|multiLineBlockquote| true | Instead of rendering multiple `blockquote` elements for quotes that are consecutive and have same styles(`align`, `indent`, and `direction`), it renders them into only one|
 |multiLineHeader| true | Same deal as `multiLineBlockquote` for headers|
 |multiLineCodeblock| true | Same deal as `multiLineBlockquote` for code-blocks|
 
