@@ -11,7 +11,8 @@ import './extensions/Array';
 interface IOpToHtmlConverterOptions {
     classPrefix?: string,
     encodeHtml?: boolean,
-    listItemTag?: string
+    listItemTag?: string,
+    paragraphTag?: string
 }
 
 interface ITagKeyValue {
@@ -33,7 +34,8 @@ class OpToHtmlConverter {
         this.options = Object._assign({}, { 
             classPrefix: 'ql',
             encodeHtml: true,
-            listItemTag: 'li'
+            listItemTag: 'li',
+            paragraphTag: 'p'
         }, options);
     }
 
@@ -164,9 +166,12 @@ class OpToHtmlConverter {
         }
 
         // blocks 
+        var positionTag = this.options.paragraphTag || 'p';
+
         var blocks = [['blockquote'], ['code-block', 'pre'], 
                     ['list', this.options.listItemTag ], ['header'],
-                        ['align', 'p'], ['direction', 'p'], ['indent', 'p']];
+                        ['align', positionTag], ['direction', positionTag], 
+                            ['indent', positionTag]];
         for (var item of blocks) {
             if (attrs[item[0]]) {
                 return item[0] === 'header' ? ['h' + attrs[item[0]]] : [item._preferSecond()];

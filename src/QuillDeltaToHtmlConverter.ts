@@ -50,7 +50,8 @@ class QuillDeltaToHtmlConverter {
         this.converter = new OpToHtmlConverter({
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
-            listItemTag: this.options.listItemTag
+            listItemTag: this.options.listItemTag,
+            paragraphTag: this.options.paragraphTag
         });
         this.rawDeltaOps = deltaOps;
 
@@ -157,12 +158,6 @@ class QuillDeltaToHtmlConverter {
                 ops.map((op) => op.insert.value).join('')
                 + htmlParts.closingTag;
         }
-
-        // if (op.isBlockquote() || op.isHeader()) {
-        //     return htmlParts.openingTag +
-        //         ops.map((op) => this.converter.getHtml(op)).join(BrTag)
-        //         + htmlParts.closingTag;
-        // }
 
         var inlines = this.renderInlines(ops, false);
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;

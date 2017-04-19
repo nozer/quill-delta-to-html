@@ -51,6 +51,26 @@ describe('QuillDeltaToHtmlConverter', function () {
             assert.equal(html.indexOf('<p>mr') > -1, true);
             assert.equal(html.indexOf('</ol><ul><li>there') > -1, true);
         });
+
+        it('should wrap positional styles in right tag', function(){
+            var ops4 = [
+                {insert: "mr"},
+                {insert: "\n", attributes: {align: 'center'}},
+                {insert: "\n", attributes: {direction: 'rtl'}},
+                {insert: "\n", attributes: {indent: 2}}
+            ]
+            var qdc = new QuillDeltaToHtmlConverter(ops4, {paragraphTag: 'div'});
+            var html = qdc.convert();
+            assert.equal(html.indexOf('<div class="ql-align') > -1, true);
+            assert.equal(html.indexOf('<div class="ql-direction') > -1, true);
+            assert.equal(html.indexOf('<div class="ql-indent') > -1, true);
+
+            var qdc = new QuillDeltaToHtmlConverter(ops4);
+            var html = qdc.convert();
+            assert.equal(html.indexOf('<p class="ql-align') > -1, true);
+            assert.equal(html.indexOf('<p class="ql-direction') > -1, true);
+            assert.equal(html.indexOf('<p class="ql-indent') > -1, true);
+        });
     });
 
     describe('getListTag()', function () {
@@ -69,7 +89,7 @@ describe('QuillDeltaToHtmlConverter', function () {
         });
     });
 
-    describe(' prepare data before inline and container renders', function(){
+    describe(' prepare data before inline and block renders', function(){
         var ops: any; 
         beforeEach(function(){
             ops = [

@@ -37,7 +37,7 @@ describe('DeltaInsertOp', function() {
         it('should successfully if two ops have same align indent and direction', function() {
             var op1 = new DeltaInsertOp("\n", {align: 'right', indent: 2});
             var op2 = new DeltaInsertOp("\n", {align: 'right', indent: 2});
-            console.log(op1, op2); 
+            
             assert.ok(op1.hasSameAdiAs(op2));
 
             var op2 = new DeltaInsertOp("\n", {align: 'right', indent: 3});
