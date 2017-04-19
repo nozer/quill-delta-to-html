@@ -160,8 +160,7 @@ class OpToHtmlConverter {
         if (!op.isText()) {
             return [op.isVideo() ? 'iframe'
                 : op.isImage() ? 'img'
-                    : op.isFormula() ? 'span'
-                        : 'unknown'
+                    :  'span' // formula 
             ]
         }
 

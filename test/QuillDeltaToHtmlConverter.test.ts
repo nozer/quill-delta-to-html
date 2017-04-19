@@ -163,19 +163,19 @@ describe('QuillDeltaToHtmlConverter', function () {
         });
 
         describe('renderContainerBlock()', function () {
-            var op = new DeltaInsertOp('\n', {blockquote: true, indent: 2});
+            var op = new DeltaInsertOp('\n', {header: 3, indent: 2});
             var inlineop = new DeltaInsertOp("hi there"); 
             it('should render container block', function () {
 
                 var qdc = new QuillDeltaToHtmlConverter([]);
                 var blockhtml  = qdc.renderContainerBlock(op, [inlineop]);
-                assert.equal(blockhtml, ['<blockquote class="ql-indent-2">',
-                    'hi there</blockquote>'].join(''));
+                assert.equal(blockhtml, ['<h3 class="ql-indent-2">',
+                    'hi there</h3>'].join(''));
 
                 var qdc = new QuillDeltaToHtmlConverter([]);
                 var blockhtml  = qdc.renderContainerBlock(op, []);
-                assert.equal(blockhtml, ['<blockquote class="ql-indent-2">',
-                    '<br/></blockquote>'].join(''));
+                assert.equal(blockhtml, ['<h3 class="ql-indent-2">',
+                    '<br/></h3>'].join(''));
 
             });
         });

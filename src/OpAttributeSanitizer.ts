@@ -19,7 +19,10 @@ class OpAttributeSanitizer {
 
         ['bold', 'italic', 'underline', 'strike', 'code', 'blockquote', 'code-block']
             .forEach(function (prop: string) {
-                cleanAttrs[prop] = !!(<any>dirtyAttrs)[prop];
+                var v = (<any>dirtyAttrs)[prop];
+                if (v) {
+                    cleanAttrs[prop] = !!v ;
+                }
             });
 
         ['background', 'color'].forEach(function (prop: string) {
@@ -49,7 +52,7 @@ class OpAttributeSanitizer {
             cleanAttrs.list = list;
         }
         
-        if (header && Number(header)) {
+        if (Number(header)) {
             cleanAttrs.header = Math.min(Number(header), 6);
         }
 
@@ -65,7 +68,7 @@ class OpAttributeSanitizer {
             cleanAttrs.indent = Math.min(Number(indent), 30);
         }
 
-        return <IOpAttributes>cleanAttrs;
+        return cleanAttrs;
     }
 
     static IsValidHexColor(colorStr: string) {

@@ -1,14 +1,15 @@
 function makeStartTag(tag:any, attrs:any = null) {
     if (!tag) {return ''; }
     
+
+    var attrsStr = '';
     if (attrs) {
         attrs = [].concat(attrs);
+        attrsStr = attrs.map(function(attr:any){
+            return attr.key + (attr.value ? '="' + attr.value + '"' : '');
+        }).join(' ');
     }
 
-    var attrsStr = attrs && 
-    attrs.map(function(attr:any){
-        return attr.key + (attr.value ? '="' + attr.value + '"' : '');
-    }).join(' ');
     var closing = '>';
     if (tag === 'img' || tag === 'br') {
         closing = '/>';

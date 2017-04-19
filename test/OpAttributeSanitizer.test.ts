@@ -37,7 +37,7 @@ describe('OpAttributeSanitizer', function () {
 
         it('should return empty object', function() {
             [null, 3, undefined, "fd"].forEach((v) => {
-                assert.deepEqual(OpAttributeSanitizer.sanitize(v), {});
+                assert.deepEqual(OpAttributeSanitizer.sanitize(<any>v), {});
             });
         });
 
@@ -56,8 +56,8 @@ describe('OpAttributeSanitizer', function () {
             align: AlignType.Center
         };
         it('should return sanitized attributes', function() {
-            assert.deepEqual(OpAttributeSanitizer.sanitize(attrs), {
-                bold: false,
+            assert.deepEqual(OpAttributeSanitizer.sanitize(<any>attrs), {
+                bold: true,
                 background: '#333',
                 font: 'times new roman',
                 link: 'http://',
@@ -67,13 +67,15 @@ describe('OpAttributeSanitizer', function () {
                 direction: 'rtl',
                 align: 'center'
             });
-
-            assert.deepEqual(OpAttributeSanitizer.sanitize({header: '1'}), {header: 1});
+            console.log('aaaa');
+            assert.deepEqual(OpAttributeSanitizer.sanitize({header: 1}), {header: 1});
+            assert.deepEqual(OpAttributeSanitizer.sanitize({header: null}), {});
+            assert.deepEqual(OpAttributeSanitizer.sanitize({header: 100}), {header: 6});
             assert.deepEqual(OpAttributeSanitizer.sanitize({align: AlignType.Center}), 
                 {align: "center"});
             assert.deepEqual(OpAttributeSanitizer.sanitize({direction: DirectionType.Rtl}), 
-                {align: "rtl"});
-            assert.deepEqual(OpAttributeSanitizer.sanitize({indent: '2'}), 
+                {direction: "rtl"});
+            assert.deepEqual(OpAttributeSanitizer.sanitize({indent: 2}), 
                 {indent: 2});
         });
     });
