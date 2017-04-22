@@ -108,22 +108,3 @@ op = {
 }
 ```
 
-Your callbacks may be called multiple times. Imagine an entry where user...
-
-    1 - first enters a header, 
-    2 - then enters some inline content,
-    3 - then enters a video
-    4 - then enters quote 
-    5 - then enters some more inline text. 
-
-In this case, 
-
-    1 - block event will be called with relevant block op and child ops
-    2 - inlineGroup event will be called with ops in this section
-    3 - block event will be called again 
-    4 - block will be called once more
-    5 - inlineGroup will be called again as well. 
-
-
-
-
