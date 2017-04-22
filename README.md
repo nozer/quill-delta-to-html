@@ -97,7 +97,7 @@ Following shows the parameter formats for `beforeRender` event:
 `op object` will have the following format: 
 
 ```javascript
-op = {
+{
     insert: {
         type: '' // one of 'text' | 'image' | 'video' | 'formula',
         value: '' // some string value  
