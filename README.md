@@ -13,7 +13,7 @@ You can try a live demo of the conversion by opening the `demo-browser.html` fil
 
 - To generate only one block element if same consecutive block elements (`blockquote`, `header`, and `code block`) have the same `alignment`, `direction`, and `indentation`. [See #1121](https://github.com/quilljs/quill/issues/1121)
 
-- To wrap multiple inline elements (until the next block or video) in just one `p` tag. 
+- To wrap multiple inline elements (until the next block or video) in a custom tag(`p` by default). 
 
 - To securely scrub delta data on the server before converting to HTML. 
 
@@ -46,7 +46,7 @@ var html = converter.convert();
 
 |Option | Default | Description 
 |---|---|---|
-|paragraphTag| 'p' | Tag to wrap inline html elements|
+|paragraphTag| 'p' | Custom tag to wrap inline html elements|
 |encodeHtml| true | If true, `<, >, /, ', ", &` characters in content will be encoded.|
 |classPrefix| 'ql' | A css class name to prefix class generating styles such as `size`, `font`, etc. |
 |multiLineBlockquote| true | Instead of rendering multiple `blockquote` elements for quotes that are consecutive and have same styles(`align`, `indent`, and `direction`), it renders them into only one|
