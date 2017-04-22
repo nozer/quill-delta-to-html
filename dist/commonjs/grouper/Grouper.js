@@ -52,6 +52,9 @@ var Grouper = (function () {
         var newLineOp = DeltaInsertOp_1.DeltaInsertOp.createNewLineOp();
         return groups.map(function (elm) {
             if (!Array.isArray(elm)) {
+                if (elm instanceof group_types_1.BlockGroup && !elm.ops.length) {
+                    elm.ops.push(newLineOp);
+                }
                 return elm;
             }
             var groupsLastInd = elm.length - 1;

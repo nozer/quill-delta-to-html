@@ -464,9 +464,9 @@ var QuillDeltaToHtmlConverter = (function () {
         html = typeof beforeCb === 'function' ? beforeCb.apply(null, [groupType, group]) : '';
         if (!html) {
             html = myRenderFn();
-            var afterCb = this.callbacks['afterRender_cb'];
-            html = typeof afterCb === 'function' ? afterCb.apply(null, [groupType, html]) : html;
         }
+        var afterCb = this.callbacks['afterRender_cb'];
+        html = typeof afterCb === 'function' ? afterCb.apply(null, [groupType, html]) : html;
         return html;
     };
     QuillDeltaToHtmlConverter.prototype.renderList = function (list, isOuterMost) {
@@ -488,14 +488,18 @@ var QuillDeltaToHtmlConverter = (function () {
             + parts.closingTag;
     };
     QuillDeltaToHtmlConverter.prototype.renderBlock = function (op, ops) {
+        var _this = this;
         var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, this.converterOptions);
         var htmlParts = converter.getHtmlParts();
         if (op.isCodeBlock()) {
             return htmlParts.openingTag +
-                ops.map(function (op) { return op.insert.value; }).join('')
+                ops.map(function (op) { return op.insert.value; }).join(value_types_1.NewLine)
                 + htmlParts.closingTag;
         }
-        var inlines = this.renderInlines(ops, false);
+        var inlines = ops.map(function (op) {
+            var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, _this.converterOptions);
+            return converter.getHtml().replace(/\n/g, BrTag);
+        }).join('');
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
     };
     QuillDeltaToHtmlConverter.prototype.renderInlines = function (ops, wrapInParagraphTag) {
@@ -570,6 +574,16 @@ Array.prototype._sliceFromReverseWhile = function (startIndex, predicate) {
         result.elements.unshift(this[i]);
     }
     return result;
+};
+Array.prototype._intersperse = function (item) {
+    var _this = this;
+    return this.reduce(function (pv, v, index) {
+        pv.push(v);
+        if (index < (_this.length - 1)) {
+            pv.push(item);
+        }
+        return pv;
+    }, []);
 };
 
 },{}],9:[function(require,module,exports){
@@ -730,6 +744,9 @@ var Grouper = (function () {
         var newLineOp = DeltaInsertOp_1.DeltaInsertOp.createNewLineOp();
         return groups.map(function (elm) {
             if (!Array.isArray(elm)) {
+                if (elm instanceof group_types_1.BlockGroup && !elm.ops.length) {
+                    elm.ops.push(newLineOp);
+                }
                 return elm;
             }
             var groupsLastInd = elm.length - 1;

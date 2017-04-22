@@ -38,3 +38,13 @@ Array.prototype._sliceFromReverseWhile = function (startIndex, predicate) {
     }
     return result;
 };
+Array.prototype._intersperse = function (item) {
+    var _this = this;
+    return this.reduce(function (pv, v, index) {
+        pv.push(v);
+        if (index < (_this.length - 1)) {
+            pv.push(item);
+        }
+        return pv;
+    }, []);
+};
