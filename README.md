@@ -3,19 +3,10 @@
 
 
 # Quill Delta to HTML Converter #
-Converts [Quill's](https://quilljs.com) [Delta](https://quilljs.com/docs/delta/) format to HTML (insert ops only).
+Converts [Quill's](https://quilljs.com) [Delta](https://quilljs.com/docs/delta/) format to HTML (insert ops only) with properly nested lists.
 
 You can try a live demo of the conversion by opening the `demo-browser.html` file after cloning the repo.
 
-## Why not just use `innerHTML` of Quill ## 
-
-- To generate proper nested lists per [W3C recommendation](https://www.w3.org/wiki/HTML_lists#Nesting_lists).  Although it is added as a [bug #829](https://github.com/quilljs/quill/issues/829) in Quill issue tracker and will be fixed in the future.) 
-
-- To generate only one block element if same consecutive block elements (`blockquote`, `header`, and `code block`) have the same `alignment`, `direction`, and `indentation`. [See #1121](https://github.com/quilljs/quill/issues/1121)
-
-- To wrap multiple inline elements (until the next block or video) in a custom tag(`p` by default). 
-
-- To securely scrub delta data on the server before converting to HTML. 
 
 ## Quickstart ## 
 
