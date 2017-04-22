@@ -91,7 +91,7 @@ Following shows the parameter formats for `beforeRender` event:
 |---|---|
 |`video`|{op: `op object`}|
 |`block`|{op: `op object`: ops: Array<`op object`>}|
-|`list`| {items: [{item: `block`, innerList: `list`}] }|
+|`list`| {items: Array<{item: `block`, innerList: `list` or `null` }> }|
 |`inline-group`|{ops: Array<`op object`>}|
 
 `op object` will have the following format: 
