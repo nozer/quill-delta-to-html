@@ -94,7 +94,7 @@ Following shows the parameter formats for `beforeRender` event:
 |`list`| {items: [{item: `block`, innerList: `list`}] }|
 |`inline-group`|{ops: Array<`op object`>}|
 
-`op object` will have following format: 
+`op object` will have the following format: 
 
 ```javascript
 op = {
