@@ -13,7 +13,10 @@ var OpAttributeSanitizer = (function () {
         var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent;
         ['bold', 'italic', 'underline', 'strike', 'code', 'blockquote', 'code-block']
             .forEach(function (prop) {
-            cleanAttrs[prop] = !!dirtyAttrs[prop];
+            var v = dirtyAttrs[prop];
+            if (v) {
+                cleanAttrs[prop] = !!v;
+            }
         });
         ['background', 'color'].forEach(function (prop) {
             var val = dirtyAttrs[prop];
@@ -36,7 +39,7 @@ var OpAttributeSanitizer = (function () {
         if (list === value_types_1.ListType.Bullet || list === value_types_1.ListType.Ordered) {
             cleanAttrs.list = list;
         }
-        if (header && Number(header)) {
+        if (Number(header)) {
             cleanAttrs.header = Math.min(Number(header), 6);
         }
         if (align === value_types_1.AlignType.Center || align === value_types_1.AlignType.Right) {

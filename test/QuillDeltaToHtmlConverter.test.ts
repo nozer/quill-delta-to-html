@@ -8,6 +8,7 @@ import { QuillDeltaToHtmlConverter } from "./../src/QuillDeltaToHtmlConverter";
 import {callWhenAlltrue} from './_helper';
 
 import {delta1} from './data/delta1';
+import {GroupType} from './../src/value-types';
 
 describe('QuillDeltaToHtmlConverter', function () {
 
@@ -45,9 +46,11 @@ describe('QuillDeltaToHtmlConverter', function () {
                 {insert: "\n", attributes: {list: 'ordered'}},
                 {insert: "there"},
                 {insert: "\n", attributes: {list: 'bullet'}},
+                {insert: "\n", attributes: {list: 'ordered'}},
             ]
             var qdc = new QuillDeltaToHtmlConverter(ops4);
             var html = qdc.convert();
+            
             assert.equal(html.indexOf('<p>mr') > -1, true);
             assert.equal(html.indexOf('</ol><ul><li>there') > -1, true);
         });
@@ -162,150 +165,108 @@ describe('QuillDeltaToHtmlConverter', function () {
 
         });
 
-        describe('renderContainerBlock()', function () {
+        describe('renderBlock()', function () {
             var op = new DeltaInsertOp('\n', {header: 3, indent: 2});
             var inlineop = new DeltaInsertOp("hi there"); 
             it('should render container block', function () {
 
                 var qdc = new QuillDeltaToHtmlConverter([]);
-                var blockhtml  = qdc.renderContainerBlock(op, [inlineop]);
+                var blockhtml  = qdc.renderBlock(op, [inlineop]);
                 assert.equal(blockhtml, ['<h3 class="ql-indent-2">',
                     'hi there</h3>'].join(''));
 
                 var qdc = new QuillDeltaToHtmlConverter([]);
-                var blockhtml  = qdc.renderContainerBlock(op, []);
+                var blockhtml  = qdc.renderBlock(op, []);
                 assert.equal(blockhtml, ['<h3 class="ql-indent-2">',
                     '<br/></h3>'].join(''));
 
             });
         });
 
-        describe('shouldBeginList()', function () {
-            var qdc = new QuillDeltaToHtmlConverter([]);
-            it('should decide if ol/ul list tag should be put', function(){
-                var pop = new DeltaInsertOp("fdf");
-                var nop = new DeltaInsertOp("fd");
-                assert.ok(!qdc.shouldBeginList(pop, nop));
-
-                var nop = new DeltaInsertOp("\n", {list: 'bullet'});
-                assert.ok(qdc.shouldBeginList(pop, nop));
-
-                var nop = new DeltaInsertOp("\n", {list: 'bullet'});
-                var pop = new DeltaInsertOp("\n", {list: 'ordered'});
-                assert.ok(qdc.shouldBeginList(pop, nop));
-
-                var pop = new DeltaInsertOp("\n", {list: 'bullet'});
-                var nop = new DeltaInsertOp("\n", {list: 'bullet', indent: 1});
-                assert.ok(!qdc.shouldBeginList(pop, nop));
-
-                assert.ok(!qdc.shouldBeginList(nop, null));
-            });
-        });
-
-        describe('shouldEndList()', function () {
-            var qdc = new QuillDeltaToHtmlConverter([]);
-            it('should decide if ol/ul list tag should be closed', function(){
-                var pop = new DeltaInsertOp("fdf");
-                var nop = new DeltaInsertOp("fd");
-                assert.ok(!qdc.shouldEndList(pop, nop));
-
-                var pop = new DeltaInsertOp("\n", {list: 'bullet'});
-                assert.ok(qdc.shouldEndList(pop, nop));
-
-                var nop = new DeltaInsertOp("\n", {list: 'bullet'});
-                var pop = new DeltaInsertOp("\n", {list: 'ordered'});
-                assert.ok(qdc.shouldEndList(pop, nop));
-
-                var pop = new DeltaInsertOp("\n", {list: 'bullet'});
-                var nop = new DeltaInsertOp("\n", {list: 'bullet', indent: 1});
-                assert.ok(!qdc.shouldEndList(pop, nop));
-            });
-        });
-
         describe('before n after renders()', function () {
             var ops = [
-                {insert: 'hello'},
-                {insert: '\n'},
+                {insert: 'hello', attributes: {bold: true}},
+                {insert: '\n', attributes: {bold: true}},
                 {insert: 'how r u?'},
                 {insert: 'r u fine'},
                 {insert :'\n', attributes: {blockquote: true}},
-                {insert: {video: 'http://'}}
+                {insert: {video: 'http://'}},
+                {insert: 'list item 1'},
+                {insert: '\n', attributes: {list: 'bullet'}},
+                {insert: 'list item 1 indented'},
+                {insert: '\n', attributes: {list: 'bullet', indent: 1}}
             ]
             var qdc = new QuillDeltaToHtmlConverter(ops);
             
-            it('should call before/afterBlockRender for blocks', function(done){
+            it('should call before/after render callbacks ', function(done){
                 var jobstatus1 = [false, false];
-                qdc.beforeBlockRender((op, ops) => {
-                    if (ops) {
-                        assert.ok(op.attributes.blockquote);
-                        assert.ok(ops.length === 2);
-                    } else {
+                qdc.beforeRender((groupType, data) => {
+                    if (groupType === GroupType.InlineGroup) {
+                        var op = (<any>data).ops[0];
+                        assert.ok(op.attributes.bold);
+                    } else if (groupType === GroupType.Video) {
+                        var op = (<any>data).op;
                         assert.ok(op.insert.type === 'video');
+                    } else if (groupType === GroupType.Block) {
+                        var d = (<any>data);
+                        assert.ok(d.op.attributes.blockquote && d.ops.length === 2);
+                    } else {
+                        var d = (<any>data);
+                        assert.ok(d.items.length === 1);
                     }
                     jobstatus1[0] = true;
                     return '';
                 });
-                qdc.afterBlockRender((html) => {
-                    assert.ok(!(html.indexOf('fine') > -1) || !(html.indexOf('iframe') > -1));
+                qdc.afterRender((groupType, html) => {
+                    if (groupType === GroupType.InlineGroup) {
+                        assert.ok(html.indexOf('<strong>hello') > -1);
+                    } else if (groupType === GroupType.Video) {
+                        assert.ok(html.indexOf('<iframe') > -1);
+                    } else if (groupType === GroupType.Block) {
+                        assert.ok(html.indexOf('<blockquote') > -1);
+                    } else {
+                        
+                        assert.ok(html.indexOf('list item 1<ul><li') > -1);
+                    }
                     jobstatus1[1] = true;
                     return html;
                 });
                 qdc.convert();
                 callWhenAlltrue(jobstatus1, done);
 
-                var c1 = new QuillDeltaToHtmlConverter([
-                    {insert:'\n',attributes: {blockquote:true}}]);
-                c1.beforeBlockRender((op) => 'xyz');
-                var h= c1.convert();
-                assert.ok(h.indexOf('xyz') > -1);
             });
 
 
-            it('should call before/afterInlineGroupRender', function(done){
-                var jobstatus = [false, false];
-                qdc.beforeInlineGroupRender((ops) => {
-                    assert.ok(ops[1].insert.value === '\n');
-                    jobstatus[0] = true;
-                    return '';
-                });
-                qdc.afterInlineGroupRender((html) => {
-                    assert.ok(html.indexOf('lo') > -1);
-                    jobstatus[1] = true;
-                    return html;
-                });
-                var v = qdc.convert();
-                callWhenAlltrue(jobstatus, function(){
-                    assert.ok(v.indexOf('blockquote>how') > -1);
-                    done();
-                });
-            });
-
-            it('should use my custom html if I return from before* call back', function(){
-                var jobstatus = [false, false];
+            it('should use my custom html if I return from before call back', function(){
+                
                 var c = new QuillDeltaToHtmlConverter([
                     {insert: {video: "http"}}, {insert: 'aa'}]);
-                c.beforeBlockRender((op) => {
+                c.beforeRender(() => {
                     return '<my custom video html>';
                 });
-                c.beforeInlineGroupRender((op) => {
-                    return "my html";
-                });
                 var v = c.convert();
-                assert.ok(v.indexOf('<my') > - 1 && v.indexOf('my html') > -1);
+                assert.ok(v.indexOf('<my custom') > - 1);
             });
 
             it('should register and use callbacks if they are functions', function(){
                 var jobstatus = [false, false];
                 var c = new QuillDeltaToHtmlConverter([
                     {insert: {video: "http"}}, {insert: 'aa'}]);
-                var dummy = (): any => null;
-                c.beforeBlockRender(dummy());
-                c.beforeInlineGroupRender(dummy());
-                c.afterBlockRender(dummy());
-                c.afterInlineGroupRender(dummy());
+                var dummy = (): any => '';
 
+                c.beforeRender(dummy());
+                c.afterRender(dummy());
+                v = c.convert();
+                assert.ok(v.indexOf('iframe') > -1);
+                
+                c.beforeRender(dummy);
                 var v = c.convert();
                 assert.ok(v.indexOf('<iframe') > - 1 && v.indexOf('aa') > -1);
+
+                c.afterRender(dummy);
+                v = c.convert();
+                assert.ok(v === '');
+
                 
             });
         });

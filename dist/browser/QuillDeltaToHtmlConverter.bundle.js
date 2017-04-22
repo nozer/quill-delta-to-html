@@ -33,6 +33,12 @@ var DeltaInsertOp = (function () {
             && this.attributes.direction === op.attributes.direction
             && this.attributes.indent === op.attributes.indent;
     };
+    DeltaInsertOp.prototype.hasSameIndentationAs = function (op) {
+        return this.attributes.indent === op.attributes.indent;
+    };
+    DeltaInsertOp.prototype.hasHigherIndentThan = function (op) {
+        return (Number(this.attributes.indent) || 0) > (Number(op.attributes.indent) || 0);
+    };
     DeltaInsertOp.prototype.isInline = function () {
         return !(this.isContainerBlock() || this.isVideo());
     };
@@ -73,7 +79,7 @@ var DeltaInsertOp = (function () {
 }());
 exports.DeltaInsertOp = DeltaInsertOp;
 
-},{"./InsertData":2,"./value-types":13}],2:[function(require,module,exports){
+},{"./InsertData":2,"./value-types":15}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertData = (function () {
@@ -120,7 +126,7 @@ var InsertOpDenormalizer = (function () {
 }());
 exports.InsertOpDenormalizer = InsertOpDenormalizer;
 
-},{"./extensions/Object":10,"./extensions/String":11,"./value-types":13}],4:[function(require,module,exports){
+},{"./extensions/Object":9,"./extensions/String":10,"./value-types":15}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var DeltaInsertOp_1 = require("./DeltaInsertOp");
@@ -171,7 +177,7 @@ var InsertOpsConverter = (function () {
 }());
 exports.InsertOpsConverter = InsertOpsConverter;
 
-},{"./DeltaInsertOp":1,"./InsertData":2,"./InsertOpDenormalizer":3,"./OpAttributeSanitizer":5,"./value-types":13}],5:[function(require,module,exports){
+},{"./DeltaInsertOp":1,"./InsertData":2,"./InsertOpDenormalizer":3,"./OpAttributeSanitizer":5,"./value-types":15}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
@@ -187,7 +193,10 @@ var OpAttributeSanitizer = (function () {
         var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent;
         ['bold', 'italic', 'underline', 'strike', 'code', 'blockquote', 'code-block']
             .forEach(function (prop) {
-            cleanAttrs[prop] = !!dirtyAttrs[prop];
+            var v = dirtyAttrs[prop];
+            if (v) {
+                cleanAttrs[prop] = !!v;
+            }
         });
         ['background', 'color'].forEach(function (prop) {
             var val = dirtyAttrs[prop];
@@ -210,7 +219,7 @@ var OpAttributeSanitizer = (function () {
         if (list === value_types_1.ListType.Bullet || list === value_types_1.ListType.Ordered) {
             cleanAttrs.list = list;
         }
-        if (header && Number(header)) {
+        if (Number(header)) {
             cleanAttrs.header = Math.min(Number(header), 6);
         }
         if (align === value_types_1.AlignType.Center || align === value_types_1.AlignType.Right) {
@@ -237,88 +246,7 @@ var OpAttributeSanitizer = (function () {
 }());
 exports.OpAttributeSanitizer = OpAttributeSanitizer;
 
-},{"./extensions/String":11,"./value-types":13}],6:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var DeltaInsertOp_1 = require("./DeltaInsertOp");
-require("./extensions/Array");
-var OpGroup = (function () {
-    function OpGroup(op, ops) {
-        if (ops === void 0) { ops = null; }
-        this.op = op;
-        this.ops = ops;
-    }
-    OpGroup.pairOpsWithTheirBlock = function (ops) {
-        var result = [];
-        var canBeInBlock = function (op) {
-            return !(op.isJustNewline() || op.isVideo() || op.isContainerBlock());
-        };
-        var isInlineData = function (op) { return op.isInline(); };
-        var lastInd = ops.length - 1;
-        var opsSlice;
-        for (var i = lastInd; i >= 0; i--) {
-            var op = ops[i];
-            if (op.isVideo()) {
-                result.push(new OpGroup(op));
-            }
-            else if (op.isContainerBlock()) {
-                opsSlice = ops._sliceFromReverseWhile(i - 1, canBeInBlock);
-                result.push(new OpGroup(op, opsSlice.elements));
-                i = opsSlice.sliceStartsAt > -1 ? opsSlice.sliceStartsAt : i;
-            }
-            else {
-                opsSlice = ops._sliceFromReverseWhile(i - 1, isInlineData);
-                result.push(new OpGroup(null, opsSlice.elements.concat(op)));
-                i = opsSlice.sliceStartsAt > -1 ? opsSlice.sliceStartsAt : i;
-            }
-        }
-        result.reverse();
-        return result;
-    };
-    OpGroup.groupConsecutiveSameStyleBlocks = function (groups, blocksOf) {
-        if (blocksOf === void 0) { blocksOf = {
-            header: true,
-            codeBlocks: true,
-            blockquotes: true
-        }; }
-        return groups._groupConsecutiveElementsWhile(function (g, gPrev) {
-            return blocksOf.codeBlocks && OpGroup.areBothCodeblocks(g, gPrev)
-                || blocksOf.blockquotes && OpGroup.areBothBlockquotesWithSameAdi(g, gPrev)
-                || blocksOf.header && OpGroup.areBothSameHeadersWithSameAdi(g, gPrev);
-        });
-    };
-    OpGroup.reduceConsecutiveSameStyleBlocksToOne = function (groups) {
-        var newLineOp = DeltaInsertOp_1.DeltaInsertOp.createNewLineOp();
-        return groups.map(function (elm) {
-            if (!Array.isArray(elm)) {
-                return elm;
-            }
-            var groupsLastInd = elm.length - 1;
-            elm[0].ops = elm.map(function (g, i) {
-                if (!g.ops.length) {
-                    return [newLineOp];
-                }
-                return g.ops.concat(i < groupsLastInd ? [newLineOp] : []);
-            })._flatten();
-            return elm[0];
-        });
-    };
-    OpGroup.areBothCodeblocks = function (g1, gOther) {
-        return g1.op && gOther.op && g1.op.isCodeBlock() && gOther.op.isCodeBlock();
-    };
-    OpGroup.areBothSameHeadersWithSameAdi = function (g1, gOther) {
-        return g1.op && gOther.op && g1.op.isSameHeaderAs(gOther.op)
-            && g1.op.hasSameAdiAs(gOther.op);
-    };
-    OpGroup.areBothBlockquotesWithSameAdi = function (g, gOther) {
-        return g.op && gOther.op && g.op.isBlockquote() && gOther.op.isBlockquote()
-            && g.op.hasSameAdiAs(gOther.op);
-    };
-    return OpGroup;
-}());
-exports.OpGroup = OpGroup;
-
-},{"./DeltaInsertOp":1,"./extensions/Array":9}],7:[function(require,module,exports){
+},{"./extensions/String":10,"./value-types":15}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var funcs_html_1 = require("./funcs-html");
@@ -327,11 +255,13 @@ require("./extensions/String");
 require("./extensions/Object");
 require("./extensions/Array");
 var OpToHtmlConverter = (function () {
-    function OpToHtmlConverter(options) {
+    function OpToHtmlConverter(op, options) {
+        this.op = op;
         this.options = Object._assign({}, {
             classPrefix: 'ql',
             encodeHtml: true,
-            listItemTag: 'li'
+            listItemTag: 'li',
+            paragraphTag: 'p'
         }, options);
     }
     OpToHtmlConverter.prototype.prefixClass = function (className) {
@@ -340,15 +270,15 @@ var OpToHtmlConverter = (function () {
         }
         return this.options.classPrefix + '-' + className;
     };
-    OpToHtmlConverter.prototype.getHtml = function (op) {
-        var parts = this.getHtmlParts(op);
+    OpToHtmlConverter.prototype.getHtml = function () {
+        var parts = this.getHtmlParts();
         return parts.openingTag + parts.content + parts.closingTag;
     };
-    OpToHtmlConverter.prototype.getHtmlParts = function (op) {
-        if (op.isJustNewline() && !op.isContainerBlock()) {
+    OpToHtmlConverter.prototype.getHtmlParts = function () {
+        if (this.op.isJustNewline() && !this.op.isContainerBlock()) {
             return { openingTag: '', closingTag: '', content: value_types_1.NewLine };
         }
-        var tags = this.getTags(op), attrs = this.getTagAttributes(op);
+        var tags = this.getTags(), attrs = this.getTagAttributes();
         if (!tags.length && attrs.length) {
             tags.push('span');
         }
@@ -362,70 +292,71 @@ var OpToHtmlConverter = (function () {
         endTags.reverse();
         return {
             openingTag: beginTags.join(''),
-            content: this.getContent(op),
+            content: this.getContent(),
             closingTag: endTags.join('')
         };
     };
-    OpToHtmlConverter.prototype.getContent = function (op) {
-        if (op.isContainerBlock()) {
+    OpToHtmlConverter.prototype.getContent = function () {
+        if (this.op.isContainerBlock()) {
             return '';
         }
-        var content = op.isFormula() || op.isText() ? op.insert.value : '';
+        var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
         return this.options.encodeHtml && funcs_html_1.encodeHtml(content) || content;
     };
-    OpToHtmlConverter.prototype.getCssClasses = function (op) {
-        var attrs = op.attributes;
+    OpToHtmlConverter.prototype.getCssClasses = function () {
+        var attrs = this.op.attributes;
         return ['indent', 'align', 'direction', 'font', 'size']
             .filter(function (prop) { return !!attrs[prop]; })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
-            .concat(op.isFormula() ? 'formula' : [])
-            .concat(op.isVideo() ? 'video' : [])
-            .concat(op.isImage() ? 'image' : [])
+            .concat(this.op.isFormula() ? 'formula' : [])
+            .concat(this.op.isVideo() ? 'video' : [])
+            .concat(this.op.isImage() ? 'image' : [])
             .map(this.prefixClass.bind(this));
     };
-    OpToHtmlConverter.prototype.getCssStyles = function (op) {
-        var attrs = op.attributes;
+    OpToHtmlConverter.prototype.getCssStyles = function () {
+        var attrs = this.op.attributes;
         return [['background', 'background-color'], ['color']]
             .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) { return item._preferSecond() + ':' + attrs[item[0]]; });
     };
-    OpToHtmlConverter.prototype.getTagAttributes = function (op) {
-        if (op.attributes.code) {
+    OpToHtmlConverter.prototype.getTagAttributes = function () {
+        if (this.op.attributes.code) {
             return [];
         }
         var makeAttr = function (k, v) { return ({ key: k, value: v }); };
-        var classes = this.getCssClasses(op);
+        var classes = this.getCssClasses();
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
-        if (op.isImage()) {
-            return tagAttrs.concat(makeAttr('src', (op.insert.value + '')._scrubUrl()));
+        if (this.op.isImage()) {
+            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
-        if (op.isFormula() || op.isContainerBlock()) {
+        if (this.op.isFormula() || this.op.isContainerBlock()) {
             return tagAttrs;
         }
-        if (op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (op.insert.value + '')._scrubUrl()));
+        if (this.op.isVideo()) {
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
-        var styles = this.getCssStyles(op);
+        var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
         return tagAttrs
             .concat(styleAttr)
-            .concat(op.isLink() ? makeAttr('href', op.attributes.link) : []);
+            .concat(this.op.isLink() ? makeAttr('href', this.op.attributes.link) : []);
     };
-    OpToHtmlConverter.prototype.getTags = function (op) {
-        var attrs = op.attributes;
+    OpToHtmlConverter.prototype.getTags = function () {
+        var attrs = this.op.attributes;
         if (attrs.code) {
             return ['code'];
         }
-        if (!op.isText()) {
-            return [op.isVideo() ? 'iframe'
-                    : op.isImage() ? 'img'
-                        : op.isFormula() ? 'span'
-                            : 'unknown'
+        if (!this.op.isText()) {
+            return [this.op.isVideo() ? 'iframe'
+                    : this.op.isImage() ? 'img'
+                        : 'span'
             ];
         }
+        var positionTag = this.options.paragraphTag || 'p';
         var blocks = [['blockquote'], ['code-block', 'pre'],
             ['list', this.options.listItemTag], ['header'],
-            ['align', 'p'], ['direction', 'p'], ['indent', 'p']];
+            ['align', positionTag], ['direction', positionTag],
+            ['indent', positionTag]];
         for (var _i = 0, blocks_1 = blocks; _i < blocks_1.length; _i++) {
             var item = blocks_1[_i];
             if (attrs[item[0]]) {
@@ -446,35 +377,40 @@ var OpToHtmlConverter = (function () {
 }());
 exports.OpToHtmlConverter = OpToHtmlConverter;
 
-},{"./extensions/Array":9,"./extensions/Object":10,"./extensions/String":11,"./funcs-html":12,"./value-types":13}],8:[function(require,module,exports){
+},{"./extensions/Array":8,"./extensions/Object":9,"./extensions/String":10,"./funcs-html":11,"./value-types":15}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertOpsConverter_1 = require("./InsertOpsConverter");
 var OpToHtmlConverter_1 = require("./OpToHtmlConverter");
-var OpGroup_1 = require("./OpGroup");
+var Grouper_1 = require("./grouper/Grouper");
+var group_types_1 = require("./grouper/group-types");
+var ListNester_1 = require("./grouper/ListNester");
 var funcs_html_1 = require("./funcs-html");
 require("./extensions/Object");
+var value_types_1 = require("./value-types");
 var BrTag = '<br/>';
 var QuillDeltaToHtmlConverter = (function () {
     function QuillDeltaToHtmlConverter(deltaOps, options) {
         this.rawDeltaOps = [];
         this.callbacks = {};
         this.options = Object._assign({
-            orderedListTag: 'ol',
-            bulletListTag: 'ul',
-            listItemTag: 'li',
             paragraphTag: 'p',
             encodeHtml: true,
             classPrefix: 'ql',
             multiLineBlockquote: true,
             multiLineHeader: true,
             multiLineCodeblock: true
-        }, options);
-        this.converter = new OpToHtmlConverter_1.OpToHtmlConverter({
+        }, options, {
+            orderedListTag: 'ol',
+            bulletListTag: 'ul',
+            listItemTag: 'li'
+        });
+        this.converterOptions = {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
-            listItemTag: this.options.listItemTag
-        });
+            listItemTag: this.options.listItemTag,
+            paragraphTag: this.options.paragraphTag
+        };
         this.rawDeltaOps = deltaOps;
     }
     QuillDeltaToHtmlConverter.prototype.getListTag = function (op) {
@@ -483,79 +419,77 @@ var QuillDeltaToHtmlConverter = (function () {
                 : '';
     };
     QuillDeltaToHtmlConverter.prototype.convert = function () {
+        var _this = this;
         var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
-        var tagStack = [];
-        var htmlArr = [];
-        var beginListTag = function (tag) {
-            tag && tagStack.push(tag) && htmlArr.push('<' + tag + '>');
-        };
-        var endListTag = function (shouldEndAllTags) {
-            if (shouldEndAllTags === void 0) { shouldEndAllTags = false; }
-            var endTag = function () {
-                var tag = tagStack.pop();
-                tag && htmlArr.push('</' + tag + '>');
-            };
-            shouldEndAllTags ? tagStack.map(endTag) : endTag();
-        };
-        var callCustomRenderCb = function (cbName, args) {
-            cbName += '_cb';
-            if (typeof this.callbacks[cbName] === 'function') {
-                return this.callbacks[cbName].apply(null, args);
-            }
-            return cbName.indexOf('after') === 0 ? args[0] : undefined;
-        }.bind(this);
-        var pairedOps = OpGroup_1.OpGroup.pairOpsWithTheirBlock(deltaOps);
-        var groupedSameStyleBlocks = OpGroup_1.OpGroup.groupConsecutiveSameStyleBlocks(pairedOps, {
+        var pairedOps = Grouper_1.Grouper.pairOpsWithTheirBlock(deltaOps);
+        var groupedSameStyleBlocks = Grouper_1.Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
             blockquotes: !!this.options.multiLineBlockquote,
             header: !!this.options.multiLineHeader,
             codeBlocks: !!this.options.multiLineCodeblock
         });
-        var groupedOps = OpGroup_1.OpGroup.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
-        var len = groupedOps.length;
-        var group, prevGroup, html, prevOp;
-        var prevOpFn = function (pg) { return pg.op || pg.ops && pg.ops.length && pg.ops[pg.ops.length - 1]; };
+        var groupedOps = Grouper_1.Grouper.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
+        var listNester = new ListNester_1.ListNester();
+        var groupListsNested = listNester.nest(groupedOps);
+        var len = groupListsNested.length;
+        var group, html;
+        var htmlArr = [];
         for (var i = 0; i < len; i++) {
-            group = groupedOps[i];
-            prevGroup = i > 0 ? groupedOps[i - 1] : null;
-            prevOp = prevGroup && prevOpFn(prevGroup);
-            if (this.shouldEndList(prevOp, group.op)) {
-                endListTag();
+            group = groupListsNested[i];
+            if (group instanceof group_types_1.ListGroup) {
+                html = this.renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this.renderList(group); });
             }
-            if (group.op) {
-                if (group.op.isContainerBlock()) {
-                    if (this.shouldBeginList(prevOp, group.op)) {
-                        beginListTag(this.getListTag(group.op));
-                    }
-                    html = callCustomRenderCb('beforeBlockRender', [group.op, group.ops]);
-                    if (!html) {
-                        html = this.renderContainerBlock(group.op, group.ops);
-                        html = callCustomRenderCb('afterBlockRender', [html]);
-                    }
-                    htmlArr.push(html);
-                }
-                else {
-                    html = callCustomRenderCb('beforeBlockRender', [group.op]);
-                    if (!html) {
-                        html = this.converter.getHtml(group.op);
-                        html = callCustomRenderCb('afterBlockRender', [html]);
-                    }
-                    htmlArr.push(html);
-                }
+            else if (group instanceof group_types_1.BlockGroup) {
+                var g = group;
+                html = this.renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this.renderBlock(g.op, g.ops); });
+            }
+            else if (group instanceof group_types_1.VideoItem) {
+                html = this.renderWithCallbacks(value_types_1.GroupType.Video, group, function () {
+                    var g = group;
+                    var converter = new OpToHtmlConverter_1.OpToHtmlConverter(g.op, _this.converterOptions);
+                    return converter.getHtml();
+                });
             }
             else {
-                html = callCustomRenderCb('beforeInlineGroupRender', [group.ops]);
-                if (!html) {
-                    html = this.renderInlines(group.ops);
-                    html = callCustomRenderCb('afterInlineGroupRender', [html]);
-                }
-                htmlArr.push(html);
+                html = this.renderWithCallbacks(value_types_1.GroupType.InlineGroup, group, function () {
+                    return _this.renderInlines(group.ops);
+                });
             }
+            htmlArr.push(html);
         }
-        endListTag(true);
         return htmlArr.join('');
     };
-    QuillDeltaToHtmlConverter.prototype.renderContainerBlock = function (op, ops) {
-        var htmlParts = this.converter.getHtmlParts(op);
+    QuillDeltaToHtmlConverter.prototype.renderWithCallbacks = function (groupType, group, myRenderFn) {
+        var html = '';
+        var beforeCb = this.callbacks['beforeRender_cb'];
+        html = typeof beforeCb === 'function' ? beforeCb.apply(null, [groupType, group]) : '';
+        if (!html) {
+            html = myRenderFn();
+            var afterCb = this.callbacks['afterRender_cb'];
+            html = typeof afterCb === 'function' ? afterCb.apply(null, [groupType, html]) : html;
+        }
+        return html;
+    };
+    QuillDeltaToHtmlConverter.prototype.renderList = function (list, isOuterMost) {
+        var _this = this;
+        if (isOuterMost === void 0) { isOuterMost = true; }
+        var firstItem = list.items[0];
+        return funcs_html_1.makeStartTag(this.getListTag(firstItem.item.op))
+            + list.items.map(function (li) { return _this.renderListItem(li, isOuterMost); }).join('')
+            + funcs_html_1.makeEndTag(this.getListTag(firstItem.item.op));
+    };
+    QuillDeltaToHtmlConverter.prototype.renderListItem = function (li, isOuterMost) {
+        var converterOptions = Object._assign({}, this.converterOptions);
+        li.item.op.attributes.indent = 0;
+        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(li.item.op, this.converterOptions);
+        var parts = converter.getHtmlParts();
+        var liElementsHtml = this.renderInlines(li.item.ops, false);
+        return parts.openingTag + (liElementsHtml || BrTag) +
+            (li.innerList ? this.renderList(li.innerList, false) : '')
+            + parts.closingTag;
+    };
+    QuillDeltaToHtmlConverter.prototype.renderBlock = function (op, ops) {
+        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, this.converterOptions);
+        var htmlParts = converter.getHtmlParts();
         if (op.isCodeBlock()) {
             return htmlParts.openingTag +
                 ops.map(function (op) { return op.insert.value; }).join('')
@@ -576,57 +510,27 @@ var QuillDeltaToHtmlConverter = (function () {
                 if (i === opsLen && op.isJustNewline()) {
                     return '';
                 }
-                return _this.converter.getHtml(op).replace(nlRx, BrTag);
+                var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, _this.converterOptions);
+                return converter.getHtml().replace(nlRx, BrTag);
             }).join('')
             + pEnd;
         return html;
     };
-    QuillDeltaToHtmlConverter.prototype.shouldBeginList = function (prevOp, currOp) {
-        if (!currOp) {
-            return false;
-        }
-        if ((!prevOp || !prevOp.isList()) && currOp.isList()) {
-            return true;
-        }
-        if (prevOp && prevOp.isList() && currOp.isList() && !prevOp.isSameListAs(currOp)) {
-            return true;
-        }
-        return false;
-    };
-    QuillDeltaToHtmlConverter.prototype.shouldEndList = function (prevOp, currOp) {
-        if (prevOp && prevOp.isList() && (!currOp || !currOp.isList())) {
-            return true;
-        }
-        if (prevOp && prevOp.isList() && currOp && currOp.isList() && !prevOp.isSameListAs(currOp)) {
-            return true;
-        }
-        return false;
-    };
-    QuillDeltaToHtmlConverter.prototype.beforeBlockRender = function (cb) {
+    QuillDeltaToHtmlConverter.prototype.beforeRender = function (cb) {
         if (typeof cb === 'function') {
-            this.callbacks['beforeBlockRender_cb'] = cb;
+            this.callbacks['beforeRender_cb'] = cb;
         }
     };
-    QuillDeltaToHtmlConverter.prototype.beforeInlineGroupRender = function (cb) {
+    QuillDeltaToHtmlConverter.prototype.afterRender = function (cb) {
         if (typeof cb === 'function') {
-            this.callbacks['beforeInlineGroupRender_cb'] = cb;
-        }
-    };
-    QuillDeltaToHtmlConverter.prototype.afterBlockRender = function (cb) {
-        if (typeof cb === 'function') {
-            this.callbacks['afterBlockRender_cb'] = cb;
-        }
-    };
-    QuillDeltaToHtmlConverter.prototype.afterInlineGroupRender = function (cb) {
-        if (typeof cb === 'function') {
-            this.callbacks['afterInlineGroupRender_cb'] = cb;
+            this.callbacks['afterRender_cb'] = cb;
         }
     };
     return QuillDeltaToHtmlConverter;
 }());
 exports.QuillDeltaToHtmlConverter = QuillDeltaToHtmlConverter;
 
-},{"./InsertOpsConverter":4,"./OpGroup":6,"./OpToHtmlConverter":7,"./extensions/Object":10,"./funcs-html":12}],9:[function(require,module,exports){
+},{"./InsertOpsConverter":4,"./OpToHtmlConverter":6,"./extensions/Object":9,"./funcs-html":11,"./grouper/Grouper":12,"./grouper/ListNester":13,"./grouper/group-types":14,"./value-types":15}],8:[function(require,module,exports){
 Array.prototype._preferSecond = function () {
     if (this.length === 0) {
         return null;
@@ -668,7 +572,7 @@ Array.prototype._sliceFromReverseWhile = function (startIndex, predicate) {
     return result;
 };
 
-},{}],10:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 Object._assign = function (target, varArg1, varArg2) {
     if (varArg2 === void 0) { varArg2 = null; }
     if (target == null) {
@@ -688,7 +592,7 @@ Object._assign = function (target, varArg1, varArg2) {
     return to;
 };
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 String.prototype._tokenizeWithNewLines = function () {
     var NewLine = "\n";
     var this_ = this.toString();
@@ -719,7 +623,7 @@ String.prototype._scrubUrl = function () {
     return this.replace(/[^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)]/g, '');
 };
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function makeStartTag(tag, attrs) {
@@ -727,13 +631,13 @@ function makeStartTag(tag, attrs) {
     if (!tag) {
         return '';
     }
+    var attrsStr = '';
     if (attrs) {
         attrs = [].concat(attrs);
-    }
-    var attrsStr = attrs &&
-        attrs.map(function (attr) {
+        attrsStr = attrs.map(function (attr) {
             return attr.key + (attr.value ? '="' + attr.value + '"' : '');
         }).join(' ');
+    }
     var closing = '>';
     if (tag === 'img' || tag === 'br') {
         closing = '/>';
@@ -771,7 +675,227 @@ function encodeHtml(str, preventDoubleEncoding) {
 }
 exports.encodeHtml = encodeHtml;
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var DeltaInsertOp_1 = require("./../DeltaInsertOp");
+require("./../extensions/Array");
+var group_types_1 = require("./group-types");
+var Grouper = (function () {
+    function Grouper() {
+    }
+    Grouper.pairOpsWithTheirBlock = function (ops) {
+        var result = [];
+        var canBeInBlock = function (op) {
+            return !(op.isJustNewline() || op.isVideo() || op.isContainerBlock());
+        };
+        var isInlineData = function (op) { return op.isInline(); };
+        var lastInd = ops.length - 1;
+        var opsSlice;
+        for (var i = lastInd; i >= 0; i--) {
+            var op = ops[i];
+            if (op.isVideo()) {
+                result.push(new group_types_1.VideoItem(op));
+            }
+            else if (op.isContainerBlock()) {
+                opsSlice = ops._sliceFromReverseWhile(i - 1, canBeInBlock);
+                result.push(new group_types_1.BlockGroup(op, opsSlice.elements));
+                i = opsSlice.sliceStartsAt > -1 ? opsSlice.sliceStartsAt : i;
+            }
+            else {
+                opsSlice = ops._sliceFromReverseWhile(i - 1, isInlineData);
+                result.push(new group_types_1.InlineGroup(opsSlice.elements.concat(op)));
+                i = opsSlice.sliceStartsAt > -1 ? opsSlice.sliceStartsAt : i;
+            }
+        }
+        result.reverse();
+        return result;
+    };
+    Grouper.groupConsecutiveSameStyleBlocks = function (groups, blocksOf) {
+        if (blocksOf === void 0) { blocksOf = {
+            header: true,
+            codeBlocks: true,
+            blockquotes: true
+        }; }
+        return groups._groupConsecutiveElementsWhile(function (g, gPrev) {
+            if (!(g instanceof group_types_1.BlockGroup) || !(gPrev instanceof group_types_1.BlockGroup)) {
+                return false;
+            }
+            return blocksOf.codeBlocks && Grouper.areBothCodeblocks(g, gPrev)
+                || blocksOf.blockquotes && Grouper.areBothBlockquotesWithSameAdi(g, gPrev)
+                || blocksOf.header && Grouper.areBothSameHeadersWithSameAdi(g, gPrev);
+        });
+    };
+    Grouper.reduceConsecutiveSameStyleBlocksToOne = function (groups) {
+        var newLineOp = DeltaInsertOp_1.DeltaInsertOp.createNewLineOp();
+        return groups.map(function (elm) {
+            if (!Array.isArray(elm)) {
+                return elm;
+            }
+            var groupsLastInd = elm.length - 1;
+            elm[0].ops = elm.map(function (g, i) {
+                if (!g.ops.length) {
+                    return [newLineOp];
+                }
+                return g.ops.concat(i < groupsLastInd ? [newLineOp] : []);
+            })._flatten();
+            return elm[0];
+        });
+    };
+    Grouper.areBothCodeblocks = function (g1, gOther) {
+        return g1.op.isCodeBlock() && gOther.op.isCodeBlock();
+    };
+    Grouper.areBothSameHeadersWithSameAdi = function (g1, gOther) {
+        return g1.op.isSameHeaderAs(gOther.op) && g1.op.hasSameAdiAs(gOther.op);
+    };
+    Grouper.areBothBlockquotesWithSameAdi = function (g, gOther) {
+        return g.op.isBlockquote() && gOther.op.isBlockquote()
+            && g.op.hasSameAdiAs(gOther.op);
+    };
+    return Grouper;
+}());
+exports.Grouper = Grouper;
+
+},{"./../DeltaInsertOp":1,"./../extensions/Array":8,"./group-types":14}],13:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var group_types_1 = require("./group-types");
+var ListNester = (function () {
+    function ListNester() {
+    }
+    ListNester.prototype.nest = function (groups) {
+        var _this = this;
+        var result = [];
+        var listBlocked = this.convertListBlocksToListGroups(groups);
+        var groupedByListGroups = this.groupConsecutiveListGroups(listBlocked);
+        var nested = groupedByListGroups.map(function (group) {
+            if (!Array.isArray(group)) {
+                return group;
+            }
+            return _this.nestListSection(group);
+        })
+            ._flatten();
+        var groupRootLists = nested._groupConsecutiveElementsWhile(function (curr, prev) {
+            if (!(curr instanceof group_types_1.ListGroup && prev instanceof group_types_1.ListGroup)) {
+                return false;
+            }
+            return curr.items[0].item.op.isSameListAs(prev.items[0].item.op);
+        });
+        return groupRootLists.map(function (v) {
+            if (!Array.isArray(v)) {
+                return v;
+            }
+            var litems = v.map(function (g) { return g.items; });
+            return new group_types_1.ListGroup(litems._flatten());
+        });
+    };
+    ListNester.prototype.convertListBlocksToListGroups = function (items) {
+        var grouped = items._groupConsecutiveElementsWhile(function (g, gPrev) {
+            return g instanceof group_types_1.BlockGroup && gPrev instanceof group_types_1.BlockGroup
+                && g.op.isList() && gPrev.op.isList() && g.op.isSameListAs(gPrev.op)
+                && g.op.hasSameIndentationAs(gPrev.op);
+        });
+        return grouped.map(function (item) {
+            if (!Array.isArray(item)) {
+                if (item instanceof group_types_1.BlockGroup && item.op.isList()) {
+                    return new group_types_1.ListGroup([new group_types_1.ListItem(item)]);
+                }
+                return item;
+            }
+            return new group_types_1.ListGroup(item.map(function (g) { return new group_types_1.ListItem(g); }));
+        });
+    };
+    ListNester.prototype.groupConsecutiveListGroups = function (items) {
+        return items._groupConsecutiveElementsWhile(function (curr, prev) {
+            return curr instanceof group_types_1.ListGroup && prev instanceof group_types_1.ListGroup;
+        });
+    };
+    ListNester.prototype.nestListSection = function (sectionItems) {
+        var _this = this;
+        var indentGroups = this.groupByIndent(sectionItems);
+        Object.keys(indentGroups).map(Number).sort().reverse().forEach(function (indent) {
+            indentGroups[indent].forEach(function (lg) {
+                var idx = sectionItems.indexOf(lg);
+                if (_this.placeUnderParent(lg, sectionItems.slice(0, idx))) {
+                    sectionItems.splice(idx, 1);
+                }
+            });
+        });
+        return sectionItems;
+    };
+    ListNester.prototype.groupByIndent = function (items) {
+        return items.reduce(function (pv, cv) {
+            var indent = cv.items[0].item.op.attributes.indent;
+            if (indent) {
+                pv[indent] = pv[indent] || [];
+                pv[indent].push(cv);
+            }
+            return pv;
+        }, {});
+    };
+    ListNester.prototype.placeUnderParent = function (target, items) {
+        for (var i = items.length - 1; i >= 0; i--) {
+            var elm = items[i];
+            if (target.items[0].item.op.hasHigherIndentThan(elm.items[0].item.op)) {
+                var parent = elm.items[elm.items.length - 1];
+                if (parent.innerList) {
+                    parent.innerList.items = parent.innerList.items.concat(target.items);
+                }
+                else {
+                    parent.innerList = target;
+                }
+                return true;
+            }
+        }
+        return false;
+    };
+    return ListNester;
+}());
+exports.ListNester = ListNester;
+
+},{"./group-types":14}],14:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var InlineGroup = (function () {
+    function InlineGroup(ops) {
+        this.ops = ops;
+    }
+    return InlineGroup;
+}());
+exports.InlineGroup = InlineGroup;
+var VideoItem = (function () {
+    function VideoItem(op) {
+        this.op = op;
+    }
+    return VideoItem;
+}());
+exports.VideoItem = VideoItem;
+var BlockGroup = (function () {
+    function BlockGroup(op, ops) {
+        this.op = op;
+        this.ops = ops;
+    }
+    return BlockGroup;
+}());
+exports.BlockGroup = BlockGroup;
+var ListGroup = (function () {
+    function ListGroup(items) {
+        this.items = items;
+    }
+    return ListGroup;
+}());
+exports.ListGroup = ListGroup;
+var ListItem = (function () {
+    function ListItem(item, innerList) {
+        if (innerList === void 0) { innerList = null; }
+        this.item = item;
+        this.innerList = innerList;
+    }
+    return ListItem;
+}());
+exports.ListItem = ListItem;
+
+},{}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var NewLine = "\n";
@@ -802,6 +926,13 @@ var DataType = {
     Text: "text"
 };
 exports.DataType = DataType;
+var GroupType = {
+    Block: 'block',
+    InlineGroup: 'inline-group',
+    List: 'list',
+    Video: 'video'
+};
+exports.GroupType = GroupType;
 
-},{}]},{},[8])(8)
+},{}]},{},[7])(7)
 });; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter; 

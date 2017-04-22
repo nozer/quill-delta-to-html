@@ -1,4 +1,10 @@
-function makeStartTag(tag:any, attrs:any = null) {
+
+interface ITagKeyValue {
+    key: string,
+    value?: string
+}
+
+function makeStartTag(tag:any, attrs: ITagKeyValue | ITagKeyValue[] = null) {
     if (!tag) {return ''; }
     
 
@@ -49,5 +55,6 @@ export {
     makeStartTag,
     makeEndTag,
     encodeHtml,
-    decodeHtml
+    decodeHtml,
+    ITagKeyValue
 };

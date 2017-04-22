@@ -1,5 +1,5 @@
 
-import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
+import { makeStartTag, makeEndTag, encodeHtml, ITagKeyValue } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ScriptType, NewLine } from './value-types';
 import './extensions/String';
@@ -15,11 +15,6 @@ interface IOpToHtmlConverterOptions {
     paragraphTag?: string
 }
 
-interface ITagKeyValue {
-    key: string,
-    value: string
-}
-
 interface IHtmlParts {
     openingTag: string,
     content: string,
@@ -29,8 +24,9 @@ interface IHtmlParts {
 class OpToHtmlConverter {
 
     private options: IOpToHtmlConverterOptions;
-
-    constructor(options?: IOpToHtmlConverterOptions) {
+    private op: DeltaInsertOp;
+    constructor(op: DeltaInsertOp, options?: IOpToHtmlConverterOptions) {
+        this.op = op;
         this.options = Object._assign({}, { 
             classPrefix: 'ql',
             encodeHtml: true,
@@ -46,18 +42,18 @@ class OpToHtmlConverter {
         return this.options.classPrefix + '-' + className;
     }
 
-    getHtml(op: DeltaInsertOp): string {
-        var parts = this.getHtmlParts(op);
+    getHtml(): string {
+        var parts = this.getHtmlParts();
         return parts.openingTag + parts.content + parts.closingTag;
     }
 
-    getHtmlParts(op: DeltaInsertOp): IHtmlParts {
+    getHtmlParts(): IHtmlParts {
         
-        if (op.isJustNewline() && !op.isContainerBlock()) {
+        if (this.op.isJustNewline() && !this.op.isContainerBlock()) {
             return {openingTag: '', closingTag: '', content: NewLine};
         }
 
-        let tags = this.getTags(op), attrs = this.getTagAttributes(op);
+        let tags = this.getTags(), attrs = this.getTagAttributes();
         
         if (!tags.length && attrs.length) {
             tags.push('span');
@@ -75,81 +71,81 @@ class OpToHtmlConverter {
 
         return {
             openingTag: beginTags.join(''),
-            content: this.getContent(op), 
+            content: this.getContent(), 
             closingTag: endTags.join('')
         };
     }
 
-    getContent(op: DeltaInsertOp): string {
-        if (op.isContainerBlock()) {
+    getContent(): string {
+        if (this.op.isContainerBlock()) {
             return '';
         }
-        var content = op.isFormula() || op.isText() ? op.insert.value : '';
+        var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
         
         return this.options.encodeHtml && encodeHtml(content) || content;
     }
 
-    getCssClasses(op: DeltaInsertOp): string[] {
+    getCssClasses(): string[] {
         
-        var attrs: any = op.attributes;
+        var attrs: any = this.op.attributes;
 
         type Str2StrType = { (x: string): string };
 
         return ['indent', 'align', 'direction', 'font', 'size']
             .filter((prop) => !!attrs[prop])
             .map((prop) => prop + '-' + attrs[prop])
-            .concat(op.isFormula() ? 'formula' : [])
-            .concat(op.isVideo() ? 'video' : [])
-            .concat(op.isImage() ? 'image' : [])
+            .concat(this.op.isFormula() ? 'formula' : [])
+            .concat(this.op.isVideo() ? 'video' : [])
+            .concat(this.op.isImage() ? 'image' : [])
             .map(<Str2StrType>this.prefixClass.bind(this));
     }
 
 
-    getCssStyles(op: DeltaInsertOp): string[] {
+    getCssStyles(): string[] {
         
-        var attrs: any = op.attributes;
+        var attrs: any = this.op.attributes;
 
         return [['background', 'background-color'], ['color']]
             .filter((item) => !!attrs[item[0]])
             .map((item: any[]) => item._preferSecond() + ':' + attrs[item[0]]);
     }
 
-    getTagAttributes(op: DeltaInsertOp): Array<ITagKeyValue> {
-        if (op.attributes.code) {
+    getTagAttributes(): Array<ITagKeyValue> {
+        if (this.op.attributes.code) {
             return [];
         }
 
         const makeAttr = (k: string, v: string): ITagKeyValue => ({ key: k, value: v });
 
-        var classes = this.getCssClasses(op);
+        var classes = this.getCssClasses();
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
 
-        if (op.isImage()) {
-            return tagAttrs.concat(makeAttr('src', (op.insert.value + '')._scrubUrl()));
+        if (this.op.isImage()) {
+            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
 
-        if (op.isFormula() || op.isContainerBlock()) {
+        if (this.op.isFormula() || this.op.isContainerBlock()) {
             return tagAttrs;
         }
 
-        if (op.isVideo()) {
+        if (this.op.isVideo()) {
             return tagAttrs.concat(
                 makeAttr('frameborder', '0'),
                 makeAttr('allowfullscreen', 'true'),
-                makeAttr('src', (op.insert.value + '')._scrubUrl())
+                makeAttr('src', (this.op.insert.value + '')._scrubUrl())
             );
         }
 
-        var styles = this.getCssStyles(op);
+        var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
 
         return tagAttrs
             .concat(styleAttr)
-            .concat(op.isLink() ? makeAttr('href', op.attributes.link) : []);
+            .concat(this.op.isLink() ? makeAttr('href', this.op.attributes.link) : []);
     }
 
-    getTags(op: DeltaInsertOp): string[] {
-        var attrs: any = op.attributes;
+    getTags(): string[] {
+        var attrs: any = this.op.attributes;
 
         // code 
         if (attrs.code) {
@@ -157,9 +153,9 @@ class OpToHtmlConverter {
         }
 
         // embeds
-        if (!op.isText()) {
-            return [op.isVideo() ? 'iframe'
-                : op.isImage() ? 'img'
+        if (!this.op.isText()) {
+            return [this.op.isVideo() ? 'iframe'
+                : this.op.isImage() ? 'img'
                     :  'span' // formula 
             ]
         }

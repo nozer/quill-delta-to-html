@@ -28,3 +28,10 @@ var DataType = {
     Text: "text"
 };
 exports.DataType = DataType;
+var GroupType = {
+    Block: 'block',
+    InlineGroup: 'inline-group',
+    List: 'list',
+    Video: 'video'
+};
+exports.GroupType = GroupType;

@@ -2,16 +2,22 @@
 import { InsertOpsConverter } from './InsertOpsConverter';
 import { OpToHtmlConverter, IOpToHtmlConverterOptions, IHtmlParts } from './OpToHtmlConverter';
 import { DeltaInsertOp } from './DeltaInsertOp';
-import { OpGroup } from './OpGroup';
+import { Grouper } from './grouper/Grouper';
+import {
+    VideoItem, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup
+} from './grouper/group-types';
+import { ListNester } from './grouper/ListNester';
 import { makeStartTag, makeEndTag } from './funcs-html';
 import './extensions/Object';
-import { NewLine } from './value-types';
+import { NewLine, GroupType } from './value-types';
 
 
 interface IQuillDeltaToHtmlConverterOptions {
+    // no more allowing these to be customized; unnecessary
     orderedListTag?: string,
     bulletListTag?: string,
     listItemTag?: string,
+
     paragraphTag?: string,
     classPrefix?: string,
     encodeHtml?: boolean,
@@ -26,7 +32,7 @@ class QuillDeltaToHtmlConverter {
 
     private options: IQuillDeltaToHtmlConverterOptions;
     private rawDeltaOps: any[] = [];
-    private converter: OpToHtmlConverter;
+    private converterOptions: IOpToHtmlConverterOptions;
 
     // render callbacks 
     private callbacks: any = {};
@@ -36,23 +42,24 @@ class QuillDeltaToHtmlConverter {
         options?: IQuillDeltaToHtmlConverterOptions) {
 
         this.options = Object._assign({
-            orderedListTag: 'ol',
-            bulletListTag: 'ul',
-            listItemTag: 'li',
             paragraphTag: 'p',
             encodeHtml: true,
             classPrefix: 'ql',
             multiLineBlockquote: true,
             multiLineHeader: true,
             multiLineCodeblock: true
-        }, options);
+        }, options, {
+            orderedListTag: 'ol',
+            bulletListTag: 'ul',
+            listItemTag: 'li'
+        });
 
-        this.converter = new OpToHtmlConverter({
+        this.converterOptions = {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
             listItemTag: this.options.listItemTag,
             paragraphTag: this.options.paragraphTag
-        });
+        };
         this.rawDeltaOps = deltaOps;
 
     }
@@ -66,170 +73,136 @@ class QuillDeltaToHtmlConverter {
     convert() {
         var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
 
-        // holds the list tags(ol, ul) that are opened and needs closing
-        var tagStack: string[] = [];
+        var pairedOps = Grouper.pairOpsWithTheirBlock(deltaOps);
 
-        // holds html string being built
-        var htmlArr: string[] = [];
-
-        const beginListTag = (tag: string) => {
-            tag && tagStack.push(tag) && htmlArr.push('<' + tag + '>');
-        };
-
-        const endListTag = (shouldEndAllTags: boolean = false) => {
-            var endTag = () => {
-                var tag = tagStack.pop();
-                tag && htmlArr.push('</' + tag + '>');
-            };
-            shouldEndAllTags ? tagStack.map(endTag) : endTag();
-        };
-
-        const callCustomRenderCb = function (cbName: string, args: any) {
-            cbName += '_cb';
-            if (typeof this.callbacks[cbName] === 'function') {
-                return this.callbacks[cbName].apply(null, args);
-            }
-            // return original html if this is an after call back, otherwise undef
-            return cbName.indexOf('after') === 0 ? args[0] : undefined;
-        }.bind(this);
-
-        var pairedOps = OpGroup.pairOpsWithTheirBlock(deltaOps);
-        var groupedSameStyleBlocks = OpGroup.groupConsecutiveSameStyleBlocks(pairedOps, {
+        var groupedSameStyleBlocks = Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
             blockquotes: !!this.options.multiLineBlockquote,
             header: !!this.options.multiLineHeader,
             codeBlocks: !!this.options.multiLineCodeblock
         });
-        var groupedOps = OpGroup.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
 
-        var len = groupedOps.length;
-        var group, prevGroup, html, prevOp;
+        var groupedOps = Grouper.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
+        var listNester = new ListNester();
+        var groupListsNested = listNester.nest(groupedOps);
+        
+        var len = groupListsNested.length;
+        var group: TDataGroup, html;
+        var htmlArr: string[] = [];
 
-        const prevOpFn = (pg: OpGroup) => pg.op || pg.ops && pg.ops.length && pg.ops[pg.ops.length - 1];
         for (var i = 0; i < len; i++) {
-            group = groupedOps[i];
-            prevGroup = i > 0 ? groupedOps[i - 1] : null;
-            prevOp = prevGroup && prevOpFn(prevGroup);
-            if (this.shouldEndList(prevOp, group.op)) {
-                endListTag();
+            group = groupListsNested[i];
+
+            if (group instanceof ListGroup) {
+
+                html = this.renderWithCallbacks(
+                    GroupType.List, group, () => this.renderList(<ListGroup>group));
+
+            } else if (group instanceof BlockGroup) {
+
+                var g = <BlockGroup>group;
+
+                html = this.renderWithCallbacks(
+                    GroupType.Block, group, () => this.renderBlock(g.op, g.ops));
+
+            } else if (group instanceof VideoItem) {
+
+                html = this.renderWithCallbacks(GroupType.Video, group, () => {
+                    var g = <VideoItem>group;
+                    var converter = new OpToHtmlConverter(g.op, this.converterOptions);
+                    return converter.getHtml();
+                });
+
+            } else { // InlineGroup
+                html = this.renderWithCallbacks(GroupType.InlineGroup, group, () => {
+                    return this.renderInlines((<InlineGroup>group).ops);
+                });
             }
-
-            if (group.op) {
-                if (group.op.isContainerBlock()) {
-                    if (this.shouldBeginList(prevOp, group.op)) {
-                        beginListTag(this.getListTag(group.op));
-                    }
-                    html = callCustomRenderCb('beforeBlockRender', [group.op, group.ops]);
-                    if (!html) {
-                        html = this.renderContainerBlock(group.op, group.ops);
-                        html = callCustomRenderCb('afterBlockRender', [html]);
-                    }
-
-                    htmlArr.push(html);
-
-                } else { //  (video)
-                    html = callCustomRenderCb('beforeBlockRender', [group.op]);
-                    if (!html) {
-                        html = this.converter.getHtml(group.op);
-                        html = callCustomRenderCb('afterBlockRender', [html]);
-                    }
-
-                    htmlArr.push(html);
-                }
-            } else { // inline group
-                html = callCustomRenderCb('beforeInlineGroupRender', [group.ops]);
-                if (!html) {
-                    html = this.renderInlines(group.ops);
-                    html = callCustomRenderCb('afterInlineGroupRender', [html]);
-                }
-                htmlArr.push(html);
-            }
+            htmlArr.push(html);
         }
-        // close any open list; 
-        endListTag(true);
+
         return htmlArr.join('');
     }
 
-    renderContainerBlock(op: DeltaInsertOp, ops: DeltaInsertOp[]) {
+    renderWithCallbacks(groupType: GroupType, group: TDataGroup, myRenderFn: () => string) {
+        var html = '';
+        var beforeCb = this.callbacks['beforeRender_cb'];
+        html = typeof beforeCb === 'function' ? beforeCb.apply(null, [groupType, group]) : '';
 
-        var htmlParts = this.converter.getHtmlParts(op);
-        
+        if (!html) {
+            html = myRenderFn();
+        }
+
+        var afterCb = this.callbacks['afterRender_cb'];
+        html = typeof afterCb === 'function' ? afterCb.apply(null, [groupType, html]) : html;
+
+        return html;
+    }
+
+    renderList(list: ListGroup, isOuterMost = true): string {
+       
+        var firstItem  = list.items[0];
+        return  makeStartTag(this.getListTag(firstItem.item.op)) 
+            + list.items.map((li: ListItem) => this.renderListItem(li, isOuterMost)).join('')
+            + makeEndTag(this.getListTag(firstItem.item.op));
+    }
+
+    renderListItem(li: ListItem, isOuterMost: boolean): string {
+        var converterOptions = Object._assign({}, this.converterOptions);
+        //if (!isOuterMost) {
+            li.item.op.attributes.indent = 0;
+        //}
+        var converter = new OpToHtmlConverter(li.item.op, this.converterOptions);
+        var parts = converter.getHtmlParts();
+        var liElementsHtml = this.renderInlines(li.item.ops, false);
+        return parts.openingTag + (liElementsHtml || BrTag) +
+            (li.innerList ? this.renderList(li.innerList, false) : '')
+            + parts.closingTag;
+    }
+
+    renderBlock(op: DeltaInsertOp, ops: DeltaInsertOp[]) {
+        var converter = new OpToHtmlConverter(op, this.converterOptions);
+        var htmlParts = converter.getHtmlParts();
+
         if (op.isCodeBlock()) {
             return htmlParts.openingTag +
-                ops.map((op) => op.insert.value).join('')
+                ops.map((op) => op.insert.value).join(NewLine)
                 + htmlParts.closingTag;
         }
 
-        var inlines = this.renderInlines(ops, false);
+        var inlines = ops.map((op: DeltaInsertOp) => {
+            var converter = new OpToHtmlConverter(op, this.converterOptions);
+            return converter.getHtml().replace(/\n/g, BrTag);
+        }).join(''); // this.renderInlines(ops, false);
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
     }
 
     renderInlines(ops: DeltaInsertOp[], wrapInParagraphTag = true) {
+        
         var nlRx = /\n/g;
         var pStart = wrapInParagraphTag ? makeStartTag(this.options.paragraphTag) : '';
         var pEnd = wrapInParagraphTag ? makeEndTag(this.options.paragraphTag) : '';
         var opsLen = ops.length - 1;
         var html = pStart
             + ops.map((op: DeltaInsertOp, i: number) => {
-                if ( i === opsLen && op.isJustNewline()) {
+                if (i === opsLen && op.isJustNewline()) {
                     return '';
                 }
-                return this.converter.getHtml(op).replace(nlRx, BrTag)
+                var converter = new OpToHtmlConverter(op, this.converterOptions);
+                return converter.getHtml().replace(nlRx, BrTag)
             }).join('')
             + pEnd;
         return html;
     }
 
-    shouldBeginList(prevOp: DeltaInsertOp, currOp: DeltaInsertOp) {
-        if (!currOp) {
-            return false;
-        }
-        // if previous one is not list but current one is, then yes
-        if ((!prevOp || !prevOp.isList()) && currOp.isList()) {
-            return true;
-        }
-
-        // if current and previou ones are lists that are diff
-        if (prevOp && prevOp.isList() && currOp.isList() && !prevOp.isSameListAs(currOp)) {
-            return true;
-        }
-        return false;
-    }
-
-    shouldEndList(prevOp: DeltaInsertOp, currOp: DeltaInsertOp) {
-
-        // if previous one is a list but current one is not, then yes
-        if (prevOp && prevOp.isList() && (!currOp || !currOp.isList())) {
-            return true;
-        }
-
-        // if current and previou ones are lists that are not same 
-        if (prevOp && prevOp.isList() && currOp && currOp.isList() && !prevOp.isSameListAs(currOp)) {
-            return true;
-        }
-        return false;
-    }
-
-    beforeBlockRender(cb: (op: DeltaInsertOp, ops: DeltaInsertOp[] | null) => string) {
+    beforeRender(cb: (group: GroupType, data: TDataGroup) => string) {
         if (typeof cb === 'function') {
-            this.callbacks['beforeBlockRender_cb'] = cb;
-        }
-    }
-    
-    beforeInlineGroupRender(cb: (ops: DeltaInsertOp[]) => string) {
-        if (typeof cb === 'function') {
-            this.callbacks['beforeInlineGroupRender_cb'] = cb;
+            this.callbacks['beforeRender_cb'] = cb;
         }
     }
 
-    afterBlockRender(cb: (html: string) => string) {
+    afterRender(cb: (group: GroupType, html: string) => string) {
         if (typeof cb === 'function') {
-            this.callbacks['afterBlockRender_cb'] = cb;
-        }
-    }
-   
-    afterInlineGroupRender(cb: (html: string) => string) {
-        if (typeof cb === 'function') {
-            this.callbacks['afterInlineGroupRender_cb'] = cb;
+            this.callbacks['afterRender_cb'] = cb;
         }
     }
 

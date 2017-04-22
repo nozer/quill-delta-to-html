@@ -33,4 +33,12 @@ const DataType = {
     Text: "text" as DataType
 };
 
-export { NewLine, ListType, ScriptType, DirectionType, AlignType, DataType };
+type GroupType = "block" | "inline-group" | "list" | "video";
+const GroupType = {
+    Block: 'block' as GroupType,
+    InlineGroup: 'inline-group' as GroupType,
+    List: 'list' as GroupType,
+    Video: 'video' as GroupType
+};
+
+export { NewLine, ListType, ScriptType, DirectionType, AlignType, DataType, GroupType };

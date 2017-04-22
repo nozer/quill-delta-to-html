@@ -6,11 +6,13 @@ require("./extensions/String");
 require("./extensions/Object");
 require("./extensions/Array");
 var OpToHtmlConverter = (function () {
-    function OpToHtmlConverter(options) {
+    function OpToHtmlConverter(op, options) {
+        this.op = op;
         this.options = Object._assign({}, {
             classPrefix: 'ql',
             encodeHtml: true,
-            listItemTag: 'li'
+            listItemTag: 'li',
+            paragraphTag: 'p'
         }, options);
     }
     OpToHtmlConverter.prototype.prefixClass = function (className) {
@@ -19,15 +21,15 @@ var OpToHtmlConverter = (function () {
         }
         return this.options.classPrefix + '-' + className;
     };
-    OpToHtmlConverter.prototype.getHtml = function (op) {
-        var parts = this.getHtmlParts(op);
+    OpToHtmlConverter.prototype.getHtml = function () {
+        var parts = this.getHtmlParts();
         return parts.openingTag + parts.content + parts.closingTag;
     };
-    OpToHtmlConverter.prototype.getHtmlParts = function (op) {
-        if (op.isJustNewline() && !op.isContainerBlock()) {
+    OpToHtmlConverter.prototype.getHtmlParts = function () {
+        if (this.op.isJustNewline() && !this.op.isContainerBlock()) {
             return { openingTag: '', closingTag: '', content: value_types_1.NewLine };
         }
-        var tags = this.getTags(op), attrs = this.getTagAttributes(op);
+        var tags = this.getTags(), attrs = this.getTagAttributes();
         if (!tags.length && attrs.length) {
             tags.push('span');
         }
@@ -41,70 +43,71 @@ var OpToHtmlConverter = (function () {
         endTags.reverse();
         return {
             openingTag: beginTags.join(''),
-            content: this.getContent(op),
+            content: this.getContent(),
             closingTag: endTags.join('')
         };
     };
-    OpToHtmlConverter.prototype.getContent = function (op) {
-        if (op.isContainerBlock()) {
+    OpToHtmlConverter.prototype.getContent = function () {
+        if (this.op.isContainerBlock()) {
             return '';
         }
-        var content = op.isFormula() || op.isText() ? op.insert.value : '';
+        var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
         return this.options.encodeHtml && funcs_html_1.encodeHtml(content) || content;
     };
-    OpToHtmlConverter.prototype.getCssClasses = function (op) {
-        var attrs = op.attributes;
+    OpToHtmlConverter.prototype.getCssClasses = function () {
+        var attrs = this.op.attributes;
         return ['indent', 'align', 'direction', 'font', 'size']
             .filter(function (prop) { return !!attrs[prop]; })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
-            .concat(op.isFormula() ? 'formula' : [])
-            .concat(op.isVideo() ? 'video' : [])
-            .concat(op.isImage() ? 'image' : [])
+            .concat(this.op.isFormula() ? 'formula' : [])
+            .concat(this.op.isVideo() ? 'video' : [])
+            .concat(this.op.isImage() ? 'image' : [])
             .map(this.prefixClass.bind(this));
     };
-    OpToHtmlConverter.prototype.getCssStyles = function (op) {
-        var attrs = op.attributes;
+    OpToHtmlConverter.prototype.getCssStyles = function () {
+        var attrs = this.op.attributes;
         return [['background', 'background-color'], ['color']]
             .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) { return item._preferSecond() + ':' + attrs[item[0]]; });
     };
-    OpToHtmlConverter.prototype.getTagAttributes = function (op) {
-        if (op.attributes.code) {
+    OpToHtmlConverter.prototype.getTagAttributes = function () {
+        if (this.op.attributes.code) {
             return [];
         }
         var makeAttr = function (k, v) { return ({ key: k, value: v }); };
-        var classes = this.getCssClasses(op);
+        var classes = this.getCssClasses();
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
-        if (op.isImage()) {
-            return tagAttrs.concat(makeAttr('src', (op.insert.value + '')._scrubUrl()));
+        if (this.op.isImage()) {
+            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
-        if (op.isFormula() || op.isContainerBlock()) {
+        if (this.op.isFormula() || this.op.isContainerBlock()) {
             return tagAttrs;
         }
-        if (op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (op.insert.value + '')._scrubUrl()));
+        if (this.op.isVideo()) {
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
-        var styles = this.getCssStyles(op);
+        var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
         return tagAttrs
             .concat(styleAttr)
-            .concat(op.isLink() ? makeAttr('href', op.attributes.link) : []);
+            .concat(this.op.isLink() ? makeAttr('href', this.op.attributes.link) : []);
     };
-    OpToHtmlConverter.prototype.getTags = function (op) {
-        var attrs = op.attributes;
+    OpToHtmlConverter.prototype.getTags = function () {
+        var attrs = this.op.attributes;
         if (attrs.code) {
             return ['code'];
         }
-        if (!op.isText()) {
-            return [op.isVideo() ? 'iframe'
-                    : op.isImage() ? 'img'
-                        : op.isFormula() ? 'span'
-                            : 'unknown'
+        if (!this.op.isText()) {
+            return [this.op.isVideo() ? 'iframe'
+                    : this.op.isImage() ? 'img'
+                        : 'span'
             ];
         }
+        var positionTag = this.options.paragraphTag || 'p';
         var blocks = [['blockquote'], ['code-block', 'pre'],
             ['list', this.options.listItemTag], ['header'],
-            ['align', 'p'], ['direction', 'p'], ['indent', 'p']];
+            ['align', positionTag], ['direction', positionTag],
+            ['indent', positionTag]];
         for (var _i = 0, blocks_1 = blocks; _i < blocks_1.length; _i++) {
             var item = blocks_1[_i];
             if (attrs[item[0]]) {

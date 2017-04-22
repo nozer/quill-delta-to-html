@@ -14,6 +14,9 @@ describe("Object Extensions Module", function(){
             assert.equal(o.name , 'Joe');
             assert.ok(Object._assign(s1, null).level === 1);
             assert.throws(() => Object._assign(null, 2));
+            (<any>Object.prototype).a = "";
+            assert.ok(Object._assign({x:1}, {x: 2}).x === 2);
+            
         });
     });
 });

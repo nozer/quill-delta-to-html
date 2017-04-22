@@ -5,13 +5,13 @@ function makeStartTag(tag, attrs) {
     if (!tag) {
         return '';
     }
+    var attrsStr = '';
     if (attrs) {
         attrs = [].concat(attrs);
-    }
-    var attrsStr = attrs &&
-        attrs.map(function (attr) {
+        attrsStr = attrs.map(function (attr) {
             return attr.key + (attr.value ? '="' + attr.value + '"' : '');
         }).join(' ');
+    }
     var closing = '>';
     if (tag === 'img' || tag === 'br') {
         closing = '/>';

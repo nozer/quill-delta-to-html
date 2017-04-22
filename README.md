@@ -5,9 +5,17 @@
 # Quill Delta to HTML Converter #
 Converts [Quill's](https://quilljs.com) [Delta](https://quilljs.com/docs/delta/) format to HTML (insert ops only).
 
-If you need to render Quill's delta as HTML on the server (such as for SEO purposes), this library should help you. 
-
 You can try a live demo of the conversion by opening the `demo-browser.html` file after cloning the repo.
+
+## Why not just use `innerHTML` of Quill ## 
+
+- To generate proper nested lists per [W3C recommendation](https://www.w3.org/wiki/HTML_lists#Nesting_lists).  Although it is added as a [bug #829](https://github.com/quilljs/quill/issues/829) in Quill issue tracker and will be fixed in the future.) 
+
+- To generate only one block element if same consecutive block elements (`blockquote`, `header`, and `code block`) have the same `alignment`, `direction`, and `indentation`. [See #1121](https://github.com/quilljs/quill/issues/1121)
+
+- To wrap multiple inline elements (until the next block or video) in just one `p` tag. 
+
+- To securely scrub delta data on the server before converting to HTML. 
 
 ## Quickstart ## 
 
@@ -38,9 +46,6 @@ var html = converter.convert();
 
 |Option | Default | Description 
 |---|---|---|
-|orderedListTag| 'ol' | Parent tag for ordered list elements |
-|bulletListTag| 'ul' | Parent tag for bullet list elements|
-|listItemTag| 'li' | Tag for list item, in case you just wanna use `div` etc|
 |paragraphTag| 'p' | Tag to wrap inline html elements|
 |encodeHtml| true | If true, `<, >, /, ', ", &` characters in content will be encoded.|
 |classPrefix| 'ql' | A css class name to prefix class generating styles such as `size`, `font`, etc. |
@@ -50,35 +55,26 @@ var html = converter.convert();
 
 ## Events ##
 
-You can customize the rendering by subscribing to relevant events before calling the `convert()` method. 
+You can customize the rendering by subscribing to events before calling the `convert()` method. 
 
-There are `before` and `after` events. 
+There are `beforeRender` and `afterRender` events and they are called multiple times before and after rendering each group. A group is one of:
 
-`Before` events are called with raw operation objects for you to generate and return your own html. If you return a `falsy` value, system will return its own generated html. 
+- continuous sets of inline elements
+- a video element
+- list elements
+- block elements (header, code-block, and blockquote) 
 
-`After` events are called with generated html for you to inspect and maybe make some changes.
+`beforeRender` event is called with raw operation objects for you to generate and return your own html. If you return a `falsy` value, system will return its own generated html. 
 
-If you subscribe to any `before` event and return `non-falsy` value, corresponding `after` event won't be called. 
+`afterRender` event is called with generated html for you to inspect, maybe make some changes and return your modified or original html.
 
 ```javascript
 
-// op refers to the block operation that is wrapping around child operations
-// for video, childOpsArray will be null
-converter.beforeBlockRender(function(op, childOpsArray){
+converter.beforeRender(function(groupType, data){
     // ... generate your own html 
     // return your html
 });
-converter.afterBlockRender(function(htmlForThisGroup){
-    // modify if you wish
-    // return the html
-});
-
-// opsArray refers to a group of inline operations that are not video or not in a block. 
-converter.beforeInlineGroupRender(function(opsArray){
-    // ... generate your own html 
-    // return your html
-});
-converter.afterInlineGroupRender(function(html){
+converter.afterRender(function(htmlString){
     // modify if you wish
     // return the html
 });
@@ -87,16 +83,27 @@ html = converter.convert();
 
 ```
 
-Each `op` that is passed to the event callbacks will have following format: 
+Following shows the parameter formats for `beforeRender` event: 
+
+
+
+|groupType|data|
+|---|---|
+|`video`|{op: `op object`}|
+|`block`|{op: `op object`: ops: Array<`op object`>}|
+|`list`| {items: [{item: `block`, innerList: `list`}] }|
+|`inline-group`|{ops: Array<`op object`>}|
+
+`op object` will have following format: 
 
 ```javascript
-{
+op = {
     insert: {
-        type: '' // one of 'text' | 'image' | 'video' | 'formula' 
-        value: '...' // url for image/video, regular text for others 
-    },
+        type: '' // one of 'text' | 'image' | 'video' | 'formula',
+        value: '' // some string value  
+    }, 
     attributes: {
-        // quill delta attributes
+        // ... quill delta attributes 
     }
 }
 ```

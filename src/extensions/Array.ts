@@ -10,7 +10,8 @@ interface Array<T> {
     _groupConsecutiveElementsWhile(
         predicate: (currElm: any, prevElm: any) => boolean): any[],
     _sliceFromReverseWhile(startIndex: number,
-        predicate: (currElm: any) => boolean): IArraySlice
+        predicate: (currElm: any) => boolean): IArraySlice,
+    _intersperse(item: any): any[]
 }
 
 
@@ -77,3 +78,13 @@ Array.prototype._sliceFromReverseWhile = function (startIndex: number,
     }
     return result;
 };
+
+Array.prototype._intersperse = function (item) {
+    return this.reduce((pv: any[], v: any, index: number) => {
+        pv.push(v);
+        if (index < (this.length - 1)) {
+            pv.push(item);
+        }
+        return pv;
+    }, []);
+}

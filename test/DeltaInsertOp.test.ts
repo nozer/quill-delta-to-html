@@ -45,6 +45,16 @@ describe('DeltaInsertOp', function() {
         });
     });
 
+    describe('hasHigherIndentThan()', function() {
+        it('should successfully if two ops have same align indent and direction', function() {
+            var op1 = new DeltaInsertOp("\n", {indent: undefined});
+            var op2 = new DeltaInsertOp("\n", { indent: null});
+            
+            assert.ok(!op1.hasHigherIndentThan(op2));
+
+        });
+    });
+
     describe('isInline()', function() {
         it('should return true if op is an inline', function() {
             var op = new DeltaInsertOp("\n", {});

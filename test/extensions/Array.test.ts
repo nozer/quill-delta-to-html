@@ -35,4 +35,13 @@ describe("Array Extensions Module", function(){
         });
     });
 
+    describe("Array#_intersperse", function(){
+        it('should put specified element between arr elements', function() {
+            assert.deepEqual([1,3, 4]._intersperse(0), [
+                1,0,3,0, 4
+            ]);
+            assert.deepEqual([1]._intersperse(2), [1]);
+        });
+    });
+
 });

@@ -67,7 +67,7 @@ describe('OpAttributeSanitizer', function () {
                 direction: 'rtl',
                 align: 'center'
             });
-            console.log('aaaa');
+            
             assert.deepEqual(OpAttributeSanitizer.sanitize({header: 1}), {header: 1});
             assert.deepEqual(OpAttributeSanitizer.sanitize({header: null}), {});
             assert.deepEqual(OpAttributeSanitizer.sanitize({header: 100}), {header: 6});

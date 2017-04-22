@@ -2,30 +2,35 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertOpsConverter_1 = require("./InsertOpsConverter");
 var OpToHtmlConverter_1 = require("./OpToHtmlConverter");
-var OpGroup_1 = require("./OpGroup");
+var Grouper_1 = require("./grouper/Grouper");
+var group_types_1 = require("./grouper/group-types");
+var ListNester_1 = require("./grouper/ListNester");
 var funcs_html_1 = require("./funcs-html");
 require("./extensions/Object");
+var value_types_1 = require("./value-types");
 var BrTag = '<br/>';
 var QuillDeltaToHtmlConverter = (function () {
     function QuillDeltaToHtmlConverter(deltaOps, options) {
         this.rawDeltaOps = [];
         this.callbacks = {};
         this.options = Object._assign({
-            orderedListTag: 'ol',
-            bulletListTag: 'ul',
-            listItemTag: 'li',
             paragraphTag: 'p',
             encodeHtml: true,
             classPrefix: 'ql',
             multiLineBlockquote: true,
             multiLineHeader: true,
             multiLineCodeblock: true
-        }, options);
-        this.converter = new OpToHtmlConverter_1.OpToHtmlConverter({
+        }, options, {
+            orderedListTag: 'ol',
+            bulletListTag: 'ul',
+            listItemTag: 'li'
+        });
+        this.converterOptions = {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
-            listItemTag: this.options.listItemTag
-        });
+            listItemTag: this.options.listItemTag,
+            paragraphTag: this.options.paragraphTag
+        };
         this.rawDeltaOps = deltaOps;
     }
     QuillDeltaToHtmlConverter.prototype.getListTag = function (op) {
@@ -34,79 +39,77 @@ var QuillDeltaToHtmlConverter = (function () {
                 : '';
     };
     QuillDeltaToHtmlConverter.prototype.convert = function () {
+        var _this = this;
         var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
-        var tagStack = [];
-        var htmlArr = [];
-        var beginListTag = function (tag) {
-            tag && tagStack.push(tag) && htmlArr.push('<' + tag + '>');
-        };
-        var endListTag = function (shouldEndAllTags) {
-            if (shouldEndAllTags === void 0) { shouldEndAllTags = false; }
-            var endTag = function () {
-                var tag = tagStack.pop();
-                tag && htmlArr.push('</' + tag + '>');
-            };
-            shouldEndAllTags ? tagStack.map(endTag) : endTag();
-        };
-        var callCustomRenderCb = function (cbName, args) {
-            cbName += '_cb';
-            if (typeof this.callbacks[cbName] === 'function') {
-                return this.callbacks[cbName].apply(null, args);
-            }
-            return cbName.indexOf('after') === 0 ? args[0] : undefined;
-        }.bind(this);
-        var pairedOps = OpGroup_1.OpGroup.pairOpsWithTheirBlock(deltaOps);
-        var groupedSameStyleBlocks = OpGroup_1.OpGroup.groupConsecutiveSameStyleBlocks(pairedOps, {
+        var pairedOps = Grouper_1.Grouper.pairOpsWithTheirBlock(deltaOps);
+        var groupedSameStyleBlocks = Grouper_1.Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
             blockquotes: !!this.options.multiLineBlockquote,
             header: !!this.options.multiLineHeader,
             codeBlocks: !!this.options.multiLineCodeblock
         });
-        var groupedOps = OpGroup_1.OpGroup.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
-        var len = groupedOps.length;
-        var group, prevGroup, html, prevOp;
-        var prevOpFn = function (pg) { return pg.op || pg.ops && pg.ops.length && pg.ops[pg.ops.length - 1]; };
+        var groupedOps = Grouper_1.Grouper.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
+        var listNester = new ListNester_1.ListNester();
+        var groupListsNested = listNester.nest(groupedOps);
+        var len = groupListsNested.length;
+        var group, html;
+        var htmlArr = [];
         for (var i = 0; i < len; i++) {
-            group = groupedOps[i];
-            prevGroup = i > 0 ? groupedOps[i - 1] : null;
-            prevOp = prevGroup && prevOpFn(prevGroup);
-            if (this.shouldEndList(prevOp, group.op)) {
-                endListTag();
+            group = groupListsNested[i];
+            if (group instanceof group_types_1.ListGroup) {
+                html = this.renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this.renderList(group); });
             }
-            if (group.op) {
-                if (group.op.isContainerBlock()) {
-                    if (this.shouldBeginList(prevOp, group.op)) {
-                        beginListTag(this.getListTag(group.op));
-                    }
-                    html = callCustomRenderCb('beforeBlockRender', [group.op, group.ops]);
-                    if (!html) {
-                        html = this.renderContainerBlock(group.op, group.ops);
-                        html = callCustomRenderCb('afterBlockRender', [html]);
-                    }
-                    htmlArr.push(html);
-                }
-                else {
-                    html = callCustomRenderCb('beforeBlockRender', [group.op]);
-                    if (!html) {
-                        html = this.converter.getHtml(group.op);
-                        html = callCustomRenderCb('afterBlockRender', [html]);
-                    }
-                    htmlArr.push(html);
-                }
+            else if (group instanceof group_types_1.BlockGroup) {
+                var g = group;
+                html = this.renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this.renderBlock(g.op, g.ops); });
+            }
+            else if (group instanceof group_types_1.VideoItem) {
+                html = this.renderWithCallbacks(value_types_1.GroupType.Video, group, function () {
+                    var g = group;
+                    var converter = new OpToHtmlConverter_1.OpToHtmlConverter(g.op, _this.converterOptions);
+                    return converter.getHtml();
+                });
             }
             else {
-                html = callCustomRenderCb('beforeInlineGroupRender', [group.ops]);
-                if (!html) {
-                    html = this.renderInlines(group.ops);
-                    html = callCustomRenderCb('afterInlineGroupRender', [html]);
-                }
-                htmlArr.push(html);
+                html = this.renderWithCallbacks(value_types_1.GroupType.InlineGroup, group, function () {
+                    return _this.renderInlines(group.ops);
+                });
             }
+            htmlArr.push(html);
         }
-        endListTag(true);
         return htmlArr.join('');
     };
-    QuillDeltaToHtmlConverter.prototype.renderContainerBlock = function (op, ops) {
-        var htmlParts = this.converter.getHtmlParts(op);
+    QuillDeltaToHtmlConverter.prototype.renderWithCallbacks = function (groupType, group, myRenderFn) {
+        var html = '';
+        var beforeCb = this.callbacks['beforeRender_cb'];
+        html = typeof beforeCb === 'function' ? beforeCb.apply(null, [groupType, group]) : '';
+        if (!html) {
+            html = myRenderFn();
+            var afterCb = this.callbacks['afterRender_cb'];
+            html = typeof afterCb === 'function' ? afterCb.apply(null, [groupType, html]) : html;
+        }
+        return html;
+    };
+    QuillDeltaToHtmlConverter.prototype.renderList = function (list, isOuterMost) {
+        var _this = this;
+        if (isOuterMost === void 0) { isOuterMost = true; }
+        var firstItem = list.items[0];
+        return funcs_html_1.makeStartTag(this.getListTag(firstItem.item.op))
+            + list.items.map(function (li) { return _this.renderListItem(li, isOuterMost); }).join('')
+            + funcs_html_1.makeEndTag(this.getListTag(firstItem.item.op));
+    };
+    QuillDeltaToHtmlConverter.prototype.renderListItem = function (li, isOuterMost) {
+        var converterOptions = Object._assign({}, this.converterOptions);
+        li.item.op.attributes.indent = 0;
+        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(li.item.op, this.converterOptions);
+        var parts = converter.getHtmlParts();
+        var liElementsHtml = this.renderInlines(li.item.ops, false);
+        return parts.openingTag + (liElementsHtml || BrTag) +
+            (li.innerList ? this.renderList(li.innerList, false) : '')
+            + parts.closingTag;
+    };
+    QuillDeltaToHtmlConverter.prototype.renderBlock = function (op, ops) {
+        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, this.converterOptions);
+        var htmlParts = converter.getHtmlParts();
         if (op.isCodeBlock()) {
             return htmlParts.openingTag +
                 ops.map(function (op) { return op.insert.value; }).join('')
@@ -127,50 +130,20 @@ var QuillDeltaToHtmlConverter = (function () {
                 if (i === opsLen && op.isJustNewline()) {
                     return '';
                 }
-                return _this.converter.getHtml(op).replace(nlRx, BrTag);
+                var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, _this.converterOptions);
+                return converter.getHtml().replace(nlRx, BrTag);
             }).join('')
             + pEnd;
         return html;
     };
-    QuillDeltaToHtmlConverter.prototype.shouldBeginList = function (prevOp, currOp) {
-        if (!currOp) {
-            return false;
-        }
-        if ((!prevOp || !prevOp.isList()) && currOp.isList()) {
-            return true;
-        }
-        if (prevOp && prevOp.isList() && currOp.isList() && !prevOp.isSameListAs(currOp)) {
-            return true;
-        }
-        return false;
-    };
-    QuillDeltaToHtmlConverter.prototype.shouldEndList = function (prevOp, currOp) {
-        if (prevOp && prevOp.isList() && (!currOp || !currOp.isList())) {
-            return true;
-        }
-        if (prevOp && prevOp.isList() && currOp && currOp.isList() && !prevOp.isSameListAs(currOp)) {
-            return true;
-        }
-        return false;
-    };
-    QuillDeltaToHtmlConverter.prototype.beforeBlockRender = function (cb) {
+    QuillDeltaToHtmlConverter.prototype.beforeRender = function (cb) {
         if (typeof cb === 'function') {
-            this.callbacks['beforeBlockRender_cb'] = cb;
+            this.callbacks['beforeRender_cb'] = cb;
         }
     };
-    QuillDeltaToHtmlConverter.prototype.beforeInlineGroupRender = function (cb) {
+    QuillDeltaToHtmlConverter.prototype.afterRender = function (cb) {
         if (typeof cb === 'function') {
-            this.callbacks['beforeInlineGroupRender_cb'] = cb;
-        }
-    };
-    QuillDeltaToHtmlConverter.prototype.afterBlockRender = function (cb) {
-        if (typeof cb === 'function') {
-            this.callbacks['afterBlockRender_cb'] = cb;
-        }
-    };
-    QuillDeltaToHtmlConverter.prototype.afterInlineGroupRender = function (cb) {
-        if (typeof cb === 'function') {
-            this.callbacks['afterInlineGroupRender_cb'] = cb;
+            this.callbacks['afterRender_cb'] = cb;
         }
     };
     return QuillDeltaToHtmlConverter;

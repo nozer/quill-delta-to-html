@@ -32,6 +32,12 @@ var DeltaInsertOp = (function () {
             && this.attributes.direction === op.attributes.direction
             && this.attributes.indent === op.attributes.indent;
     };
+    DeltaInsertOp.prototype.hasSameIndentationAs = function (op) {
+        return this.attributes.indent === op.attributes.indent;
+    };
+    DeltaInsertOp.prototype.hasHigherIndentThan = function (op) {
+        return (Number(this.attributes.indent) || 0) > (Number(op.attributes.indent) || 0);
+    };
     DeltaInsertOp.prototype.isInline = function () {
         return !(this.isContainerBlock() || this.isVideo());
     };

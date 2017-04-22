@@ -46,6 +46,14 @@ class DeltaInsertOp {
             && this.attributes.indent === op.attributes.indent
     }
 
+    hasSameIndentationAs(op: DeltaInsertOp) {
+        return this.attributes.indent === op.attributes.indent;
+    }
+
+    hasHigherIndentThan(op: DeltaInsertOp) {
+        return (Number(this.attributes.indent) || 0) > (Number(op.attributes.indent) || 0);
+    }
+
     isInline() {
         return !(this.isContainerBlock() || this.isVideo());
     }
