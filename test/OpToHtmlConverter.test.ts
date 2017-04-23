@@ -230,7 +230,7 @@ describe('OpToHtmlConverter', function () {
 
                 
                 var op = new DeltaInsertOp("\n", { bold: true });
-                c1 = new OpToHtmlConverter(op);
+                c1 = new OpToHtmlConverter(op, {encodeHtml: false});
                 assert.equal(c1.getHtml(), '\n');
 
                 var op = new DeltaInsertOp("\n", { color: '#fff' });

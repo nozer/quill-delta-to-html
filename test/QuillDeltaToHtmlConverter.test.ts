@@ -79,11 +79,11 @@ describe('QuillDeltaToHtmlConverter', function () {
     describe('getListTag()', function () {
         
         it('should return proper list tag', function () {
-            var op = new DeltaInsertOp("d", {list: 'ordered'});
+            var op = new DeltaInsertOp("\n", {list: 'ordered'});
             var qdc = new QuillDeltaToHtmlConverter(delta1.ops)
             assert.equal(qdc.getListTag(op), 'ol');
 
-            var op = new DeltaInsertOp("d", {list: 'bullet'});
+            var op = new DeltaInsertOp("\n", {list: 'bullet'});
             assert.equal(qdc.getListTag(op), 'ul');
 
             var op = new DeltaInsertOp("d");
