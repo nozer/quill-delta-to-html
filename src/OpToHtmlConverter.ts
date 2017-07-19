@@ -153,7 +153,8 @@ class OpToHtmlConverter {
 
         return tagAttrs
             .concat(styleAttr)
-            .concat(this.op.isLink() ? makeAttr('href', this.op.attributes.link) : []);
+            .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
+                makeAttr('target', '_blank')] : []);
     }
 
     getTags(): string[] {

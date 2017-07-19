@@ -96,7 +96,8 @@ var OpToHtmlConverter = (function () {
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
         return tagAttrs
             .concat(styleAttr)
-            .concat(this.op.isLink() ? makeAttr('href', this.op.attributes.link) : []);
+            .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
+            makeAttr('target', '_blank')] : []);
     };
     OpToHtmlConverter.prototype.getTags = function () {
         var attrs = this.op.attributes;
