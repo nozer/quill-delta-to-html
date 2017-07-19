@@ -51,6 +51,9 @@ var OpToHtmlConverter = (function () {
         if (this.op.isContainerBlock()) {
             return '';
         }
+        if (this.op.isMentions()) {
+            return this.op.insert.value;
+        }
         var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
         return this.options.encodeHtml && funcs_html_1.encodeHtml(content) || content;
     };
@@ -86,6 +89,9 @@ var OpToHtmlConverter = (function () {
         if (this.op.isVideo()) {
             return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
+        if (this.op.isMentions()) {
+            return tagAttrs.concat(makeAttr('class', 'custom-em'), makeAttr('href', 'javascript:void(0)'));
+        }
         var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
         return tagAttrs
@@ -115,8 +121,8 @@ var OpToHtmlConverter = (function () {
             }
         }
         return [['link', 'a'], ['script'],
-            ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u']
-        ]
+            ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u'],
+            ['mentions', 'a']]
             .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) {
             return item[0] === 'script' ?
