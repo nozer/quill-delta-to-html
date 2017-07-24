@@ -142,9 +142,11 @@ class OpToHtmlConverter {
         }
 
         if (this.op.isMentions()) {
+            var mention: any = this.op.attributes.mention;
             return tagAttrs.concat(
-                makeAttr('class', 'custom-em'),
-                makeAttr('href', 'javascript:void(0)')
+                makeAttr('class', mention.class),
+                makeAttr('href', mention['end-point'] + '/' + mention.slug || 'javascript:void(0)'),
+                makeAttr('target', mention.target)
             );
         }
 

@@ -52,7 +52,9 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.indent = Math.min(Number(indent), 30);
         }
         if (mentions) {
+            var mention = dirtyAttrs.mention;
             cleanAttrs.mentions = mentions;
+            cleanAttrs.mention = mention;
         }
         return cleanAttrs;
     };
