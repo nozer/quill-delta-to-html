@@ -22,7 +22,9 @@ interface IOpAttributes {
     header?: number,
     align?: AlignType,
     direction?: DirectionType,
-    indent?: number
+    indent?: number,
+
+    mentions?: boolean
 }
 
 export { IOpAttributes };

@@ -2,8 +2,7 @@
 import { OpToHtmlConverter } from "./../src/OpToHtmlConverter";
 import { DeltaInsertOp } from './../src/DeltaInsertOp';
 import { InsertData } from './../src/InsertData';
-import { ListType, ScriptType, DirectionType, AlignType, DataType }
-    from './../src/value-types';
+import { ListType, ScriptType, DirectionType, AlignType, DataType } from './../src/value-types';
 
 let assert = require('assert');
 
@@ -158,7 +157,8 @@ describe('OpToHtmlConverter', function () {
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), [
                 { key: 'style', value: 'color:red' },
-                { key: 'href', value: 'l' }
+                { key: 'href', value: 'l' },
+                { key: 'target', value: '_blank' }
             ]);
 
         });
@@ -202,7 +202,7 @@ describe('OpToHtmlConverter', function () {
         var c1 = new OpToHtmlConverter(op1);
         var result = [
             '<a class="ql-font-verdana ql-size-small"',
-            ' style="background-color:#fff;color:red" href="http://">',
+            ' style="background-color:#fff;color:red" href="http://" target="_blank">',
             '<sup>',
             '<strong><em><s><u>aaa</u></s></em></strong>',
             '</sup>',

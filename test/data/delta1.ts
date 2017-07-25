@@ -24,7 +24,7 @@ var delta1 = {
         ' is ', '<span style="color:#e60000">will</span>', ' ',
         '<span style="background-color:#ffebcc">test</span>', ' ',
         '<sub>the</sub>', ' ', '<sup>rendering</sup>', ' of ',
-        '<a href="yahoo">inline</a>', ' ', '<span class="noz-formula">x=data</span>',
+        '<a href="yahoo" target="_blank">inline</a>', ' ', '<span class="noz-formula">x=data</span>',
         ' formats.</p>'
     ].join('')
 };

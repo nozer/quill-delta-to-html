@@ -80,6 +80,11 @@ class OpToHtmlConverter {
         if (this.op.isContainerBlock()) {
             return '';
         }
+
+        if (this.op.isMentions()) {
+            return this.op.insert.value;
+        }
+
         var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
         
         return this.options.encodeHtml && encodeHtml(content) || content;
@@ -136,12 +141,20 @@ class OpToHtmlConverter {
             );
         }
 
+        if (this.op.isMentions()) {
+            return tagAttrs.concat(
+                makeAttr('class', 'custom-em'),
+                makeAttr('href', 'javascript:void(0)')
+            );
+        }
+
         var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
 
         return tagAttrs
             .concat(styleAttr)
-            .concat(this.op.isLink() ? makeAttr('href', this.op.attributes.link) : []);
+            .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
+                makeAttr('target', '_blank')] : []);
     }
 
     getTags(): string[] {
@@ -175,8 +188,8 @@ class OpToHtmlConverter {
 
         // inlines  
         return [['link', 'a'], ['script'],
-        ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u']
-        ]
+        ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u'],
+        ['mentions', 'a']]
             .filter((item: any[]) => !!attrs[item[0]])
             .map((item) => {
                 return item[0] === 'script' ?
