@@ -201,7 +201,7 @@ describe('OpToHtmlConverter', function () {
         var op1 = new DeltaInsertOp("aaa", attributes);
         var c1 = new OpToHtmlConverter(op1);
         var result = [
-            '<a class="ql-font-verdana ql-size-small"',
+            '<a class="ql-font-verdana ql-size-small ql-background-#fff"',
             ' style="background-color:#fff;color:red" href="http://" target="_blank">',
             '<sup>',
             '<strong><em><s><u>aaa</u></s></em></strong>',
@@ -228,7 +228,7 @@ describe('OpToHtmlConverter', function () {
                 var act = c1.getHtml();
                 assert.equal(act, result);
 
-                
+
                 var op = new DeltaInsertOp("\n", { bold: true });
                 c1 = new OpToHtmlConverter(op, {encodeHtml: false});
                 assert.equal(c1.getHtml(), '\n');
