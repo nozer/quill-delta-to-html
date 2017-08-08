@@ -2,10 +2,11 @@
 import { IOpAttributes } from './IOpAttributes';
 import { ListType, AlignType, DirectionType, ScriptType } from './value-types';
 import './extensions/String';
+import {IOpToHtmlConverterOptions} from "./OpToHtmlConverter";
 
 class OpAttributeSanitizer {
 
-    static sanitize(dirtyAttrs: IOpAttributes): IOpAttributes {
+    static sanitize(dirtyAttrs: IOpAttributes, options : IOpToHtmlConverterOptions): IOpAttributes {
 
         var cleanAttrs: any = {};
 
@@ -27,7 +28,7 @@ class OpAttributeSanitizer {
 
         ['background', 'color'].forEach(function (prop: string) {
             var val = (<any>dirtyAttrs)[prop];
-            if (val && OpAttributeSanitizer.IsValidHexColor(val + '')) {
+            if (val && (options.allowNonHex || OpAttributeSanitizer.IsValidHexColor(val + ''))) {
                 cleanAttrs[prop] = val;
             }
         });
@@ -51,7 +52,7 @@ class OpAttributeSanitizer {
         if (list === ListType.Bullet || list === ListType.Ordered) {
             cleanAttrs.list = list;
         }
-        
+
         if (Number(header)) {
             cleanAttrs.header = Math.min(Number(header), 6);
         }

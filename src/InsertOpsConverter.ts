@@ -4,19 +4,20 @@ import { DataType } from './value-types';
 import { InsertData } from './InsertData';
 import { OpAttributeSanitizer } from './OpAttributeSanitizer';
 import { InsertOpDenormalizer } from './InsertOpDenormalizer';
+import { IOpToHtmlConverterOptions} from './OpToHtmlConverter';
 
 /**
- * Converts raw delta insert ops to array of denormalized DeltaInsertOp objects 
+ * Converts raw delta insert ops to array of denormalized DeltaInsertOp objects
  */
 class InsertOpsConverter {
 
-    static convert(deltaOps: any[]): DeltaInsertOp[] {
+    static convert(deltaOps: any[], options : IOpToHtmlConverterOptions): DeltaInsertOp[] {
 
         if (!Array.isArray(deltaOps)) {
             return [];
         }
 
-        var denormalizedOps = [].concat.apply([], 
+        var denormalizedOps = [].concat.apply([],
             deltaOps.map(InsertOpDenormalizer.denormalize));
         var results: DeltaInsertOp[] = [];
 
@@ -32,8 +33,8 @@ class InsertOpsConverter {
                 continue;
             }
 
-            attributes =  OpAttributeSanitizer.sanitize(op.attributes);
-            
+            attributes =  OpAttributeSanitizer.sanitize(op.attributes, options);
+
             results.push(new DeltaInsertOp(insertVal, attributes));
         }
         return results;
