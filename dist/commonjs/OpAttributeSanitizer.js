@@ -5,7 +5,7 @@ require("./extensions/String");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
-    OpAttributeSanitizer.sanitize = function (dirtyAttrs) {
+    OpAttributeSanitizer.sanitize = function (dirtyAttrs, options) {
         var cleanAttrs = {};
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
@@ -20,7 +20,7 @@ var OpAttributeSanitizer = (function () {
         });
         ['background', 'color'].forEach(function (prop) {
             var val = dirtyAttrs[prop];
-            if (val && OpAttributeSanitizer.IsValidHexColor(val + '')) {
+            if (val && (options.allowNonHex || OpAttributeSanitizer.IsValidHexColor(val + ''))) {
                 cleanAttrs[prop] = val;
             }
         });

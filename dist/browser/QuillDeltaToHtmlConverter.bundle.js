@@ -75,6 +75,9 @@ var DeltaInsertOp = (function () {
     DeltaInsertOp.prototype.isLink = function () {
         return this.isText() && !!this.attributes.link;
     };
+    DeltaInsertOp.prototype.isMentions = function () {
+        return this.isText() && !!this.attributes.mentions;
+    };
     return DeltaInsertOp;
 }());
 exports.DeltaInsertOp = DeltaInsertOp;
@@ -137,7 +140,7 @@ var InsertOpDenormalizer_1 = require("./InsertOpDenormalizer");
 var InsertOpsConverter = (function () {
     function InsertOpsConverter() {
     }
-    InsertOpsConverter.convert = function (deltaOps) {
+    InsertOpsConverter.convert = function (deltaOps, options) {
         if (!Array.isArray(deltaOps)) {
             return [];
         }
@@ -153,7 +156,7 @@ var InsertOpsConverter = (function () {
             if (!insertVal) {
                 continue;
             }
-            attributes = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitize(op.attributes);
+            attributes = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitize(op.attributes, options);
             results.push(new DeltaInsertOp_1.DeltaInsertOp(insertVal, attributes));
         }
         return results;
@@ -185,12 +188,12 @@ require("./extensions/String");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
-    OpAttributeSanitizer.sanitize = function (dirtyAttrs) {
+    OpAttributeSanitizer.sanitize = function (dirtyAttrs, options) {
         var cleanAttrs = {};
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
         }
-        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent;
+        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions;
         ['bold', 'italic', 'underline', 'strike', 'code', 'blockquote', 'code-block']
             .forEach(function (prop) {
             var v = dirtyAttrs[prop];
@@ -200,7 +203,7 @@ var OpAttributeSanitizer = (function () {
         });
         ['background', 'color'].forEach(function (prop) {
             var val = dirtyAttrs[prop];
-            if (val && OpAttributeSanitizer.IsValidHexColor(val + '')) {
+            if (val && (options.allowNonHex || OpAttributeSanitizer.IsValidHexColor(val + ''))) {
                 cleanAttrs[prop] = val;
             }
         });
@@ -230,6 +233,9 @@ var OpAttributeSanitizer = (function () {
         }
         if (indent && Number(indent)) {
             cleanAttrs.indent = Math.min(Number(indent), 30);
+        }
+        if (mentions) {
+            cleanAttrs.mentions = mentions;
         }
         return cleanAttrs;
     };
@@ -300,12 +306,15 @@ var OpToHtmlConverter = (function () {
         if (this.op.isContainerBlock()) {
             return '';
         }
+        if (this.op.isMentions()) {
+            return this.op.insert.value;
+        }
         var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
         return this.options.encodeHtml && funcs_html_1.encodeHtml(content) || content;
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
-        return ['indent', 'align', 'direction', 'font', 'size']
+        return ['indent', 'align', 'direction', 'font', 'size', 'background']
             .filter(function (prop) { return !!attrs[prop]; })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
             .concat(this.op.isFormula() ? 'formula' : [])
@@ -335,11 +344,19 @@ var OpToHtmlConverter = (function () {
         if (this.op.isVideo()) {
             return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
+        if (this.op.isMentions()) {
+            return tagAttrs.concat(makeAttr('class', 'custom-em'), makeAttr('href', 'javascript:void(0)'));
+        }
         var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
-        return tagAttrs
+        tagAttrs = tagAttrs
             .concat(styleAttr)
-            .concat(this.op.isLink() ? makeAttr('href', this.op.attributes.link) : []);
+            .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
+            makeAttr('target', '_blank')] : []);
+        if (this.op.isLink() && !!this.options.linkRel) {
+            tagAttrs.push(makeAttr('rel', this.options.linkRel));
+        }
+        return tagAttrs;
     };
     OpToHtmlConverter.prototype.getTags = function () {
         var attrs = this.op.attributes;
@@ -364,8 +381,8 @@ var OpToHtmlConverter = (function () {
             }
         }
         return [['link', 'a'], ['script'],
-            ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u']
-        ]
+            ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u'],
+            ['mentions', 'a']]
             .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) {
             return item[0] === 'script' ?
@@ -409,7 +426,9 @@ var QuillDeltaToHtmlConverter = (function () {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
             listItemTag: this.options.listItemTag,
-            paragraphTag: this.options.paragraphTag
+            paragraphTag: this.options.paragraphTag,
+            linkRel: this.options.linkRel,
+            allowNonHex: this.options.allowNonHex
         };
         this.rawDeltaOps = deltaOps;
     }
@@ -420,7 +439,7 @@ var QuillDeltaToHtmlConverter = (function () {
     };
     QuillDeltaToHtmlConverter.prototype.convert = function () {
         var _this = this;
-        var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
+        var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps, this.converterOptions);
         var pairedOps = Grouper_1.Grouper.pairOpsWithTheirBlock(deltaOps);
         var groupedSameStyleBlocks = Grouper_1.Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
             blockquotes: !!this.options.multiLineBlockquote,
@@ -952,4 +971,4 @@ var GroupType = {
 exports.GroupType = GroupType;
 
 },{}]},{},[7])(7)
-});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter; 
+});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter;  

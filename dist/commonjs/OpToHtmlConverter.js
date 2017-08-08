@@ -59,7 +59,7 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
-        return ['indent', 'align', 'direction', 'font', 'size']
+        return ['indent', 'align', 'direction', 'font', 'size', 'background']
             .filter(function (prop) { return !!attrs[prop]; })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
             .concat(this.op.isFormula() ? 'formula' : [])
@@ -94,10 +94,14 @@ var OpToHtmlConverter = (function () {
         }
         var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
-        return tagAttrs
+        tagAttrs = tagAttrs
             .concat(styleAttr)
             .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
             makeAttr('target', '_blank')] : []);
+        if (this.op.isLink() && !!this.options.linkRel) {
+            tagAttrs.push(makeAttr('rel', this.options.linkRel));
+        }
+        return tagAttrs;
     };
     OpToHtmlConverter.prototype.getTags = function () {
         var attrs = this.op.attributes;
