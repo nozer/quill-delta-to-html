@@ -7,7 +7,7 @@ import {InsertData} from './../src/InsertData';
 import { InsertOpsConverter } from "./../src/InsertOpsConverter";
 
 var data = [
-
+    
         {"ops":[
             {"insert":"This "},
             {"attributes":{"font":"monospace"},"insert":"is"},
@@ -38,20 +38,20 @@ var data = [
             ].join('')
         }
 
-
+    
 ]
 
 describe('InsertOpsConverter', function () {
     describe('#convert()', function () {
-
+        
         it('should transform raw delta ops to DeltaInsertOp[]', function () {
-            var objs = InsertOpsConverter.convert(data[0].ops, {});
-
+            var objs = InsertOpsConverter.convert(data[0].ops);
+            
             assert.equal(objs[0] instanceof DeltaInsertOp, true);
             assert.equal(objs[objs.length -1] instanceof DeltaInsertOp, true);
-            assert.deepEqual(InsertOpsConverter.convert(null, {}), []);
-            assert.deepEqual(InsertOpsConverter.convert([{insert:''}], {}), []);
-            assert.deepEqual(InsertOpsConverter.convert([{insert:{cake: ''}}], {}), []);
+            assert.deepEqual(InsertOpsConverter.convert(null), []);
+            assert.deepEqual(InsertOpsConverter.convert([{insert:''}]), []);
+            assert.deepEqual(InsertOpsConverter.convert([{insert:{cake: ''}}]), []);
             //console.log(objs);
         });
     });

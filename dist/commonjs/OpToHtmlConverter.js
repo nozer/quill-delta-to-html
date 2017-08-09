@@ -5,6 +5,7 @@ var value_types_1 = require("./value-types");
 require("./extensions/String");
 require("./extensions/Object");
 require("./extensions/Array");
+var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
 var OpToHtmlConverter = (function () {
     function OpToHtmlConverter(op, options) {
         this.op = op;
@@ -61,6 +62,7 @@ var OpToHtmlConverter = (function () {
         var attrs = this.op.attributes;
         return ['indent', 'align', 'direction', 'font', 'size', 'background']
             .filter(function (prop) { return !!attrs[prop]; })
+            .filter(function (prop) { return prop === 'background' ? OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true; })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
             .concat(this.op.isFormula() ? 'formula' : [])
             .concat(this.op.isVideo() ? 'video' : [])
@@ -98,7 +100,7 @@ var OpToHtmlConverter = (function () {
             .concat(styleAttr)
             .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
             makeAttr('target', '_blank')] : []);
-        if (this.op.isLink() && !!this.options.linkRel) {
+        if (this.op.isLink() && !!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));
         }
         return tagAttrs;
@@ -134,6 +136,9 @@ var OpToHtmlConverter = (function () {
                 (attrs[item[0]] === value_types_1.ScriptType.Sub ? 'sub' : 'sup')
                 : item._preferSecond();
         });
+    };
+    OpToHtmlConverter.IsValidRel = function (relStr) {
+        return !!relStr.match(/^[a-zA-Z\-]{1,30}$/i);
     };
     return OpToHtmlConverter;
 }());

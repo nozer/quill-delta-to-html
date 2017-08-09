@@ -140,7 +140,7 @@ var InsertOpDenormalizer_1 = require("./InsertOpDenormalizer");
 var InsertOpsConverter = (function () {
     function InsertOpsConverter() {
     }
-    InsertOpsConverter.convert = function (deltaOps, options) {
+    InsertOpsConverter.convert = function (deltaOps) {
         if (!Array.isArray(deltaOps)) {
             return [];
         }
@@ -156,7 +156,7 @@ var InsertOpsConverter = (function () {
             if (!insertVal) {
                 continue;
             }
-            attributes = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitize(op.attributes, options);
+            attributes = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitize(op.attributes);
             results.push(new DeltaInsertOp_1.DeltaInsertOp(insertVal, attributes));
         }
         return results;
@@ -188,7 +188,7 @@ require("./extensions/String");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
-    OpAttributeSanitizer.sanitize = function (dirtyAttrs, options) {
+    OpAttributeSanitizer.sanitize = function (dirtyAttrs) {
         var cleanAttrs = {};
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
@@ -203,7 +203,8 @@ var OpAttributeSanitizer = (function () {
         });
         ['background', 'color'].forEach(function (prop) {
             var val = dirtyAttrs[prop];
-            if (val && (options.allowNonHex || OpAttributeSanitizer.IsValidHexColor(val + ''))) {
+            if (val && (OpAttributeSanitizer.IsValidHexColor(val + '') ||
+                OpAttributeSanitizer.IsValidColorLiteral(val + ''))) {
                 cleanAttrs[prop] = val;
             }
         });
@@ -242,6 +243,9 @@ var OpAttributeSanitizer = (function () {
     OpAttributeSanitizer.IsValidHexColor = function (colorStr) {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
     };
+    OpAttributeSanitizer.IsValidColorLiteral = function (colorStr) {
+        return !!colorStr.match(/^[a-zA-Z]{1,50}$/i);
+    };
     OpAttributeSanitizer.IsValidFontName = function (fontName) {
         return !!fontName.match(/^[a-z\s0-9\- ]{1,30}$/i);
     };
@@ -260,6 +264,7 @@ var value_types_1 = require("./value-types");
 require("./extensions/String");
 require("./extensions/Object");
 require("./extensions/Array");
+var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
 var OpToHtmlConverter = (function () {
     function OpToHtmlConverter(op, options) {
         this.op = op;
@@ -316,6 +321,7 @@ var OpToHtmlConverter = (function () {
         var attrs = this.op.attributes;
         return ['indent', 'align', 'direction', 'font', 'size', 'background']
             .filter(function (prop) { return !!attrs[prop]; })
+            .filter(function (prop) { return prop === 'background' ? OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true; })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
             .concat(this.op.isFormula() ? 'formula' : [])
             .concat(this.op.isVideo() ? 'video' : [])
@@ -353,7 +359,7 @@ var OpToHtmlConverter = (function () {
             .concat(styleAttr)
             .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
             makeAttr('target', '_blank')] : []);
-        if (this.op.isLink() && !!this.options.linkRel) {
+        if (this.op.isLink() && !!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));
         }
         return tagAttrs;
@@ -390,11 +396,14 @@ var OpToHtmlConverter = (function () {
                 : item._preferSecond();
         });
     };
+    OpToHtmlConverter.IsValidRel = function (relStr) {
+        return !!relStr.match(/^[a-zA-Z\-]{1,30}$/i);
+    };
     return OpToHtmlConverter;
 }());
 exports.OpToHtmlConverter = OpToHtmlConverter;
 
-},{"./extensions/Array":8,"./extensions/Object":9,"./extensions/String":10,"./funcs-html":11,"./value-types":15}],7:[function(require,module,exports){
+},{"./OpAttributeSanitizer":5,"./extensions/Array":8,"./extensions/Object":9,"./extensions/String":10,"./funcs-html":11,"./value-types":15}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertOpsConverter_1 = require("./InsertOpsConverter");
@@ -427,8 +436,7 @@ var QuillDeltaToHtmlConverter = (function () {
             classPrefix: this.options.classPrefix,
             listItemTag: this.options.listItemTag,
             paragraphTag: this.options.paragraphTag,
-            linkRel: this.options.linkRel,
-            allowNonHex: this.options.allowNonHex
+            linkRel: this.options.linkRel
         };
         this.rawDeltaOps = deltaOps;
     }
@@ -439,7 +447,7 @@ var QuillDeltaToHtmlConverter = (function () {
     };
     QuillDeltaToHtmlConverter.prototype.convert = function () {
         var _this = this;
-        var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps, this.converterOptions);
+        var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
         var pairedOps = Grouper_1.Grouper.pairOpsWithTheirBlock(deltaOps);
         var groupedSameStyleBlocks = Grouper_1.Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
             blockquotes: !!this.options.multiLineBlockquote,
@@ -971,4 +979,4 @@ var GroupType = {
 exports.GroupType = GroupType;
 
 },{}]},{},[7])(7)
-});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter;  
+});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter;   

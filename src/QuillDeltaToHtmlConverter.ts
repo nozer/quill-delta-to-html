@@ -25,8 +25,7 @@ interface IQuillDeltaToHtmlConverterOptions {
     multiLineHeader?: boolean,
     multiLineCodeblock?: boolean,
 
-    linkRel?: string,
-    allowNonHex?: boolean
+    linkRel?: string
 }
 
 const BrTag = '<br/>';
@@ -62,8 +61,7 @@ class QuillDeltaToHtmlConverter {
             classPrefix: this.options.classPrefix,
             listItemTag: this.options.listItemTag,
             paragraphTag: this.options.paragraphTag,
-            linkRel: this.options.linkRel,
-            allowNonHex: this.options.allowNonHex
+            linkRel: this.options.linkRel
         };
         this.rawDeltaOps = deltaOps;
 
@@ -76,7 +74,7 @@ class QuillDeltaToHtmlConverter {
     }
 
     convert() {
-        var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps, this.converterOptions);
+        var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
 
         var pairedOps = Grouper.pairOpsWithTheirBlock(deltaOps);
 

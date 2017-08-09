@@ -44,7 +44,6 @@ var html = converter.convert();
 |multiLineHeader| true | Same deal as `multiLineBlockquote` for headers|
 |multiLineCodeblock| true | Same deal as `multiLineBlockquote` for code-blocks|
 |linkRel| '' | Specifies a value to put on the `rel` attr on links|
-|allowNonHex| false | If true, allowes non hex values on color properties, e.g. `yellow`|
 
 ## Events ##
 

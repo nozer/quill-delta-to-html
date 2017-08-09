@@ -5,6 +5,7 @@ import './extensions/String';
 import './extensions/Object';
 import {IOpAttributes} from './IOpAttributes';
 import './extensions/Array';
+import {OpAttributeSanitizer} from "./OpAttributeSanitizer";
 
 
 interface IOpToHtmlConverterOptions {
@@ -100,6 +101,7 @@ class OpToHtmlConverter {
 
         return ['indent', 'align', 'direction', 'font', 'size', 'background']
             .filter((prop) => !!attrs[prop])
+            .filter((prop) => prop === 'background' ? OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true)
             .map((prop) => prop + '-' + attrs[prop])
             .concat(this.op.isFormula() ? 'formula' : [])
             .concat(this.op.isVideo() ? 'video' : [])
@@ -158,7 +160,7 @@ class OpToHtmlConverter {
             .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
                 makeAttr('target', '_blank')] : []);
 
-        if (this.op.isLink() && !!this.options.linkRel) {
+        if (this.op.isLink() && !!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));
         }
 
@@ -206,6 +208,9 @@ class OpToHtmlConverter {
             });
     }
 
+    static IsValidRel(relStr: string) {
+        return !!relStr.match(/^[a-zA-Z\-]{1,30}$/i);
+    }
 
 }
 

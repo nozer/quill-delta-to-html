@@ -2,11 +2,10 @@
 import { IOpAttributes } from './IOpAttributes';
 import { ListType, AlignType, DirectionType, ScriptType } from './value-types';
 import './extensions/String';
-import {IOpToHtmlConverterOptions} from "./OpToHtmlConverter";
 
 class OpAttributeSanitizer {
 
-    static sanitize(dirtyAttrs: IOpAttributes, options : IOpToHtmlConverterOptions): IOpAttributes {
+    static sanitize(dirtyAttrs: IOpAttributes): IOpAttributes {
 
         var cleanAttrs: any = {};
 
@@ -28,7 +27,8 @@ class OpAttributeSanitizer {
 
         ['background', 'color'].forEach(function (prop: string) {
             var val = (<any>dirtyAttrs)[prop];
-            if (val && (options.allowNonHex || OpAttributeSanitizer.IsValidHexColor(val + ''))) {
+            if (val && (OpAttributeSanitizer.IsValidHexColor(val + '') ||
+                    OpAttributeSanitizer.IsValidColorLiteral(val + ''))) {
                 cleanAttrs[prop] = val;
             }
         });
@@ -78,6 +78,10 @@ class OpAttributeSanitizer {
 
     static IsValidHexColor(colorStr: string) {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
+    }
+
+    static IsValidColorLiteral(colorStr: string) {
+        return !!colorStr.match(/^[a-zA-Z]{1,50}$/i);
     }
 
     static IsValidFontName(fontName: string) {
