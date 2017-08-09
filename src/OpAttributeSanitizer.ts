@@ -70,7 +70,9 @@ class OpAttributeSanitizer {
         }
 
         if (mentions) {
+            let { mention } = dirtyAttrs;
             cleanAttrs.mentions = mentions;
+            cleanAttrs.mention = mention;
         }
 
         return cleanAttrs;

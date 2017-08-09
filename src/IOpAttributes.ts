@@ -1,5 +1,5 @@
 
-import { ListType, AlignType, DirectionType, ScriptType } from './value-types';
+import { ListType, AlignType, DirectionType, ScriptType, MentionType } from './value-types';
 
 interface IOpAttributes {
     background?: string,
@@ -24,7 +24,8 @@ interface IOpAttributes {
     direction?: DirectionType,
     indent?: number,
 
-    mentions?: boolean
+    mentions?: boolean,
+    mention?: MentionType
 }
 
 export { IOpAttributes };

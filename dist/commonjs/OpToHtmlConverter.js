@@ -92,7 +92,8 @@ var OpToHtmlConverter = (function () {
             return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
         if (this.op.isMentions()) {
-            return tagAttrs.concat(makeAttr('class', 'custom-em'), makeAttr('href', 'javascript:void(0)'));
+            var mention = this.op.attributes.mention;
+            return tagAttrs.concat(makeAttr('class', mention.class), makeAttr('href', mention['end-point'] + '/' + mention.slug || 'javascript:void(0)'), makeAttr('target', mention.target));
         }
         var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
