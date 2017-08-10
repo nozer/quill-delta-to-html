@@ -168,6 +168,14 @@ describe('OpToHtmlConverter', function () {
                 { key: 'target', value: '_blank' }
             ]);
 
+            var c = new OpToHtmlConverter(o, {linkRel: 'nofollow'});
+            assert.deepEqual(c.getTagAttributes(), [
+                { key: 'style', value: 'color:red' },
+                { key: 'href', value: 'l' },
+                { key: 'target', value: '_blank' },
+                { key: 'rel', value: 'nofollow' }
+            ]);
+
         });
     });
 
@@ -256,6 +264,7 @@ describe('OpToHtmlConverter', function () {
         it('should return true if color literal is valid', function() {
             assert.ok(OpToHtmlConverter.IsValidRel('nofollow'));
             assert.ok(OpToHtmlConverter.IsValidRel('tag'));
+            assert.ok(OpToHtmlConverter.IsValidRel('tag nofollow'));
             assert.equal(OpToHtmlConverter.IsValidRel('no-follow'), false);
             assert.equal(OpToHtmlConverter.IsValidRel('tag1'), false);
             assert.equal(OpToHtmlConverter.IsValidRel(''), false);
