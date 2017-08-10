@@ -47,7 +47,10 @@ describe('OpToHtmlConverter', function () {
 
             o = new DeltaInsertOp('f', { background: 'red', color: 'blue' });
             c = new OpToHtmlConverter(o);
-            assert.deepEqual(c.getCssStyles(), ['background-color:red', 'color:blue']);
+            assert.deepEqual(c.getCssStyles(), ['color:blue', 'background-color:red']);
+
+            c = new OpToHtmlConverter(o, { allowBackgroundClasses: true });
+            assert.deepEqual(c.getCssStyles(), ['color:blue']);
 
         });
     });
@@ -60,7 +63,7 @@ describe('OpToHtmlConverter', function () {
 
             var attrs = {
                 indent: 1, align: AlignType.Center, direction: DirectionType.Rtl,
-                font: 'roman', size: 'small'
+                font: 'roman', size: 'small', background: 'red'
             }
             var o = new DeltaInsertOp('f', attrs);
             c = new OpToHtmlConverter(o);
@@ -79,6 +82,10 @@ describe('OpToHtmlConverter', function () {
             o = new DeltaInsertOp(new InsertData("formula", ""), attrs);
             c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getCssClasses(), classes.concat('ql-formula'));
+
+            o = new DeltaInsertOp('f', attrs);
+            c = new OpToHtmlConverter(o, {allowBackgroundClasses: true});
+            assert.deepEqual(c.getCssClasses(), classes.concat('ql-background-red'));
 
         });
     });
@@ -161,6 +168,14 @@ describe('OpToHtmlConverter', function () {
                 { key: 'target', value: '_blank' }
             ]);
 
+            var c = new OpToHtmlConverter(o, {linkRel: 'nofollow'});
+            assert.deepEqual(c.getTagAttributes(), [
+                { key: 'style', value: 'color:red' },
+                { key: 'href', value: 'l' },
+                { key: 'target', value: '_blank' },
+                { key: 'rel', value: 'nofollow' }
+            ]);
+
         });
     });
 
@@ -202,7 +217,7 @@ describe('OpToHtmlConverter', function () {
         var c1 = new OpToHtmlConverter(op1);
         var result = [
             '<a class="ql-font-verdana ql-size-small"',
-            ' style="background-color:#fff;color:red" href="http://" target="_blank">',
+            ' style="color:red;background-color:#fff" href="http://" target="_blank">',
             '<sup>',
             '<strong><em><s><u>aaa</u></s></em></strong>',
             '</sup>',
@@ -228,7 +243,7 @@ describe('OpToHtmlConverter', function () {
                 var act = c1.getHtml();
                 assert.equal(act, result);
 
-                
+
                 var op = new DeltaInsertOp("\n", { bold: true });
                 c1 = new OpToHtmlConverter(op, {encodeHtml: false});
                 assert.equal(c1.getHtml(), '\n');
@@ -243,6 +258,17 @@ describe('OpToHtmlConverter', function () {
             });
         });
 
+    });
+
+    describe('#IsValidColorLiteral()', function() {
+        it('should return true if color literal is valid', function() {
+            assert.ok(OpToHtmlConverter.IsValidRel('nofollow'));
+            assert.ok(OpToHtmlConverter.IsValidRel('tag'));
+            assert.ok(OpToHtmlConverter.IsValidRel('tag nofollow'));
+            assert.equal(OpToHtmlConverter.IsValidRel('no-follow'), false);
+            assert.equal(OpToHtmlConverter.IsValidRel('tag1'), false);
+            assert.equal(OpToHtmlConverter.IsValidRel(''), false);
+        });
     });
 
 });

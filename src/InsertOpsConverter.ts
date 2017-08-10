@@ -6,7 +6,7 @@ import { OpAttributeSanitizer } from './OpAttributeSanitizer';
 import { InsertOpDenormalizer } from './InsertOpDenormalizer';
 
 /**
- * Converts raw delta insert ops to array of denormalized DeltaInsertOp objects 
+ * Converts raw delta insert ops to array of denormalized DeltaInsertOp objects
  */
 class InsertOpsConverter {
 
@@ -16,7 +16,7 @@ class InsertOpsConverter {
             return [];
         }
 
-        var denormalizedOps = [].concat.apply([], 
+        var denormalizedOps = [].concat.apply([],
             deltaOps.map(InsertOpDenormalizer.denormalize));
         var results: DeltaInsertOp[] = [];
 
@@ -33,7 +33,7 @@ class InsertOpsConverter {
             }
 
             attributes =  OpAttributeSanitizer.sanitize(op.attributes);
-            
+
             results.push(new DeltaInsertOp(insertVal, attributes));
         }
         return results;

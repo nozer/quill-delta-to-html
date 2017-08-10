@@ -27,7 +27,8 @@ class OpAttributeSanitizer {
 
         ['background', 'color'].forEach(function (prop: string) {
             var val = (<any>dirtyAttrs)[prop];
-            if (val && OpAttributeSanitizer.IsValidHexColor(val + '')) {
+            if (val && (OpAttributeSanitizer.IsValidHexColor(val + '') ||
+                    OpAttributeSanitizer.IsValidColorLiteral(val + ''))) {
                 cleanAttrs[prop] = val;
             }
         });
@@ -51,7 +52,7 @@ class OpAttributeSanitizer {
         if (list === ListType.Bullet || list === ListType.Ordered) {
             cleanAttrs.list = list;
         }
-        
+
         if (Number(header)) {
             cleanAttrs.header = Math.min(Number(header), 6);
         }
@@ -79,6 +80,10 @@ class OpAttributeSanitizer {
 
     static IsValidHexColor(colorStr: string) {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
+    }
+
+    static IsValidColorLiteral(colorStr: string) {
+        return !!colorStr.match(/^[a-z]{1,50}$/i);
     }
 
     static IsValidFontName(fontName: string) {

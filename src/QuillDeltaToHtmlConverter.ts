@@ -23,7 +23,10 @@ interface IQuillDeltaToHtmlConverterOptions {
     encodeHtml?: boolean,
     multiLineBlockquote?: boolean,
     multiLineHeader?: boolean,
-    multiLineCodeblock?: boolean
+    multiLineCodeblock?: boolean,
+
+    linkRel?: string,
+    allowBackgroundClasses?: boolean
 }
 
 const BrTag = '<br/>';
@@ -34,7 +37,7 @@ class QuillDeltaToHtmlConverter {
     private rawDeltaOps: any[] = [];
     private converterOptions: IOpToHtmlConverterOptions;
 
-    // render callbacks 
+    // render callbacks
     private callbacks: any = {};
 
     constructor(
@@ -47,7 +50,8 @@ class QuillDeltaToHtmlConverter {
             classPrefix: 'ql',
             multiLineBlockquote: true,
             multiLineHeader: true,
-            multiLineCodeblock: true
+            multiLineCodeblock: true,
+            allowBackgroundClasses: false
         }, options, {
             orderedListTag: 'ol',
             bulletListTag: 'ul',
@@ -58,7 +62,9 @@ class QuillDeltaToHtmlConverter {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
             listItemTag: this.options.listItemTag,
-            paragraphTag: this.options.paragraphTag
+            paragraphTag: this.options.paragraphTag,
+            linkRel: this.options.linkRel,
+            allowBackgroundClasses: this.options.allowBackgroundClasses
         };
         this.rawDeltaOps = deltaOps;
 
@@ -84,7 +90,7 @@ class QuillDeltaToHtmlConverter {
         var groupedOps = Grouper.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
         var listNester = new ListNester();
         var groupListsNested = listNester.nest(groupedOps);
-        
+
         var len = groupListsNested.length;
         var group: TDataGroup, html;
         var htmlArr: string[] = [];
@@ -139,9 +145,9 @@ class QuillDeltaToHtmlConverter {
     }
 
     renderList(list: ListGroup, isOuterMost = true): string {
-       
+
         var firstItem  = list.items[0];
-        return  makeStartTag(this.getListTag(firstItem.item.op)) 
+        return  makeStartTag(this.getListTag(firstItem.item.op))
             + list.items.map((li: ListItem) => this.renderListItem(li, isOuterMost)).join('')
             + makeEndTag(this.getListTag(firstItem.item.op));
     }
@@ -177,7 +183,7 @@ class QuillDeltaToHtmlConverter {
     }
 
     renderInlines(ops: DeltaInsertOp[], wrapInParagraphTag = true) {
-        
+
         var nlRx = /\n/g;
         var pStart = wrapInParagraphTag ? makeStartTag(this.options.paragraphTag) : '';
         var pEnd = wrapInParagraphTag ? makeEndTag(this.options.paragraphTag) : '';

@@ -75,6 +75,9 @@ var DeltaInsertOp = (function () {
     DeltaInsertOp.prototype.isLink = function () {
         return this.isText() && !!this.attributes.link;
     };
+    DeltaInsertOp.prototype.isMentions = function () {
+        return this.isText() && !!this.attributes.mentions;
+    };
     return DeltaInsertOp;
 }());
 exports.DeltaInsertOp = DeltaInsertOp;
@@ -190,7 +193,7 @@ var OpAttributeSanitizer = (function () {
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
         }
-        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent;
+        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions;
         ['bold', 'italic', 'underline', 'strike', 'code', 'blockquote', 'code-block']
             .forEach(function (prop) {
             var v = dirtyAttrs[prop];
@@ -200,7 +203,8 @@ var OpAttributeSanitizer = (function () {
         });
         ['background', 'color'].forEach(function (prop) {
             var val = dirtyAttrs[prop];
-            if (val && OpAttributeSanitizer.IsValidHexColor(val + '')) {
+            if (val && (OpAttributeSanitizer.IsValidHexColor(val + '') ||
+                OpAttributeSanitizer.IsValidColorLiteral(val + ''))) {
                 cleanAttrs[prop] = val;
             }
         });
@@ -231,10 +235,18 @@ var OpAttributeSanitizer = (function () {
         if (indent && Number(indent)) {
             cleanAttrs.indent = Math.min(Number(indent), 30);
         }
+        if (mentions) {
+            var mention = dirtyAttrs.mention;
+            cleanAttrs.mentions = mentions;
+            cleanAttrs.mention = mention;
+        }
         return cleanAttrs;
     };
     OpAttributeSanitizer.IsValidHexColor = function (colorStr) {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
+    };
+    OpAttributeSanitizer.IsValidColorLiteral = function (colorStr) {
+        return !!colorStr.match(/^[a-z]{1,50}$/i);
     };
     OpAttributeSanitizer.IsValidFontName = function (fontName) {
         return !!fontName.match(/^[a-z\s0-9\- ]{1,30}$/i);
@@ -254,6 +266,7 @@ var value_types_1 = require("./value-types");
 require("./extensions/String");
 require("./extensions/Object");
 require("./extensions/Array");
+var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
 var OpToHtmlConverter = (function () {
     function OpToHtmlConverter(op, options) {
         this.op = op;
@@ -300,13 +313,21 @@ var OpToHtmlConverter = (function () {
         if (this.op.isContainerBlock()) {
             return '';
         }
+        if (this.op.isMentions()) {
+            return this.op.insert.value;
+        }
         var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
         return this.options.encodeHtml && funcs_html_1.encodeHtml(content) || content;
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
-        return ['indent', 'align', 'direction', 'font', 'size']
+        var propsArr = ['indent', 'align', 'direction', 'font', 'size'];
+        if (this.options.allowBackgroundClasses) {
+            propsArr.push('background');
+        }
+        return propsArr
             .filter(function (prop) { return !!attrs[prop]; })
+            .filter(function (prop) { return prop === 'background' ? OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true; })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
             .concat(this.op.isFormula() ? 'formula' : [])
             .concat(this.op.isVideo() ? 'video' : [])
@@ -315,7 +336,11 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getCssStyles = function () {
         var attrs = this.op.attributes;
-        return [['background', 'background-color'], ['color']]
+        var propsArr = [['color']];
+        if (!this.options.allowBackgroundClasses) {
+            propsArr.push(['background', 'background-color']);
+        }
+        return propsArr
             .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) { return item._preferSecond() + ':' + attrs[item[0]]; });
     };
@@ -335,11 +360,20 @@ var OpToHtmlConverter = (function () {
         if (this.op.isVideo()) {
             return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
+        if (this.op.isMentions()) {
+            var mention = this.op.attributes.mention;
+            return tagAttrs.concat(makeAttr('class', mention.class), makeAttr('href', mention['end-point'] + '/' + mention.slug || 'javascript:void(0)'), makeAttr('target', mention.target));
+        }
         var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
-        return tagAttrs
+        tagAttrs = tagAttrs
             .concat(styleAttr)
-            .concat(this.op.isLink() ? makeAttr('href', this.op.attributes.link) : []);
+            .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
+            makeAttr('target', '_blank')] : []);
+        if (this.op.isLink() && !!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
+            tagAttrs.push(makeAttr('rel', this.options.linkRel));
+        }
+        return tagAttrs;
     };
     OpToHtmlConverter.prototype.getTags = function () {
         var attrs = this.op.attributes;
@@ -364,8 +398,8 @@ var OpToHtmlConverter = (function () {
             }
         }
         return [['link', 'a'], ['script'],
-            ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u']
-        ]
+            ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u'],
+            ['mentions', 'a']]
             .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) {
             return item[0] === 'script' ?
@@ -373,11 +407,14 @@ var OpToHtmlConverter = (function () {
                 : item._preferSecond();
         });
     };
+    OpToHtmlConverter.IsValidRel = function (relStr) {
+        return !!relStr.match(/^[a-z\s]{1,50}$/i);
+    };
     return OpToHtmlConverter;
 }());
 exports.OpToHtmlConverter = OpToHtmlConverter;
 
-},{"./extensions/Array":8,"./extensions/Object":9,"./extensions/String":10,"./funcs-html":11,"./value-types":15}],7:[function(require,module,exports){
+},{"./OpAttributeSanitizer":5,"./extensions/Array":8,"./extensions/Object":9,"./extensions/String":10,"./funcs-html":11,"./value-types":15}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertOpsConverter_1 = require("./InsertOpsConverter");
@@ -399,7 +436,8 @@ var QuillDeltaToHtmlConverter = (function () {
             classPrefix: 'ql',
             multiLineBlockquote: true,
             multiLineHeader: true,
-            multiLineCodeblock: true
+            multiLineCodeblock: true,
+            allowBackgroundClasses: false
         }, options, {
             orderedListTag: 'ol',
             bulletListTag: 'ul',
@@ -409,7 +447,9 @@ var QuillDeltaToHtmlConverter = (function () {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
             listItemTag: this.options.listItemTag,
-            paragraphTag: this.options.paragraphTag
+            paragraphTag: this.options.paragraphTag,
+            linkRel: this.options.linkRel,
+            allowBackgroundClasses: this.options.allowBackgroundClasses
         };
         this.rawDeltaOps = deltaOps;
     }
@@ -950,6 +990,16 @@ var GroupType = {
     Video: 'video'
 };
 exports.GroupType = GroupType;
+var MentionType = {
+    Name: 'name',
+    Target: 'target',
+    Slug: 'slug',
+    Class: 'class',
+    Avatar: 'avatar',
+    Id: 'id',
+    EndPoint: 'end-point'
+};
+exports.MentionType = MentionType;
 
 },{}]},{},[7])(7)
-});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter; 
+});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter;   
