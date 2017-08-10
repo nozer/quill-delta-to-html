@@ -63,7 +63,7 @@ var OpAttributeSanitizer = (function () {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
     };
     OpAttributeSanitizer.IsValidColorLiteral = function (colorStr) {
-        return !!colorStr.match(/^[a-zA-Z]{1,50}$/i);
+        return !!colorStr.match(/^[a-z]{1,50}$/i);
     };
     OpAttributeSanitizer.IsValidFontName = function (fontName) {
         return !!fontName.match(/^[a-z\s0-9\- ]{1,30}$/i);

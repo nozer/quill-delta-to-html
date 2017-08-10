@@ -83,7 +83,7 @@ class OpAttributeSanitizer {
     }
 
     static IsValidColorLiteral(colorStr: string) {
-        return !!colorStr.match(/^[a-zA-Z]{1,50}$/i);
+        return !!colorStr.match(/^[a-z]{1,50}$/i);
     }
 
     static IsValidFontName(fontName: string) {

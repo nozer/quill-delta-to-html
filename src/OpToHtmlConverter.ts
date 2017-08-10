@@ -14,7 +14,7 @@ interface IOpToHtmlConverterOptions {
     listItemTag?: string,
     paragraphTag?: string,
     linkRel?: string,
-    allowNonHex?: boolean
+    allowBackgroundClasses?: boolean
 }
 
 interface IHtmlParts {
@@ -99,7 +99,11 @@ class OpToHtmlConverter {
 
         type Str2StrType = { (x: string): string };
 
-        return ['indent', 'align', 'direction', 'font', 'size', 'background']
+        var propsArr = ['indent', 'align', 'direction', 'font', 'size'];
+        if (this.options.allowBackgroundClasses) {
+            propsArr.push('background');
+        }
+        return propsArr
             .filter((prop) => !!attrs[prop])
             .filter((prop) => prop === 'background' ? OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true)
             .map((prop) => prop + '-' + attrs[prop])
@@ -114,7 +118,11 @@ class OpToHtmlConverter {
 
         var attrs: any = this.op.attributes;
 
-        return [['background', 'background-color'], ['color']]
+        var propsArr = [['color']];
+        if (!this.options.allowBackgroundClasses) {
+            propsArr.push(['background', 'background-color']);
+        }
+        return propsArr
             .filter((item) => !!attrs[item[0]])
             .map((item: any[]) => item._preferSecond() + ':' + attrs[item[0]]);
     }
@@ -211,7 +219,7 @@ class OpToHtmlConverter {
     }
 
     static IsValidRel(relStr: string) {
-        return !!relStr.match(/^[a-zA-Z\-]{1,30}$/i);
+        return !!relStr.match(/^[a-z\s]{1,50}$/i);
     }
 
 }

@@ -236,7 +236,9 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.indent = Math.min(Number(indent), 30);
         }
         if (mentions) {
+            var mention = dirtyAttrs.mention;
             cleanAttrs.mentions = mentions;
+            cleanAttrs.mention = mention;
         }
         return cleanAttrs;
     };
@@ -244,7 +246,7 @@ var OpAttributeSanitizer = (function () {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
     };
     OpAttributeSanitizer.IsValidColorLiteral = function (colorStr) {
-        return !!colorStr.match(/^[a-zA-Z]{1,50}$/i);
+        return !!colorStr.match(/^[a-z]{1,50}$/i);
     };
     OpAttributeSanitizer.IsValidFontName = function (fontName) {
         return !!fontName.match(/^[a-z\s0-9\- ]{1,30}$/i);
@@ -319,7 +321,11 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
-        return ['indent', 'align', 'direction', 'font', 'size', 'background']
+        var propsArr = ['indent', 'align', 'direction', 'font', 'size'];
+        if (this.options.allowBackgroundClasses) {
+            propsArr.push('background');
+        }
+        return propsArr
             .filter(function (prop) { return !!attrs[prop]; })
             .filter(function (prop) { return prop === 'background' ? OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true; })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
@@ -330,7 +336,11 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getCssStyles = function () {
         var attrs = this.op.attributes;
-        return [['background', 'background-color'], ['color']]
+        var propsArr = [['color']];
+        if (!this.options.allowBackgroundClasses) {
+            propsArr.push(['background', 'background-color']);
+        }
+        return propsArr
             .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) { return item._preferSecond() + ':' + attrs[item[0]]; });
     };
@@ -351,7 +361,8 @@ var OpToHtmlConverter = (function () {
             return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
         if (this.op.isMentions()) {
-            return tagAttrs.concat(makeAttr('class', 'custom-em'), makeAttr('href', 'javascript:void(0)'));
+            var mention = this.op.attributes.mention;
+            return tagAttrs.concat(makeAttr('class', mention.class), makeAttr('href', mention['end-point'] + '/' + mention.slug || 'javascript:void(0)'), makeAttr('target', mention.target));
         }
         var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
@@ -397,7 +408,7 @@ var OpToHtmlConverter = (function () {
         });
     };
     OpToHtmlConverter.IsValidRel = function (relStr) {
-        return !!relStr.match(/^[a-zA-Z\-]{1,30}$/i);
+        return !!relStr.match(/^[a-z\s]{1,50}$/i);
     };
     return OpToHtmlConverter;
 }());
@@ -425,7 +436,8 @@ var QuillDeltaToHtmlConverter = (function () {
             classPrefix: 'ql',
             multiLineBlockquote: true,
             multiLineHeader: true,
-            multiLineCodeblock: true
+            multiLineCodeblock: true,
+            allowBackgroundClasses: false
         }, options, {
             orderedListTag: 'ol',
             bulletListTag: 'ul',
@@ -436,7 +448,8 @@ var QuillDeltaToHtmlConverter = (function () {
             classPrefix: this.options.classPrefix,
             listItemTag: this.options.listItemTag,
             paragraphTag: this.options.paragraphTag,
-            linkRel: this.options.linkRel
+            linkRel: this.options.linkRel,
+            allowBackgroundClasses: this.options.allowBackgroundClasses
         };
         this.rawDeltaOps = deltaOps;
     }
@@ -977,6 +990,16 @@ var GroupType = {
     Video: 'video'
 };
 exports.GroupType = GroupType;
+var MentionType = {
+    Name: 'name',
+    Target: 'target',
+    Slug: 'slug',
+    Class: 'class',
+    Avatar: 'avatar',
+    Id: 'id',
+    EndPoint: 'end-point'
+};
+exports.MentionType = MentionType;
 
 },{}]},{},[7])(7)
 });; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter;   

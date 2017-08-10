@@ -60,7 +60,11 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
-        return ['indent', 'align', 'direction', 'font', 'size', 'background']
+        var propsArr = ['indent', 'align', 'direction', 'font', 'size'];
+        if (this.options.allowBackgroundClasses) {
+            propsArr.push('background');
+        }
+        return propsArr
             .filter(function (prop) { return !!attrs[prop]; })
             .filter(function (prop) { return prop === 'background' ? OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true; })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
@@ -71,7 +75,11 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getCssStyles = function () {
         var attrs = this.op.attributes;
-        return [['background', 'background-color'], ['color']]
+        var propsArr = [['color']];
+        if (!this.options.allowBackgroundClasses) {
+            propsArr.push(['background', 'background-color']);
+        }
+        return propsArr
             .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) { return item._preferSecond() + ':' + attrs[item[0]]; });
     };
@@ -139,7 +147,7 @@ var OpToHtmlConverter = (function () {
         });
     };
     OpToHtmlConverter.IsValidRel = function (relStr) {
-        return !!relStr.match(/^[a-zA-Z\-]{1,30}$/i);
+        return !!relStr.match(/^[a-z\s]{1,50}$/i);
     };
     return OpToHtmlConverter;
 }());
