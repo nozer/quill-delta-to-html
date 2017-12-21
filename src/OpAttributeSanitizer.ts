@@ -93,6 +93,10 @@ class OpAttributeSanitizer {
     static IsValidSize(size: string) {
         return !!size.match(/^[a-z\-]{1,20}$/i)
     }
+	
+    static IsValidWidth(width: string) {
+        return !!width.match(/^[0-9]*$/)
+    }
 }
 
 export { OpAttributeSanitizer }

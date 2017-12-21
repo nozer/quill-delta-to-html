@@ -33,6 +33,13 @@ describe('OpAttributeSanitizer', function () {
         });
     });
 
+    describe('#IsValidWidth()', function() {
+        it('should return true if width is valid', function() {
+            assert.ok(OpAttributeSanitizer.IsValidWidth('150'));
+            assert.equal(OpAttributeSanitizer.IsValidWidth('250x'), false);
+        });
+    });
+
     describe('#IsValidColorLiteral()', function() {
         it('should return true if color literal is valid', function() {
             assert.ok(OpAttributeSanitizer.IsValidColorLiteral('yellow'));
