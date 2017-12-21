@@ -138,6 +138,7 @@ class OpToHtmlConverter {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
 
         if (this.op.isImage()) {
+            this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
             return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
 

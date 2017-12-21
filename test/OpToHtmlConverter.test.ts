@@ -144,6 +144,14 @@ describe('OpToHtmlConverter', function () {
                 { key: 'src', value: "-" }
             ]);
 
+            var o = new DeltaInsertOp(new InsertData("image", "-"), { width: '200' });
+            var c = new OpToHtmlConverter(o);
+            assert.deepEqual(c.getTagAttributes(), [
+                { key: 'class', value: "ql-image" },
+                { key: 'width', value: "200"},
+                { key: 'src', value: "-" }
+            ]);
+
             var o = new DeltaInsertOp(new InsertData('formula', "-"), { color: 'red' });
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), [

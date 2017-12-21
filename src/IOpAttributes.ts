@@ -6,6 +6,7 @@ interface IOpAttributes {
     color?: string,
     font?: string,
     size?: string,
+    width?: string,
 
     link?: string,
     bold?: boolean,
