@@ -14,7 +14,8 @@ class OpAttributeSanitizer {
         }
 
         let {
-            font, size, link, script, list, header, align, direction, indent, mentions
+            font, size, link, script, list, header, align, direction, indent, 
+            mentions, width
         } = dirtyAttrs;
 
         ['bold', 'italic', 'underline', 'strike', 'code', 'blockquote', 'code-block']
@@ -39,6 +40,10 @@ class OpAttributeSanitizer {
 
         if (size && OpAttributeSanitizer.IsValidSize(size + '')) {
             cleanAttrs.size = size;
+        }
+
+        if (width && OpAttributeSanitizer.IsValidWidth(width + '')) {
+            cleanAttrs.width = width;
         }
 
         if (link) {
