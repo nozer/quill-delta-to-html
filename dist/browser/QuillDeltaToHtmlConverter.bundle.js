@@ -254,6 +254,9 @@ var OpAttributeSanitizer = (function () {
     OpAttributeSanitizer.IsValidSize = function (size) {
         return !!size.match(/^[a-z\-]{1,20}$/i);
     };
+    OpAttributeSanitizer.IsValidWidth = function (width) {
+        return !!width.match(/^[0-9]*$/);
+    };
     return OpAttributeSanitizer;
 }());
 exports.OpAttributeSanitizer = OpAttributeSanitizer;
@@ -352,6 +355,7 @@ var OpToHtmlConverter = (function () {
         var classes = this.getCssClasses();
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
+            this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
             return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
         }
         if (this.op.isFormula() || this.op.isContainerBlock()) {
@@ -1002,4 +1006,4 @@ var MentionType = {
 exports.MentionType = MentionType;
 
 },{}]},{},[7])(7)
-});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter;   
+});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter; 

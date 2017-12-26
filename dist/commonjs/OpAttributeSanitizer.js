@@ -71,6 +71,9 @@ var OpAttributeSanitizer = (function () {
     OpAttributeSanitizer.IsValidSize = function (size) {
         return !!size.match(/^[a-z\-]{1,20}$/i);
     };
+    OpAttributeSanitizer.IsValidWidth = function (width) {
+        return !!width.match(/^[0-9]*$/);
+    };
     return OpAttributeSanitizer;
 }());
 exports.OpAttributeSanitizer = OpAttributeSanitizer;
