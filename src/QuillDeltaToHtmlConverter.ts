@@ -171,7 +171,7 @@ class QuillDeltaToHtmlConverter {
 
         if (op.isCodeBlock()) {
             return htmlParts.openingTag +
-                ops.map((op) => op.insert.value).join(NewLine)
+                ops.map((op) => op.insert.value).join("")
                 + htmlParts.closingTag;
         }
 

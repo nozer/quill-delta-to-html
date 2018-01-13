@@ -1,7 +1,36 @@
 
-import { IOpAttributes } from './IOpAttributes';
-import { ListType, AlignType, DirectionType, ScriptType } from './value-types';
+import { ListType, AlignType, DirectionType, ScriptType} from './value-types';
+import {MentionSanitizer} from "./mentions/MentionSanitizer";
 import './extensions/String';
+import {IMention} from "./mentions/MentionSanitizer";
+
+interface IOpAttributes {
+    background?: string,
+    color?: string,
+    font?: string,
+    size?: string,
+    width?: string,
+
+    link?: string,
+    bold?: boolean,
+    italic?: boolean,
+    underline?: boolean,
+    strike?: boolean,
+    script?: ScriptType,
+
+    code?: boolean,
+
+    list?: ListType,
+    blockquote?: boolean,
+    'code-block'?: boolean,
+    header?: number,
+    align?: AlignType,
+    direction?: DirectionType,
+    indent?: number,
+
+    mentions?: boolean,
+    mention?: IMention
+}
 
 class OpAttributeSanitizer {
 
@@ -15,7 +44,7 @@ class OpAttributeSanitizer {
 
         let {
             font, size, link, script, list, header, align, direction, indent, 
-            mentions, width
+            mentions, mention, width
         } = dirtyAttrs;
 
         ['bold', 'italic', 'underline', 'strike', 'code', 'blockquote', 'code-block']
@@ -74,10 +103,12 @@ class OpAttributeSanitizer {
             cleanAttrs.indent = Math.min(Number(indent), 30);
         }
 
-        if (mentions) {
-            let { mention } = dirtyAttrs;
-            cleanAttrs.mentions = mentions;
-            cleanAttrs.mention = mention;
+        if (mentions && mention) {
+            let sanitizedMention = MentionSanitizer.sanitize(mention);
+            if (Object.keys(sanitizedMention).length > 0) {
+                cleanAttrs.mentions = !!mentions;
+                cleanAttrs.mention = mention;
+            }
         }
 
         return cleanAttrs;
@@ -104,4 +135,4 @@ class OpAttributeSanitizer {
     }
 }
 
-export { OpAttributeSanitizer }
+export { OpAttributeSanitizer, IOpAttributes }

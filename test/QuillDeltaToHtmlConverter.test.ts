@@ -39,6 +39,33 @@ describe('QuillDeltaToHtmlConverter', function () {
             assert.equal(html.indexOf('<pre>this is code') > -1, true);
         });
 
+        it('should render mention', function(){
+            let ops = [
+                {insert:"mention", attributes: {
+                    mentions: true,
+                    mention: {
+                        'end-point': 'http://abc.com',
+                        slug:'a',
+                        class: 'abc', target:'_blank' }
+                }}
+            ]
+            var qdc = new QuillDeltaToHtmlConverter(ops);
+            var html = qdc.convert();
+            assert.equal(html, ['<p><a class="abc"',
+                ' href="http://abc.com/a" target="_blank"',
+                '>mention</a></p>'
+            ].join(""));
+
+            var qdc = new QuillDeltaToHtmlConverter([{
+                insert: 'mention',attributes: {
+                    mentions:true,mention:{slug: 'aa'}}
+            }]);
+            var html = qdc.convert();
+            assert.equal(html, ['<p><a',
+                ' href="javascript:void(0)">mention</a></p>'
+            ].join(""));
+        });
+
         it('should open and close list tags', function(){
             var ops4 = [
                 {insert: "mr\n"},
@@ -180,6 +207,54 @@ describe('QuillDeltaToHtmlConverter', function () {
                 assert.equal(blockhtml, ['<h3 class="ql-indent-2">',
                     '<br/></h3>'].join(''));
 
+            });
+
+            it('should correctly render code block', function () {
+                let ops = [
+                    {
+                      "insert": "line 1"
+                    },
+                    {
+                      "attributes": {
+                        "code-block": true
+                      },
+                      "insert": "\n"
+                    },
+                    {
+                      "insert": "line 2"
+                    },
+                    {
+                      "attributes": {
+                        "code-block": true
+                      },
+                      "insert": "\n"
+                    },
+                    {
+                      "insert": "line 3"
+                    },
+                    {
+                      "attributes": {
+                        "code-block": true
+                      },
+                      "insert": "\n"
+                    }
+                  ]
+                
+                var qdc = new QuillDeltaToHtmlConverter(ops);
+                let html = qdc.convert();
+                assert.equal(html, "<pre>line 1\nline 2\nline 3</pre>");
+                
+                qdc = new QuillDeltaToHtmlConverter(ops, {
+                    multiLineCodeblock: false
+                });
+                html = qdc.convert();
+                assert.equal(
+                    '<pre>line 1</pre><pre>line 2</pre><pre>line 3</pre>',
+                    html);
+                qdc = new QuillDeltaToHtmlConverter([ops[0], ops[1]]);
+                html = qdc.convert();
+                assert.equal(html, '<pre>line 1</pre>');
+                
             });
         });
 

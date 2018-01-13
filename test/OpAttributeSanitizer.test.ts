@@ -72,7 +72,17 @@ describe('OpAttributeSanitizer', function () {
             header: '3',
             indent: 40,
             direction: DirectionType.Rtl,
-            align: AlignType.Center
+            align: AlignType.Center,
+            width: '3',
+            mentions: true,
+            mention: {
+               'class': 'A-cls-9',
+               id: 'An-id_9:.',
+               target: '_blank',
+               avatar: 'http://www.yahoo.com',
+               'end-point': 'http://abc.com',
+               slug: 'my-name'
+            }
         };
         it('should return sanitized attributes', function() {
             assert.deepEqual(OpAttributeSanitizer.sanitize(<any>attrs), {
@@ -84,8 +94,22 @@ describe('OpAttributeSanitizer', function () {
                 header: 3,
                 indent: 30,
                 direction: 'rtl',
-                align: 'center'
+                align: 'center',
+                width: '3',
+                mentions: true,
+                mention: {
+                  'class': 'A-cls-9',
+                  id: 'An-id_9:.',
+                  target: '_blank',
+                  avatar: 'http://www.yahoo.com',
+                  'end-point': 'http://abc.com',
+                  slug: 'my-name'
+                }
             });
+
+            assert.deepEqual(OpAttributeSanitizer.sanitize(<any>{
+                mentions: true, mention: 1
+            }), {});
 
             assert.deepEqual(OpAttributeSanitizer.sanitize({header: 1}), {header: 1});
             assert.deepEqual(OpAttributeSanitizer.sanitize({header: null}), {});

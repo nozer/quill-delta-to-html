@@ -41,15 +41,4 @@ const GroupType = {
     Video: 'video' as GroupType
 };
 
-type MentionType = "name" | "target" | "slug" | "class" | 'avatar' | 'id' | 'mention-end-point';
-const MentionType = {
-    Name: 'name' as MentionType,
-    Target: 'target' as MentionType,
-    Slug: 'slug' as MentionType,
-    Class: 'class' as MentionType,
-    Avatar: 'avatar' as MentionType,
-    Id: 'id' as MentionType,
-    EndPoint: 'end-point' as MentionType
-};
-
-export { NewLine, ListType, ScriptType, DirectionType, AlignType, DataType, GroupType, MentionType };
+export { NewLine, ListType, ScriptType, DirectionType, AlignType, DataType, GroupType };

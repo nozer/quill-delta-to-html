@@ -3,9 +3,9 @@ import {DeltaInsertOp} from './DeltaInsertOp';
 import {ScriptType, NewLine} from './value-types';
 import './extensions/String';
 import './extensions/Object';
-import {IOpAttributes} from './IOpAttributes';
+import {IMention} from "./mentions/MentionSanitizer";
 import './extensions/Array';
-import {OpAttributeSanitizer} from "./OpAttributeSanitizer";
+import {OpAttributeSanitizer, IOpAttributes} from "./OpAttributeSanitizer";
 
 
 interface IOpToHtmlConverterOptions {
@@ -155,12 +155,21 @@ class OpToHtmlConverter {
         }
 
         if (this.op.isMentions()) {
-            var mention: any = this.op.attributes.mention;
-            return tagAttrs.concat(
-                makeAttr('class', mention.class),
-                makeAttr('href', mention['end-point'] + '/' + mention.slug || 'javascript:void(0)'),
-                makeAttr('target', mention.target)
-            );
+            var mention: IMention = this.op.attributes.mention;
+            if (mention.class) {
+                tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
+            }
+            if (mention['end-point'] && mention.slug) {
+                tagAttrs = tagAttrs.concat(
+                    makeAttr('href', mention['end-point'] + '/' + mention.slug)
+                );
+            } else {
+                tagAttrs  = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
+            }
+            if (mention.target) {
+                tagAttrs = tagAttrs.concat(makeAttr('target', mention.target));
+            }
+            return tagAttrs;
         }
 
         var styles = this.getCssStyles();

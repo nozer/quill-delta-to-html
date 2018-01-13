@@ -116,7 +116,7 @@ var QuillDeltaToHtmlConverter = (function () {
         var htmlParts = converter.getHtmlParts();
         if (op.isCodeBlock()) {
             return htmlParts.openingTag +
-                ops.map(function (op) { return op.insert.value; }).join(value_types_1.NewLine)
+                ops.map(function (op) { return op.insert.value; }).join("")
                 + htmlParts.closingTag;
         }
         var inlines = ops.map(function (op) {

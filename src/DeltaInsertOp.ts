@@ -1,6 +1,6 @@
 
 import { NewLine, ListType, DataType } from './value-types';
-import { IOpAttributes } from './IOpAttributes';
+import { IOpAttributes } from "./OpAttributeSanitizer";
 import { InsertData } from './InsertData';
 
 class DeltaInsertOp {

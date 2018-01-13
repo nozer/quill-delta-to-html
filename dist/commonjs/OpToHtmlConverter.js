@@ -102,7 +102,19 @@ var OpToHtmlConverter = (function () {
         }
         if (this.op.isMentions()) {
             var mention = this.op.attributes.mention;
-            return tagAttrs.concat(makeAttr('class', mention.class), makeAttr('href', mention['end-point'] + '/' + mention.slug || 'javascript:void(0)'), makeAttr('target', mention.target));
+            if (mention.class) {
+                tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
+            }
+            if (mention['end-point'] && mention.slug) {
+                tagAttrs = tagAttrs.concat(makeAttr('href', mention['end-point'] + '/' + mention.slug));
+            }
+            else {
+                tagAttrs = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
+            }
+            if (mention.target) {
+                tagAttrs = tagAttrs.concat(makeAttr('target', mention.target));
+            }
+            return tagAttrs;
         }
         var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];

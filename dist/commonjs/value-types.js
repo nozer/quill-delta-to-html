@@ -35,13 +35,3 @@ var GroupType = {
     Video: 'video'
 };
 exports.GroupType = GroupType;
-var MentionType = {
-    Name: 'name',
-    Target: 'target',
-    Slug: 'slug',
-    Class: 'class',
-    Avatar: 'avatar',
-    Id: 'id',
-    EndPoint: 'end-point'
-};
-exports.MentionType = MentionType;

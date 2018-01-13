@@ -82,7 +82,7 @@ var DeltaInsertOp = (function () {
 }());
 exports.DeltaInsertOp = DeltaInsertOp;
 
-},{"./InsertData":2,"./value-types":15}],2:[function(require,module,exports){
+},{"./InsertData":2,"./value-types":16}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertData = (function () {
@@ -129,7 +129,7 @@ var InsertOpDenormalizer = (function () {
 }());
 exports.InsertOpDenormalizer = InsertOpDenormalizer;
 
-},{"./extensions/Object":9,"./extensions/String":10,"./value-types":15}],4:[function(require,module,exports){
+},{"./extensions/Object":9,"./extensions/String":10,"./value-types":16}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var DeltaInsertOp_1 = require("./DeltaInsertOp");
@@ -180,10 +180,11 @@ var InsertOpsConverter = (function () {
 }());
 exports.InsertOpsConverter = InsertOpsConverter;
 
-},{"./DeltaInsertOp":1,"./InsertData":2,"./InsertOpDenormalizer":3,"./OpAttributeSanitizer":5,"./value-types":15}],5:[function(require,module,exports){
+},{"./DeltaInsertOp":1,"./InsertData":2,"./InsertOpDenormalizer":3,"./OpAttributeSanitizer":5,"./value-types":16}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
+var MentionSanitizer_1 = require("./mentions/MentionSanitizer");
 require("./extensions/String");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
@@ -193,7 +194,7 @@ var OpAttributeSanitizer = (function () {
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
         }
-        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions;
+        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width;
         ['bold', 'italic', 'underline', 'strike', 'code', 'blockquote', 'code-block']
             .forEach(function (prop) {
             var v = dirtyAttrs[prop];
@@ -213,6 +214,9 @@ var OpAttributeSanitizer = (function () {
         }
         if (size && OpAttributeSanitizer.IsValidSize(size + '')) {
             cleanAttrs.size = size;
+        }
+        if (width && OpAttributeSanitizer.IsValidWidth(width + '')) {
+            cleanAttrs.width = width;
         }
         if (link) {
             cleanAttrs.link = (link + '')._scrubUrl();
@@ -235,10 +239,12 @@ var OpAttributeSanitizer = (function () {
         if (indent && Number(indent)) {
             cleanAttrs.indent = Math.min(Number(indent), 30);
         }
-        if (mentions) {
-            var mention = dirtyAttrs.mention;
-            cleanAttrs.mentions = mentions;
-            cleanAttrs.mention = mention;
+        if (mentions && mention) {
+            var sanitizedMention = MentionSanitizer_1.MentionSanitizer.sanitize(mention);
+            if (Object.keys(sanitizedMention).length > 0) {
+                cleanAttrs.mentions = !!mentions;
+                cleanAttrs.mention = mention;
+            }
         }
         return cleanAttrs;
     };
@@ -261,7 +267,7 @@ var OpAttributeSanitizer = (function () {
 }());
 exports.OpAttributeSanitizer = OpAttributeSanitizer;
 
-},{"./extensions/String":10,"./value-types":15}],6:[function(require,module,exports){
+},{"./extensions/String":10,"./mentions/MentionSanitizer":15,"./value-types":16}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var funcs_html_1 = require("./funcs-html");
@@ -366,7 +372,19 @@ var OpToHtmlConverter = (function () {
         }
         if (this.op.isMentions()) {
             var mention = this.op.attributes.mention;
-            return tagAttrs.concat(makeAttr('class', mention.class), makeAttr('href', mention['end-point'] + '/' + mention.slug || 'javascript:void(0)'), makeAttr('target', mention.target));
+            if (mention.class) {
+                tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
+            }
+            if (mention['end-point'] && mention.slug) {
+                tagAttrs = tagAttrs.concat(makeAttr('href', mention['end-point'] + '/' + mention.slug));
+            }
+            else {
+                tagAttrs = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
+            }
+            if (mention.target) {
+                tagAttrs = tagAttrs.concat(makeAttr('target', mention.target));
+            }
+            return tagAttrs;
         }
         var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
@@ -418,7 +436,7 @@ var OpToHtmlConverter = (function () {
 }());
 exports.OpToHtmlConverter = OpToHtmlConverter;
 
-},{"./OpAttributeSanitizer":5,"./extensions/Array":8,"./extensions/Object":9,"./extensions/String":10,"./funcs-html":11,"./value-types":15}],7:[function(require,module,exports){
+},{"./OpAttributeSanitizer":5,"./extensions/Array":8,"./extensions/Object":9,"./extensions/String":10,"./funcs-html":11,"./value-types":16}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertOpsConverter_1 = require("./InsertOpsConverter");
@@ -537,7 +555,7 @@ var QuillDeltaToHtmlConverter = (function () {
         var htmlParts = converter.getHtmlParts();
         if (op.isCodeBlock()) {
             return htmlParts.openingTag +
-                ops.map(function (op) { return op.insert.value; }).join(value_types_1.NewLine)
+                ops.map(function (op) { return op.insert.value; }).join("")
                 + htmlParts.closingTag;
         }
         var inlines = ops.map(function (op) {
@@ -578,7 +596,7 @@ var QuillDeltaToHtmlConverter = (function () {
 }());
 exports.QuillDeltaToHtmlConverter = QuillDeltaToHtmlConverter;
 
-},{"./InsertOpsConverter":4,"./OpToHtmlConverter":6,"./extensions/Object":9,"./funcs-html":11,"./grouper/Grouper":12,"./grouper/ListNester":13,"./grouper/group-types":14,"./value-types":15}],8:[function(require,module,exports){
+},{"./InsertOpsConverter":4,"./OpToHtmlConverter":6,"./extensions/Object":9,"./funcs-html":11,"./grouper/Grouper":12,"./grouper/ListNester":13,"./grouper/group-types":14,"./value-types":16}],8:[function(require,module,exports){
 Array.prototype._preferSecond = function () {
     if (this.length === 0) {
         return null;
@@ -959,6 +977,51 @@ exports.ListItem = ListItem;
 },{}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+require("./../extensions/String");
+var MentionSanitizer = (function () {
+    function MentionSanitizer() {
+    }
+    MentionSanitizer.sanitize = function (dirtyObj) {
+        var cleanObj = {};
+        if (!dirtyObj || typeof dirtyObj !== 'object') {
+            return cleanObj;
+        }
+        if (dirtyObj.class && MentionSanitizer.IsValidClass(dirtyObj.class)) {
+            cleanObj.class = dirtyObj.class;
+        }
+        if (dirtyObj.id && MentionSanitizer.IsValidId(dirtyObj.id)) {
+            cleanObj.id = dirtyObj.id;
+        }
+        if (MentionSanitizer.IsValidTarget(dirtyObj.target)) {
+            cleanObj.target = dirtyObj.target;
+        }
+        if (dirtyObj.avatar) {
+            cleanObj.avatar = (dirtyObj.avatar + '')._scrubUrl();
+        }
+        if (dirtyObj['end-point']) {
+            cleanObj['end-point'] = (dirtyObj['end-point'] + '')._scrubUrl();
+        }
+        if (dirtyObj.slug) {
+            cleanObj.slug = (dirtyObj.slug + '')._scrubUrl();
+        }
+        return cleanObj;
+    };
+    MentionSanitizer.IsValidClass = function (classAttr) {
+        return !!classAttr.match(/^[a-zA-Z0-9_\-]{1,500}$/i);
+    };
+    MentionSanitizer.IsValidId = function (idAttr) {
+        return !!idAttr.match(/^[a-zA-Z0-9_\-\:\.]{1,500}$/i);
+    };
+    MentionSanitizer.IsValidTarget = function (target) {
+        return ['_self', '_blank', '_parent', '_top'].indexOf(target) > -1;
+    };
+    return MentionSanitizer;
+}());
+exports.MentionSanitizer = MentionSanitizer;
+
+},{"./../extensions/String":10}],16:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var NewLine = "\n";
 exports.NewLine = NewLine;
 var ListType = {
@@ -994,16 +1057,6 @@ var GroupType = {
     Video: 'video'
 };
 exports.GroupType = GroupType;
-var MentionType = {
-    Name: 'name',
-    Target: 'target',
-    Slug: 'slug',
-    Class: 'class',
-    Avatar: 'avatar',
-    Id: 'id',
-    EndPoint: 'end-point'
-};
-exports.MentionType = MentionType;
 
 },{}]},{},[7])(7)
 });; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter; 
