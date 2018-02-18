@@ -1,13 +1,24 @@
 
 import {DataType} from './value-types';
 
-class InsertData {
-    readonly type: DataType;
-    readonly value: string;
+class InsertDataQuill {
+    readonly type: DataType; 
+    readonly value: string; 
     constructor(type: DataType, value: string) {
         this.type = type;
-        this.value = value + '';
+        this.value = value;
     }
 };
 
-export { InsertData };
+class InsertDataCustom {
+    readonly type: string; 
+    readonly value: any; 
+    constructor(type: string, value: any) {
+        this.type = type;
+        this.value = value;
+    }
+};
+
+type InsertData = InsertDataCustom | InsertDataQuill;
+
+export { InsertData, InsertDataCustom, InsertDataQuill };

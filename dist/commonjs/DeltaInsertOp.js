@@ -4,8 +4,8 @@ var value_types_1 = require("./value-types");
 var InsertData_1 = require("./InsertData");
 var DeltaInsertOp = (function () {
     function DeltaInsertOp(insertVal, attributes) {
-        if (!(insertVal instanceof InsertData_1.InsertData)) {
-            insertVal = new InsertData_1.InsertData(value_types_1.DataType.Text, insertVal + '');
+        if (typeof insertVal === 'string') {
+            insertVal = new InsertData_1.InsertDataQuill(value_types_1.DataType.Text, insertVal + '');
         }
         this.insert = insertVal;
         this.attributes = attributes || {};
@@ -73,6 +73,9 @@ var DeltaInsertOp = (function () {
     };
     DeltaInsertOp.prototype.isLink = function () {
         return this.isText() && !!this.attributes.link;
+    };
+    DeltaInsertOp.prototype.isCustom = function () {
+        return this.insert instanceof InsertData_1.InsertDataCustom;
     };
     DeltaInsertOp.prototype.isMentions = function () {
         return this.isText() && !!this.attributes.mentions;

@@ -5,8 +5,8 @@ var value_types_1 = require("./value-types");
 var InsertData_1 = require("./InsertData");
 var DeltaInsertOp = (function () {
     function DeltaInsertOp(insertVal, attributes) {
-        if (!(insertVal instanceof InsertData_1.InsertData)) {
-            insertVal = new InsertData_1.InsertData(value_types_1.DataType.Text, insertVal + '');
+        if (typeof insertVal === 'string') {
+            insertVal = new InsertData_1.InsertDataQuill(value_types_1.DataType.Text, insertVal + '');
         }
         this.insert = insertVal;
         this.attributes = attributes || {};
@@ -75,6 +75,9 @@ var DeltaInsertOp = (function () {
     DeltaInsertOp.prototype.isLink = function () {
         return this.isText() && !!this.attributes.link;
     };
+    DeltaInsertOp.prototype.isCustom = function () {
+        return this.insert instanceof InsertData_1.InsertDataCustom;
+    };
     DeltaInsertOp.prototype.isMentions = function () {
         return this.isText() && !!this.attributes.mentions;
     };
@@ -85,14 +88,23 @@ exports.DeltaInsertOp = DeltaInsertOp;
 },{"./InsertData":2,"./value-types":16}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var InsertData = (function () {
-    function InsertData(type, value) {
+var InsertDataQuill = (function () {
+    function InsertDataQuill(type, value) {
         this.type = type;
-        this.value = value + '';
+        this.value = value;
     }
-    return InsertData;
+    return InsertDataQuill;
 }());
-exports.InsertData = InsertData;
+exports.InsertDataQuill = InsertDataQuill;
+;
+var InsertDataCustom = (function () {
+    function InsertDataCustom(type, value) {
+        this.type = type;
+        this.value = value;
+    }
+    return InsertDataCustom;
+}());
+exports.InsertDataCustom = InsertDataCustom;
 ;
 
 },{}],3:[function(require,module,exports){
@@ -163,18 +175,22 @@ var InsertOpsConverter = (function () {
     };
     InsertOpsConverter.convertInsertVal = function (insertPropVal) {
         if (typeof insertPropVal === 'string') {
-            return new InsertData_1.InsertData(value_types_1.DataType.Text, insertPropVal);
+            return new InsertData_1.InsertDataQuill(value_types_1.DataType.Text, insertPropVal);
         }
         if (!insertPropVal || typeof insertPropVal !== 'object') {
             return null;
         }
+        var keys = Object.keys(insertPropVal);
+        if (!keys.length) {
+            return null;
+        }
         return value_types_1.DataType.Image in insertPropVal ?
-            new InsertData_1.InsertData(value_types_1.DataType.Image, insertPropVal[value_types_1.DataType.Image])
+            new InsertData_1.InsertDataQuill(value_types_1.DataType.Image, insertPropVal[value_types_1.DataType.Image])
             : value_types_1.DataType.Video in insertPropVal ?
-                new InsertData_1.InsertData(value_types_1.DataType.Video, insertPropVal[value_types_1.DataType.Video])
+                new InsertData_1.InsertDataQuill(value_types_1.DataType.Video, insertPropVal[value_types_1.DataType.Video])
                 : value_types_1.DataType.Formula in insertPropVal ?
-                    new InsertData_1.InsertData(value_types_1.DataType.Formula, insertPropVal[value_types_1.DataType.Formula])
-                    : null;
+                    new InsertData_1.InsertDataQuill(value_types_1.DataType.Formula, insertPropVal[value_types_1.DataType.Formula])
+                    : new InsertData_1.InsertDataCustom(keys[0], insertPropVal[keys[0]]);
     };
     return InsertOpsConverter;
 }());
@@ -194,15 +210,21 @@ var OpAttributeSanitizer = (function () {
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
         }
+        var booleanAttrs = [
+            'bold', 'italic', 'underline', 'strike', 'code',
+            'blockquote', 'code-block'
+        ];
+        var colorAttrs = ['background', 'color'];
         var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width;
-        ['bold', 'italic', 'underline', 'strike', 'code', 'blockquote', 'code-block']
-            .forEach(function (prop) {
+        var sanitizedAttrs = booleanAttrs.concat(colorAttrs, ['font', 'size', 'link', 'script', 'list', 'header', 'align',
+            'direction', 'indent', 'mentions', 'mention', 'width']);
+        booleanAttrs.forEach(function (prop) {
             var v = dirtyAttrs[prop];
             if (v) {
                 cleanAttrs[prop] = !!v;
             }
         });
-        ['background', 'color'].forEach(function (prop) {
+        colorAttrs.forEach(function (prop) {
             var val = dirtyAttrs[prop];
             if (val && (OpAttributeSanitizer.IsValidHexColor(val + '') ||
                 OpAttributeSanitizer.IsValidColorLiteral(val + ''))) {
@@ -246,7 +268,13 @@ var OpAttributeSanitizer = (function () {
                 cleanAttrs.mention = mention;
             }
         }
-        return cleanAttrs;
+        return Object.keys(dirtyAttrs).reduce(function (cleaned, k) {
+            if (sanitizedAttrs.indexOf(k) === -1) {
+                cleaned[k] = dirtyAttrs[k];
+            }
+            ;
+            return cleaned;
+        }, cleanAttrs);
     };
     OpAttributeSanitizer.IsValidHexColor = function (colorStr) {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
@@ -549,38 +577,49 @@ var QuillDeltaToHtmlConverter = (function () {
             (li.innerList ? this.renderList(li.innerList, false) : '')
             + parts.closingTag;
     };
-    QuillDeltaToHtmlConverter.prototype.renderBlock = function (op, ops) {
+    QuillDeltaToHtmlConverter.prototype.renderBlock = function (bop, ops) {
         var _this = this;
-        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, this.converterOptions);
+        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(bop, this.converterOptions);
         var htmlParts = converter.getHtmlParts();
-        if (op.isCodeBlock()) {
+        if (bop.isCodeBlock()) {
             return htmlParts.openingTag +
-                ops.map(function (op) { return op.insert.value; }).join("")
+                ops.map(function (iop) {
+                    return iop.isCustom() ? _this.renderCustom(iop, bop) : iop.insert.value;
+                }).join("")
                 + htmlParts.closingTag;
         }
-        var inlines = ops.map(function (op) {
-            var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, _this.converterOptions);
-            return converter.getHtml().replace(/\n/g, BrTag);
-        }).join('');
+        var inlines = ops.map(function (op) { return _this._renderInline(op, bop); }).join('');
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
     };
     QuillDeltaToHtmlConverter.prototype.renderInlines = function (ops, wrapInParagraphTag) {
         var _this = this;
         if (wrapInParagraphTag === void 0) { wrapInParagraphTag = true; }
-        var nlRx = /\n/g;
-        var pStart = wrapInParagraphTag ? funcs_html_1.makeStartTag(this.options.paragraphTag) : '';
-        var pEnd = wrapInParagraphTag ? funcs_html_1.makeEndTag(this.options.paragraphTag) : '';
         var opsLen = ops.length - 1;
-        var html = pStart
-            + ops.map(function (op, i) {
-                if (i === opsLen && op.isJustNewline()) {
-                    return '';
-                }
-                var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, _this.converterOptions);
-                return converter.getHtml().replace(nlRx, BrTag);
-            }).join('')
-            + pEnd;
-        return html;
+        var html = ops.map(function (op, i) {
+            if (i === opsLen && op.isJustNewline()) {
+                return '';
+            }
+            return _this._renderInline(op, null);
+        }).join('');
+        if (!wrapInParagraphTag) {
+            return html;
+        }
+        return funcs_html_1.makeStartTag(this.options.paragraphTag) +
+            html + funcs_html_1.makeEndTag(this.options.paragraphTag);
+    };
+    QuillDeltaToHtmlConverter.prototype._renderInline = function (op, contextOp) {
+        if (op.isCustom()) {
+            return this.renderCustom(op, contextOp);
+        }
+        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, this.converterOptions);
+        return converter.getHtml().replace(/\n/g, BrTag);
+    };
+    QuillDeltaToHtmlConverter.prototype.renderCustom = function (op, contextOp) {
+        var renderCb = this.callbacks['renderCustomOp_cb'];
+        if (typeof renderCb === 'function') {
+            return renderCb.apply(null, [op, contextOp]);
+        }
+        return "";
     };
     QuillDeltaToHtmlConverter.prototype.beforeRender = function (cb) {
         if (typeof cb === 'function') {
@@ -591,6 +630,9 @@ var QuillDeltaToHtmlConverter = (function () {
         if (typeof cb === 'function') {
             this.callbacks['afterRender_cb'] = cb;
         }
+    };
+    QuillDeltaToHtmlConverter.prototype.renderCustomWith = function (cb) {
+        this.callbacks['renderCustomOp_cb'] = cb;
     };
     return QuillDeltaToHtmlConverter;
 }());

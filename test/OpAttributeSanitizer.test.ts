@@ -74,6 +74,7 @@ describe('OpAttributeSanitizer', function () {
             direction: DirectionType.Rtl,
             align: AlignType.Center,
             width: '3',
+            customAttr1:'shouldnt be touched',
             mentions: true,
             mention: {
                'class': 'A-cls-9',
@@ -96,6 +97,7 @@ describe('OpAttributeSanitizer', function () {
                 direction: 'rtl',
                 align: 'center',
                 width: '3',
+                customAttr1:'shouldnt be touched',
                 mentions: true,
                 mention: {
                   'class': 'A-cls-9',

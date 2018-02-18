@@ -46,16 +46,16 @@ var html = converter.convert();
 |linkRel| '' | Specifies a value to put on the `rel` attr on links|
 |allowBackgroundClasses| false | If true, css classes will be added for background attr|
 
-## Events ##
+## Rendering Quill Formats ##
 
-You can customize the rendering by subscribing to events before calling the `convert()` method. 
+You can customize the rendering of Quill formats by registering to the render events before calling the `convert()` method. 
 
 There are `beforeRender` and `afterRender` events and they are called multiple times before and after rendering each group. A group is one of:
 
 - continuous sets of inline elements
 - a video element
 - list elements
-- block elements (header, code-block, and blockquote) 
+- block elements (header, code-block, blockquote, align, indent, and direction) 
 
 `beforeRender` event is called with raw operation objects for you to generate and return your own html. If you return a `falsy` value, system will return its own generated html. 
 
@@ -67,7 +67,7 @@ converter.beforeRender(function(groupType, data){
     // ... generate your own html 
     // return your html
 });
-converter.afterRender(function(htmlString){
+converter.afterRender(function(groupType, htmlString){
     // modify if you wish
     // return the html
 });
@@ -101,3 +101,43 @@ Following shows the parameter formats for `beforeRender` event:
 }
 ```
 
+## Rendering Custom Blot Formats ##
+
+You need to tell system how to render your custom blot by registering a renderer callback function to `renderCustomWith` method before calling the `convert()` method. 
+
+Example:
+```javascript 
+let ops = [
+    {insert: {'my-blot': {id: 2, text: 'xyz'}}}
+];
+
+let converter = new QuillDeltaToHtmlConverter(ops);
+
+// customOp is your custom blot op
+// contextOp is the block op that wraps this op, if any. 
+// If, for example, your custom blot is located inside a list item,
+// then contextOp would provide that op. 
+converter.renderCustomWith(function(customOp, contextOp){
+    if (customOp.insert.type === 'my-blot') {
+        let val = customOp.insert.value;
+        return `<span id="${val.id}">${val.text}</span>`;
+    } else {
+        return 'Unmanaged custom blot!';
+    }
+});
+
+html = converter.convert();
+```
+`customOp object` will have the following format: 
+
+```javascript
+{
+    insert: {
+        type: string //whatever you specified as key for insert, in above example: 'my-blot'
+        value: any // value for the custom blot  
+    }, 
+    attributes: {
+        // ... any attributes custom blot may have
+    }
+}
+```

@@ -110,38 +110,49 @@ var QuillDeltaToHtmlConverter = (function () {
             (li.innerList ? this.renderList(li.innerList, false) : '')
             + parts.closingTag;
     };
-    QuillDeltaToHtmlConverter.prototype.renderBlock = function (op, ops) {
+    QuillDeltaToHtmlConverter.prototype.renderBlock = function (bop, ops) {
         var _this = this;
-        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, this.converterOptions);
+        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(bop, this.converterOptions);
         var htmlParts = converter.getHtmlParts();
-        if (op.isCodeBlock()) {
+        if (bop.isCodeBlock()) {
             return htmlParts.openingTag +
-                ops.map(function (op) { return op.insert.value; }).join("")
+                ops.map(function (iop) {
+                    return iop.isCustom() ? _this.renderCustom(iop, bop) : iop.insert.value;
+                }).join("")
                 + htmlParts.closingTag;
         }
-        var inlines = ops.map(function (op) {
-            var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, _this.converterOptions);
-            return converter.getHtml().replace(/\n/g, BrTag);
-        }).join('');
+        var inlines = ops.map(function (op) { return _this._renderInline(op, bop); }).join('');
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
     };
     QuillDeltaToHtmlConverter.prototype.renderInlines = function (ops, wrapInParagraphTag) {
         var _this = this;
         if (wrapInParagraphTag === void 0) { wrapInParagraphTag = true; }
-        var nlRx = /\n/g;
-        var pStart = wrapInParagraphTag ? funcs_html_1.makeStartTag(this.options.paragraphTag) : '';
-        var pEnd = wrapInParagraphTag ? funcs_html_1.makeEndTag(this.options.paragraphTag) : '';
         var opsLen = ops.length - 1;
-        var html = pStart
-            + ops.map(function (op, i) {
-                if (i === opsLen && op.isJustNewline()) {
-                    return '';
-                }
-                var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, _this.converterOptions);
-                return converter.getHtml().replace(nlRx, BrTag);
-            }).join('')
-            + pEnd;
-        return html;
+        var html = ops.map(function (op, i) {
+            if (i === opsLen && op.isJustNewline()) {
+                return '';
+            }
+            return _this._renderInline(op, null);
+        }).join('');
+        if (!wrapInParagraphTag) {
+            return html;
+        }
+        return funcs_html_1.makeStartTag(this.options.paragraphTag) +
+            html + funcs_html_1.makeEndTag(this.options.paragraphTag);
+    };
+    QuillDeltaToHtmlConverter.prototype._renderInline = function (op, contextOp) {
+        if (op.isCustom()) {
+            return this.renderCustom(op, contextOp);
+        }
+        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, this.converterOptions);
+        return converter.getHtml().replace(/\n/g, BrTag);
+    };
+    QuillDeltaToHtmlConverter.prototype.renderCustom = function (op, contextOp) {
+        var renderCb = this.callbacks['renderCustomOp_cb'];
+        if (typeof renderCb === 'function') {
+            return renderCb.apply(null, [op, contextOp]);
+        }
+        return "";
     };
     QuillDeltaToHtmlConverter.prototype.beforeRender = function (cb) {
         if (typeof cb === 'function') {
@@ -152,6 +163,9 @@ var QuillDeltaToHtmlConverter = (function () {
         if (typeof cb === 'function') {
             this.callbacks['afterRender_cb'] = cb;
         }
+    };
+    QuillDeltaToHtmlConverter.prototype.renderCustomWith = function (cb) {
+        this.callbacks['renderCustomOp_cb'] = cb;
     };
     return QuillDeltaToHtmlConverter;
 }());

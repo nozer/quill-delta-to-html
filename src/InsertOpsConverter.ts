@@ -1,7 +1,7 @@
 
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { DataType } from './value-types';
-import { InsertData } from './InsertData';
+import { InsertData, InsertDataCustom, InsertDataQuill } from './InsertData';
 import { OpAttributeSanitizer } from './OpAttributeSanitizer';
 import { InsertOpDenormalizer } from './InsertOpDenormalizer';
 
@@ -41,20 +41,26 @@ class InsertOpsConverter {
 
     static convertInsertVal(insertPropVal: any): InsertData | null {
         if (typeof insertPropVal === 'string') {
-            return new InsertData(DataType.Text, insertPropVal);
+            return new InsertDataQuill(DataType.Text, insertPropVal);
         }
 
         if (!insertPropVal || typeof insertPropVal !== 'object') {
             return null;
         }
 
+        let keys = Object.keys(insertPropVal);
+        if (!keys.length) {
+            return null;
+        }
+
         return DataType.Image in insertPropVal ?
-            new InsertData(DataType.Image, insertPropVal[DataType.Image])
+            new InsertDataQuill(DataType.Image, insertPropVal[DataType.Image])
             : DataType.Video in insertPropVal ?
-                new InsertData(DataType.Video, insertPropVal[DataType.Video])
+                new InsertDataQuill(DataType.Video, insertPropVal[DataType.Video])
                 : DataType.Formula in insertPropVal ?
-                    new InsertData(DataType.Formula, insertPropVal[DataType.Formula])
-                    : null;
+                    new InsertDataQuill(DataType.Formula, insertPropVal[DataType.Formula])
+                    // custom 
+                    : new InsertDataCustom(keys[0], insertPropVal[keys[0]]);
     }
 }
 

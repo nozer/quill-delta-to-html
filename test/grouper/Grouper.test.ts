@@ -4,7 +4,7 @@ import * as assert from "assert";
 
 import { Grouper } from './../../src/grouper/Grouper';
 import { DeltaInsertOp } from './../../src/DeltaInsertOp';
-import { InsertData } from './../../src/InsertData';
+import { InsertData, InsertDataQuill } from './../../src/InsertData';
 import { ListGroup, ListItem, VideoItem, InlineGroup, BlockGroup, TDataGroup 
 } from './../../src/grouper/group-types';
 describe('Grouper', function () {
@@ -12,7 +12,7 @@ describe('Grouper', function () {
 
     describe('#pairOpsWithTheirBlock()', function () {
         var ops = [
-            new DeltaInsertOp(new InsertData("video", "http://")),
+            new DeltaInsertOp(new InsertDataQuill("video", "http://")),
             new DeltaInsertOp("hello"),
             new DeltaInsertOp("\n"),
             new DeltaInsertOp("how are you?"),

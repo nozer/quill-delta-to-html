@@ -3,7 +3,7 @@ import 'mocha';
 import * as assert from 'assert';
 
 import {DeltaInsertOp} from './../src/DeltaInsertOp';
-import {InsertData} from './../src/InsertData';
+import {InsertData, InsertDataCustom, InsertDataQuill} from './../src/InsertData';
 import { InsertOpsConverter } from "./../src/InsertOpsConverter";
 
 var data = [
@@ -51,7 +51,13 @@ describe('InsertOpsConverter', function () {
             assert.equal(objs[objs.length -1] instanceof DeltaInsertOp, true);
             assert.deepEqual(InsertOpsConverter.convert(null), []);
             assert.deepEqual(InsertOpsConverter.convert([{insert:''}]), []);
-            assert.deepEqual(InsertOpsConverter.convert([{insert:{cake: ''}}]), []);
+            assert.deepEqual(InsertOpsConverter.convert([{insert:{cake: ''}}]), [
+                {insert: {type: 'cake',value: ''}, attributes: {}}
+            ]);
+            assert.deepEqual(
+                InsertOpsConverter.convert([{"insert": 2}]),
+                []
+            );
             //console.log(objs);
         });
     });
@@ -66,7 +72,7 @@ describe('InsertOpsConverter', function () {
             ["fdsf", {image: 'ff'}, {video: ''}, {formula: ''}].forEach((v, i) => {
                 var act = InsertOpsConverter.convertInsertVal(v);
                 assert.notEqual(act, null);
-                assert.ok(act instanceof InsertData);
+                assert.ok(act instanceof InsertDataQuill);
             });
         });
     });

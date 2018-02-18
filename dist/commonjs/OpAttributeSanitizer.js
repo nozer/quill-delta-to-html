@@ -11,15 +11,21 @@ var OpAttributeSanitizer = (function () {
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
         }
+        var booleanAttrs = [
+            'bold', 'italic', 'underline', 'strike', 'code',
+            'blockquote', 'code-block'
+        ];
+        var colorAttrs = ['background', 'color'];
         var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width;
-        ['bold', 'italic', 'underline', 'strike', 'code', 'blockquote', 'code-block']
-            .forEach(function (prop) {
+        var sanitizedAttrs = booleanAttrs.concat(colorAttrs, ['font', 'size', 'link', 'script', 'list', 'header', 'align',
+            'direction', 'indent', 'mentions', 'mention', 'width']);
+        booleanAttrs.forEach(function (prop) {
             var v = dirtyAttrs[prop];
             if (v) {
                 cleanAttrs[prop] = !!v;
             }
         });
-        ['background', 'color'].forEach(function (prop) {
+        colorAttrs.forEach(function (prop) {
             var val = dirtyAttrs[prop];
             if (val && (OpAttributeSanitizer.IsValidHexColor(val + '') ||
                 OpAttributeSanitizer.IsValidColorLiteral(val + ''))) {
@@ -63,7 +69,13 @@ var OpAttributeSanitizer = (function () {
                 cleanAttrs.mention = mention;
             }
         }
-        return cleanAttrs;
+        return Object.keys(dirtyAttrs).reduce(function (cleaned, k) {
+            if (sanitizedAttrs.indexOf(k) === -1) {
+                cleaned[k] = dirtyAttrs[k];
+            }
+            ;
+            return cleaned;
+        }, cleanAttrs);
     };
     OpAttributeSanitizer.IsValidHexColor = function (colorStr) {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);

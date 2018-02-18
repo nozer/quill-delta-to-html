@@ -31,18 +31,22 @@ var InsertOpsConverter = (function () {
     };
     InsertOpsConverter.convertInsertVal = function (insertPropVal) {
         if (typeof insertPropVal === 'string') {
-            return new InsertData_1.InsertData(value_types_1.DataType.Text, insertPropVal);
+            return new InsertData_1.InsertDataQuill(value_types_1.DataType.Text, insertPropVal);
         }
         if (!insertPropVal || typeof insertPropVal !== 'object') {
             return null;
         }
+        var keys = Object.keys(insertPropVal);
+        if (!keys.length) {
+            return null;
+        }
         return value_types_1.DataType.Image in insertPropVal ?
-            new InsertData_1.InsertData(value_types_1.DataType.Image, insertPropVal[value_types_1.DataType.Image])
+            new InsertData_1.InsertDataQuill(value_types_1.DataType.Image, insertPropVal[value_types_1.DataType.Image])
             : value_types_1.DataType.Video in insertPropVal ?
-                new InsertData_1.InsertData(value_types_1.DataType.Video, insertPropVal[value_types_1.DataType.Video])
+                new InsertData_1.InsertDataQuill(value_types_1.DataType.Video, insertPropVal[value_types_1.DataType.Video])
                 : value_types_1.DataType.Formula in insertPropVal ?
-                    new InsertData_1.InsertData(value_types_1.DataType.Formula, insertPropVal[value_types_1.DataType.Formula])
-                    : null;
+                    new InsertData_1.InsertDataQuill(value_types_1.DataType.Formula, insertPropVal[value_types_1.DataType.Formula])
+                    : new InsertData_1.InsertDataCustom(keys[0], insertPropVal[keys[0]]);
     };
     return InsertOpsConverter;
 }());

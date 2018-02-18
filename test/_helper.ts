@@ -10,4 +10,13 @@ function callWhenAlltrue(statuses: boolean[], cb: any) {
     }, 10);
 }
 
-export {callWhenAlltrue};
+function callWhenXEqualY({x, y}: {x:any, y:any}, cb: any) {
+  
+    var interval: NodeJS.Timer;
+    interval = setInterval(function(){
+        var isdone = x === y;
+        if(isdone) { clearInterval(interval); cb(); };
+    }, 10);
+}
+
+export {callWhenAlltrue, callWhenXEqualY};

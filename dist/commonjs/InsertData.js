@@ -1,11 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var InsertData = (function () {
-    function InsertData(type, value) {
+var InsertDataQuill = (function () {
+    function InsertDataQuill(type, value) {
         this.type = type;
-        this.value = value + '';
+        this.value = value;
     }
-    return InsertData;
+    return InsertDataQuill;
 }());
-exports.InsertData = InsertData;
+exports.InsertDataQuill = InsertDataQuill;
+;
+var InsertDataCustom = (function () {
+    function InsertDataCustom(type, value) {
+        this.type = type;
+        this.value = value;
+    }
+    return InsertDataCustom;
+}());
+exports.InsertDataCustom = InsertDataCustom;
 ;

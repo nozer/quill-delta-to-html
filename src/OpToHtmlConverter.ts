@@ -51,7 +51,7 @@ class OpToHtmlConverter {
     }
 
     getHtmlParts(): IHtmlParts {
-
+        
         if (this.op.isJustNewline() && !this.op.isContainerBlock()) {
             return {openingTag: '', closingTag: '', content: NewLine};
         }
