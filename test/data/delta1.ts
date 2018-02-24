@@ -1,5 +1,6 @@
 var delta1 = {
     "ops": [
+        {"insert":"link","attributes":{"link":"http://a.com/?x=a&b=()"}},
         { "insert": "This " },
         { "attributes": { "font": "monospace" }, "insert": "is" },
         { "insert": " a " }, { "attributes": { "size": "large" }, "insert": "test" },
@@ -17,7 +18,7 @@ var delta1 = {
         { "insert": " formats.\n" }
     ],
     html: [
-        '<p>', 'This ', '<span class="noz-font-monospace">is</span>',
+        '<p>','<a href="http://a.com/?x=a&amp;b=&#40;&#41;" target="_blank">link</a>', 'This ', '<span class="noz-font-monospace">is</span>',
         ' a ', '<span class="noz-size-large">test</span>', ' ',
         '<strong><em>data</em></strong>', ' ',
         '<s><u>that</u></s>',
