@@ -1,4 +1,4 @@
-import {makeStartTag, makeEndTag, encodeHtml, ITagKeyValue} from './funcs-html';
+import {makeStartTag, makeEndTag, encodeHtml, encodeLink, ITagKeyValue} from './funcs-html';
 import {DeltaInsertOp} from './DeltaInsertOp';
 import {ScriptType, NewLine} from './value-types';
 import './extensions/String';
@@ -161,7 +161,7 @@ class OpToHtmlConverter {
             }
             if (mention['end-point'] && mention.slug) {
                 tagAttrs = tagAttrs.concat(
-                    makeAttr('href', mention['end-point'] + '/' + mention.slug)
+                    makeAttr('href', encodeLink(mention['end-point'] + '/' + mention.slug))
                 );
             } else {
                 tagAttrs  = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
@@ -177,8 +177,10 @@ class OpToHtmlConverter {
 
         tagAttrs = tagAttrs
             .concat(styleAttr)
-            .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
-                makeAttr('target', '_blank')] : []);
+            .concat(this.op.isLink() ? [
+                makeAttr('href', encodeLink(this.op.attributes.link)),
+                makeAttr('target', '_blank')
+            ] : []);
 
         if (this.op.isLink() && !!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));

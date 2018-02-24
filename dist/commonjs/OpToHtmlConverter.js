@@ -106,7 +106,7 @@ var OpToHtmlConverter = (function () {
                 tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
             }
             if (mention['end-point'] && mention.slug) {
-                tagAttrs = tagAttrs.concat(makeAttr('href', mention['end-point'] + '/' + mention.slug));
+                tagAttrs = tagAttrs.concat(makeAttr('href', funcs_html_1.encodeLink(mention['end-point'] + '/' + mention.slug)));
             }
             else {
                 tagAttrs = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
@@ -120,8 +120,10 @@ var OpToHtmlConverter = (function () {
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
         tagAttrs = tagAttrs
             .concat(styleAttr)
-            .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
-            makeAttr('target', '_blank')] : []);
+            .concat(this.op.isLink() ? [
+            makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link)),
+            makeAttr('target', '_blank')
+        ] : []);
         if (this.op.isLink() && !!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));
         }

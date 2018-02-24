@@ -41,8 +41,7 @@ var QuillDeltaToHtmlConverter = (function () {
             : op.isBulletList() ? this.options.bulletListTag + ''
                 : '';
     };
-    QuillDeltaToHtmlConverter.prototype.convert = function () {
-        var _this = this;
+    QuillDeltaToHtmlConverter.prototype.getGroupedOps = function () {
         var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
         var pairedOps = Grouper_1.Grouper.pairOpsWithTheirBlock(deltaOps);
         var groupedSameStyleBlocks = Grouper_1.Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
@@ -52,34 +51,33 @@ var QuillDeltaToHtmlConverter = (function () {
         });
         var groupedOps = Grouper_1.Grouper.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
         var listNester = new ListNester_1.ListNester();
-        var groupListsNested = listNester.nest(groupedOps);
-        var len = groupListsNested.length;
-        var group, html;
-        var htmlArr = [];
-        for (var i = 0; i < len; i++) {
-            group = groupListsNested[i];
+        return listNester.nest(groupedOps);
+    };
+    QuillDeltaToHtmlConverter.prototype.convert = function () {
+        var _this = this;
+        return this.getGroupedOps()
+            .map(function (group) {
             if (group instanceof group_types_1.ListGroup) {
-                html = this.renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this.renderList(group); });
+                return _this.renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this.renderList(group); });
             }
             else if (group instanceof group_types_1.BlockGroup) {
                 var g = group;
-                html = this.renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this.renderBlock(g.op, g.ops); });
+                return _this.renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this.renderBlock(g.op, g.ops); });
             }
             else if (group instanceof group_types_1.VideoItem) {
-                html = this.renderWithCallbacks(value_types_1.GroupType.Video, group, function () {
+                return _this.renderWithCallbacks(value_types_1.GroupType.Video, group, function () {
                     var g = group;
                     var converter = new OpToHtmlConverter_1.OpToHtmlConverter(g.op, _this.converterOptions);
                     return converter.getHtml();
                 });
             }
             else {
-                html = this.renderWithCallbacks(value_types_1.GroupType.InlineGroup, group, function () {
+                return _this.renderWithCallbacks(value_types_1.GroupType.InlineGroup, group, function () {
                     return _this.renderInlines(group.ops);
                 });
             }
-            htmlArr.push(html);
-        }
-        return htmlArr.join('');
+        })
+            .join("");
     };
     QuillDeltaToHtmlConverter.prototype.renderWithCallbacks = function (groupType, group, myRenderFn) {
         var html = '';
@@ -106,7 +104,7 @@ var QuillDeltaToHtmlConverter = (function () {
         var converter = new OpToHtmlConverter_1.OpToHtmlConverter(li.item.op, this.converterOptions);
         var parts = converter.getHtmlParts();
         var liElementsHtml = this.renderInlines(li.item.ops, false);
-        return parts.openingTag + (liElementsHtml || BrTag) +
+        return parts.openingTag + (liElementsHtml) +
             (li.innerList ? this.renderList(li.innerList, false) : '')
             + parts.closingTag;
     };
@@ -129,7 +127,7 @@ var QuillDeltaToHtmlConverter = (function () {
         if (wrapInParagraphTag === void 0) { wrapInParagraphTag = true; }
         var opsLen = ops.length - 1;
         var html = ops.map(function (op, i) {
-            if (i === opsLen && op.isJustNewline()) {
+            if (i > 0 && i === opsLen && op.isJustNewline()) {
                 return '';
             }
             return _this._renderInline(op, null);

@@ -4,6 +4,11 @@ interface ITagKeyValue {
     value?: string
 }
 
+enum EncodeTarget {
+    Html = 0,
+    Url = 1
+}
+
 function makeStartTag(tag:any, attrs: ITagKeyValue | ITagKeyValue[] = null) {
     if (!tag) {return ''; }
     
@@ -28,33 +33,54 @@ function makeEndTag(tag: any = '') {
 }
 
 function decodeHtml(str: string) {
-    return str
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, '/');
+    return encodeMappings(EncodeTarget.Html).reduce(decodeMapping, str);
 }
 
 function encodeHtml(str: string, preventDoubleEncoding = true) {
     if (preventDoubleEncoding) {
         str = decodeHtml(str);
     }
-    return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#x27;")
-    .replace(/\//g, "&#x2F;");
-
+    return encodeMappings(EncodeTarget.Html).reduce(encodeMapping, str);
 }
 
+function encodeLink(str: string) {
+    let linkMaps = encodeMappings(EncodeTarget.Url);
+    let decoded = linkMaps.reduce(decodeMapping, str);
+    return linkMaps.reduce(encodeMapping, decoded);
+}
+
+function encodeMappings(mtype: EncodeTarget) {
+    let maps = [
+        ['&', '&amp;'], 
+        ['<', '&lt;'],
+        ['>', '&gt;'],
+        ['"', '&quot;'],
+        ["'", "&#x27;"],
+        ['\\/', '&#x2F;'],
+        ['\\(', '&#40;'],
+        ['\\)', '&#41;']
+    ];
+    if (mtype === EncodeTarget.Html) {
+        return maps.filter(([v,_]) => 
+            v.indexOf('(') === -1 || v.indexOf(')') === -1
+        );
+    } else { // for url
+        return maps.filter(([v,_]) => v.indexOf('/') === -1);
+    }
+}
+function encodeMapping(str: string, mapping: string[]) {
+    return str.replace(new RegExp(mapping[0], 'g'), mapping[1]);
+}
+function decodeMapping(str: string, mapping: string[]) {
+    return str.replace(
+        new RegExp(mapping[1], 'g'), mapping[0].replace('\\','')
+    );
+}
 export {
     makeStartTag,
     makeEndTag,
     encodeHtml,
     decodeHtml,
+    encodeLink,
     ITagKeyValue
 };

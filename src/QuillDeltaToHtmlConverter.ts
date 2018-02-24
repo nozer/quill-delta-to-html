@@ -76,7 +76,7 @@ class QuillDeltaToHtmlConverter {
             : '';
    }
 
-   convert() {
+   getGroupedOps (): TDataGroup[] {
       var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
 
       var pairedOps = Grouper.pairOpsWithTheirBlock(deltaOps);
@@ -89,44 +89,39 @@ class QuillDeltaToHtmlConverter {
 
       var groupedOps = Grouper.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
       var listNester = new ListNester();
-      var groupListsNested = listNester.nest(groupedOps);
+      return listNester.nest(groupedOps);
+   }
 
-      var len = groupListsNested.length;
-      var group: TDataGroup, html;
-      var htmlArr: string[] = [];
-
-      for (var i = 0; i < len; i++) {
-         group = groupListsNested[i];
-
+   convert() {
+      return this.getGroupedOps()
+      .map(group => {
          if (group instanceof ListGroup) {
 
-            html = this.renderWithCallbacks(
+            return this.renderWithCallbacks(
                GroupType.List, group, () => this.renderList(<ListGroup>group));
 
          } else if (group instanceof BlockGroup) {
 
             var g = <BlockGroup>group;
 
-            html = this.renderWithCallbacks(
+            return this.renderWithCallbacks(
                GroupType.Block, group, () => this.renderBlock(g.op, g.ops));
 
          } else if (group instanceof VideoItem) {
 
-            html = this.renderWithCallbacks(GroupType.Video, group, () => {
+            return this.renderWithCallbacks(GroupType.Video, group, () => {
                var g = <VideoItem>group;
                var converter = new OpToHtmlConverter(g.op, this.converterOptions);
                return converter.getHtml();
             });
 
          } else { // InlineGroup
-            html = this.renderWithCallbacks(GroupType.InlineGroup, group, () => {
+            return this.renderWithCallbacks(GroupType.InlineGroup, group, () => {
                return this.renderInlines((<InlineGroup>group).ops);
             });
          }
-         htmlArr.push(html);
-      }
-
-      return htmlArr.join('');
+      })
+      .join("");
    }
 
    renderWithCallbacks(groupType: GroupType, group: TDataGroup, myRenderFn: () => string) {
@@ -160,7 +155,7 @@ class QuillDeltaToHtmlConverter {
       var converter = new OpToHtmlConverter(li.item.op, this.converterOptions);
       var parts = converter.getHtmlParts();
       var liElementsHtml = this.renderInlines(li.item.ops, false);
-      return parts.openingTag + (liElementsHtml || BrTag) +
+      return parts.openingTag + (liElementsHtml) +
          (li.innerList ? this.renderList(li.innerList, false) : '')
          + parts.closingTag;
    }
@@ -184,7 +179,7 @@ class QuillDeltaToHtmlConverter {
    renderInlines(ops: DeltaInsertOp[], wrapInParagraphTag = true) {
       var opsLen = ops.length - 1;
       var html = ops.map((op: DeltaInsertOp, i: number) => {
-            if (i === opsLen && op.isJustNewline()) {
+            if (i > 0 && i === opsLen && op.isJustNewline()) {
                return '';
             }
             return this._renderInline(op, null);

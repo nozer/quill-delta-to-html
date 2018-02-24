@@ -141,3 +141,24 @@ html = converter.convert();
     }
 }
 ```
+
+## Advanced Custom Rendering Using Grouped Ops ##
+
+If you want to do the full rendering yourself, you can do so 
+by getting the processed & grouped ops.
+
+```javascript
+let groupedOps = converter.getGroupedOps();
+```
+Each element in groupedOps array will be an instance of the 
+following types: 
+
+|type|properties|
+|---|---|
+|`InlineGroup`|ops: Array<`op object`>|
+|`VideoItem`|op: `op object`|
+|`BlockGroup`|op: `op object`, ops: Array<`op object`>|
+|`ListGroup`|items: Array<`ListItem`>|
+||ListItem: {item:`BlockGroup`, innerList:`ListGroup`}|
+
+See above for `op object` format. 

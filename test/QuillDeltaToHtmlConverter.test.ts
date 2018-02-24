@@ -228,17 +228,17 @@ describe('QuillDeltaToHtmlConverter', function () {
          it('should render plain new line string', function () {
             var ops = [new DeltaInsertOp("\n")];
             var qdc = new QuillDeltaToHtmlConverter([]);
-            assert.equal(qdc.renderInlines(ops), '<p></p>');
+            assert.equal(qdc.renderInlines(ops), '<p><br/></p>');
          });
 
          it('should render styled new line string', function () {
             var ops = [new DeltaInsertOp("\n", { font: 'arial' })];
             var qdc = new QuillDeltaToHtmlConverter([]);
             assert.equal(qdc.renderInlines(ops),
-               '<p></p>');
+               '<p><br/></p>');
 
             var qdc = new QuillDeltaToHtmlConverter([], { paragraphTag: '' });
-            assert.equal(qdc.renderInlines(ops), '');
+            assert.equal(qdc.renderInlines(ops), '<br/>');
          });
 
          it('should render when first line is new line', function () {

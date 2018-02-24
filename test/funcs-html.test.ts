@@ -6,7 +6,8 @@ import {
     makeEndTag, 
     makeStartTag,
     encodeHtml,
-    decodeHtml
+    decodeHtml,
+    encodeLink
 } from "./../src/funcs-html";
 
 
@@ -69,4 +70,12 @@ describe('html module', function () {
         });
     });
 
+    describe('encodeLink()', function () {
+        it('should encode link', function() {
+
+            var act = encodeLink('http://www.yahoo.com/?a=b&c=<>()"\'');
+            assert.equal(act, 'http://www.yahoo.com/?a=b&amp;c=&lt;&gt;&#40;&#41;&quot;&#x27;');
+
+        });
+    });
 });

@@ -404,7 +404,7 @@ var OpToHtmlConverter = (function () {
                 tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
             }
             if (mention['end-point'] && mention.slug) {
-                tagAttrs = tagAttrs.concat(makeAttr('href', mention['end-point'] + '/' + mention.slug));
+                tagAttrs = tagAttrs.concat(makeAttr('href', funcs_html_1.encodeLink(mention['end-point'] + '/' + mention.slug)));
             }
             else {
                 tagAttrs = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
@@ -418,8 +418,10 @@ var OpToHtmlConverter = (function () {
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
         tagAttrs = tagAttrs
             .concat(styleAttr)
-            .concat(this.op.isLink() ? [makeAttr('href', this.op.attributes.link),
-            makeAttr('target', '_blank')] : []);
+            .concat(this.op.isLink() ? [
+            makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link)),
+            makeAttr('target', '_blank')
+        ] : []);
         if (this.op.isLink() && !!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));
         }
@@ -508,8 +510,7 @@ var QuillDeltaToHtmlConverter = (function () {
             : op.isBulletList() ? this.options.bulletListTag + ''
                 : '';
     };
-    QuillDeltaToHtmlConverter.prototype.convert = function () {
-        var _this = this;
+    QuillDeltaToHtmlConverter.prototype.getGroupedOps = function () {
         var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
         var pairedOps = Grouper_1.Grouper.pairOpsWithTheirBlock(deltaOps);
         var groupedSameStyleBlocks = Grouper_1.Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
@@ -519,34 +520,33 @@ var QuillDeltaToHtmlConverter = (function () {
         });
         var groupedOps = Grouper_1.Grouper.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
         var listNester = new ListNester_1.ListNester();
-        var groupListsNested = listNester.nest(groupedOps);
-        var len = groupListsNested.length;
-        var group, html;
-        var htmlArr = [];
-        for (var i = 0; i < len; i++) {
-            group = groupListsNested[i];
+        return listNester.nest(groupedOps);
+    };
+    QuillDeltaToHtmlConverter.prototype.convert = function () {
+        var _this = this;
+        return this.getGroupedOps()
+            .map(function (group) {
             if (group instanceof group_types_1.ListGroup) {
-                html = this.renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this.renderList(group); });
+                return _this.renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this.renderList(group); });
             }
             else if (group instanceof group_types_1.BlockGroup) {
                 var g = group;
-                html = this.renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this.renderBlock(g.op, g.ops); });
+                return _this.renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this.renderBlock(g.op, g.ops); });
             }
             else if (group instanceof group_types_1.VideoItem) {
-                html = this.renderWithCallbacks(value_types_1.GroupType.Video, group, function () {
+                return _this.renderWithCallbacks(value_types_1.GroupType.Video, group, function () {
                     var g = group;
                     var converter = new OpToHtmlConverter_1.OpToHtmlConverter(g.op, _this.converterOptions);
                     return converter.getHtml();
                 });
             }
             else {
-                html = this.renderWithCallbacks(value_types_1.GroupType.InlineGroup, group, function () {
+                return _this.renderWithCallbacks(value_types_1.GroupType.InlineGroup, group, function () {
                     return _this.renderInlines(group.ops);
                 });
             }
-            htmlArr.push(html);
-        }
-        return htmlArr.join('');
+        })
+            .join("");
     };
     QuillDeltaToHtmlConverter.prototype.renderWithCallbacks = function (groupType, group, myRenderFn) {
         var html = '';
@@ -573,7 +573,7 @@ var QuillDeltaToHtmlConverter = (function () {
         var converter = new OpToHtmlConverter_1.OpToHtmlConverter(li.item.op, this.converterOptions);
         var parts = converter.getHtmlParts();
         var liElementsHtml = this.renderInlines(li.item.ops, false);
-        return parts.openingTag + (liElementsHtml || BrTag) +
+        return parts.openingTag + (liElementsHtml) +
             (li.innerList ? this.renderList(li.innerList, false) : '')
             + parts.closingTag;
     };
@@ -596,7 +596,7 @@ var QuillDeltaToHtmlConverter = (function () {
         if (wrapInParagraphTag === void 0) { wrapInParagraphTag = true; }
         var opsLen = ops.length - 1;
         var html = ops.map(function (op, i) {
-            if (i === opsLen && op.isJustNewline()) {
+            if (i > 0 && i === opsLen && op.isJustNewline()) {
                 return '';
             }
             return _this._renderInline(op, null);
@@ -744,6 +744,11 @@ String.prototype._scrubUrl = function () {
 },{}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var EncodeTarget;
+(function (EncodeTarget) {
+    EncodeTarget[EncodeTarget["Html"] = 0] = "Html";
+    EncodeTarget[EncodeTarget["Url"] = 1] = "Url";
+})(EncodeTarget || (EncodeTarget = {}));
 function makeStartTag(tag, attrs) {
     if (attrs === void 0) { attrs = null; }
     if (!tag) {
@@ -769,13 +774,7 @@ function makeEndTag(tag) {
 }
 exports.makeEndTag = makeEndTag;
 function decodeHtml(str) {
-    return str
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&#x27;/g, "'")
-        .replace(/&#x2F;/g, '/');
+    return encodeMappings(EncodeTarget.Html).reduce(decodeMapping, str);
 }
 exports.decodeHtml = decodeHtml;
 function encodeHtml(str, preventDoubleEncoding) {
@@ -783,15 +782,45 @@ function encodeHtml(str, preventDoubleEncoding) {
     if (preventDoubleEncoding) {
         str = decodeHtml(str);
     }
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#x27;")
-        .replace(/\//g, "&#x2F;");
+    return encodeMappings(EncodeTarget.Html).reduce(encodeMapping, str);
 }
 exports.encodeHtml = encodeHtml;
+function encodeLink(str) {
+    var linkMaps = encodeMappings(EncodeTarget.Url);
+    var decoded = linkMaps.reduce(decodeMapping, str);
+    return linkMaps.reduce(encodeMapping, decoded);
+}
+exports.encodeLink = encodeLink;
+function encodeMappings(mtype) {
+    var maps = [
+        ['&', '&amp;'],
+        ['<', '&lt;'],
+        ['>', '&gt;'],
+        ['"', '&quot;'],
+        ["'", "&#x27;"],
+        ['\\/', '&#x2F;'],
+        ['\\(', '&#40;'],
+        ['\\)', '&#41;']
+    ];
+    if (mtype === EncodeTarget.Html) {
+        return maps.filter(function (_a) {
+            var v = _a[0], _ = _a[1];
+            return v.indexOf('(') === -1 || v.indexOf(')') === -1;
+        });
+    }
+    else {
+        return maps.filter(function (_a) {
+            var v = _a[0], _ = _a[1];
+            return v.indexOf('/') === -1;
+        });
+    }
+}
+function encodeMapping(str, mapping) {
+    return str.replace(new RegExp(mapping[0], 'g'), mapping[1]);
+}
+function decodeMapping(str, mapping) {
+    return str.replace(new RegExp(mapping[1], 'g'), mapping[0].replace('\\', ''));
+}
 
 },{}],12:[function(require,module,exports){
 "use strict";
