@@ -289,7 +289,7 @@ var OpAttributeSanitizer = (function () {
         return !!size.match(/^[a-z\-]{1,20}$/i);
     };
     OpAttributeSanitizer.IsValidWidth = function (width) {
-        return !!width.match(/^[0-9]*$/);
+        return !!width.match(/^[0-9]*(px|em|%)?$/);
     };
     return OpAttributeSanitizer;
 }());
