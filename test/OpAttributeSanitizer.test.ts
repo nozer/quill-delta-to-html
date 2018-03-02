@@ -36,6 +36,12 @@ describe('OpAttributeSanitizer', function () {
     describe('#IsValidWidth()', function() {
         it('should return true if width is valid', function() {
             assert.ok(OpAttributeSanitizer.IsValidWidth('150'));
+            assert.ok(OpAttributeSanitizer.IsValidWidth('100px'));
+            assert.ok(OpAttributeSanitizer.IsValidWidth('150em'));
+            assert.ok(OpAttributeSanitizer.IsValidWidth('10%'));
+            assert.equal(OpAttributeSanitizer.IsValidWidth('250%px'), false);
+            assert.equal(OpAttributeSanitizer.IsValidWidth('250% border-box'), false);
+            assert.equal(OpAttributeSanitizer.IsValidWidth('250.80'), false);
             assert.equal(OpAttributeSanitizer.IsValidWidth('250x'), false);
         });
     });

@@ -144,7 +144,7 @@ class OpAttributeSanitizer {
    }
 
    static IsValidWidth(width: string) {
-      return !!width.match(/^[0-9]*$/)
+    return !!width.match(/^[0-9]*(px|em|%)?$/)
    }
 }
 
