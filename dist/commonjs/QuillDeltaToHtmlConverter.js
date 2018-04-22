@@ -20,7 +20,8 @@ var QuillDeltaToHtmlConverter = (function () {
             multiLineBlockquote: true,
             multiLineHeader: true,
             multiLineCodeblock: true,
-            allowBackgroundClasses: false
+            allowBackgroundClasses: false,
+            linkTarget: '_blank'
         }, options, {
             orderedListTag: 'ol',
             bulletListTag: 'ul',
@@ -32,6 +33,7 @@ var QuillDeltaToHtmlConverter = (function () {
             listItemTag: this.options.listItemTag,
             paragraphTag: this.options.paragraphTag,
             linkRel: this.options.linkRel,
+            linkTarget: this.options.linkTarget,
             allowBackgroundClasses: this.options.allowBackgroundClasses
         };
         this.rawDeltaOps = deltaOps;

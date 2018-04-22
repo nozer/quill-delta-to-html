@@ -29,7 +29,8 @@ interface IOpAttributes {
    indent?: number,
 
    mentions?: boolean,
-   mention?: IMention
+   mention?: IMention,
+   target?: string
 }
 
 class OpAttributeSanitizer {
@@ -49,7 +50,7 @@ class OpAttributeSanitizer {
       let colorAttrs = ['background', 'color'];
 
       let { font, size, link, script, list, header, align, 
-         direction, indent, mentions, mention, width
+         direction, indent, mentions, mention, width, target
       } = dirtyAttrs;
 
       let sanitizedAttrs = [...booleanAttrs, ...colorAttrs,
@@ -86,6 +87,9 @@ class OpAttributeSanitizer {
       if (link) {
          cleanAttrs.link = (link + '')._scrubUrl();
       }
+      if (target && OpAttributeSanitizer.isValidTarget(target)) {
+         cleanAttrs.target = target;
+      }
 
       if (script === ScriptType.Sub || ScriptType.Super === script) {
          cleanAttrs.script = script;
@@ -110,7 +114,7 @@ class OpAttributeSanitizer {
       if (indent && Number(indent)) {
          cleanAttrs.indent = Math.min(Number(indent), 30);
       }
-
+      
       if (mentions && mention) {
          let sanitizedMention = MentionSanitizer.sanitize(mention);
          if (Object.keys(sanitizedMention).length > 0) {
@@ -144,7 +148,11 @@ class OpAttributeSanitizer {
    }
 
    static IsValidWidth(width: string) {
-    return !!width.match(/^[0-9]*(px|em|%)?$/)
+      return !!width.match(/^[0-9]*(px|em|%)?$/)
+   }
+
+   static isValidTarget(target: string) {
+      return !!target.match(/^[_a-zA-Z0-9\-]{1,50}$/);
    }
 }
 

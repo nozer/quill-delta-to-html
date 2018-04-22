@@ -16,7 +16,7 @@ var OpAttributeSanitizer = (function () {
             'blockquote', 'code-block'
         ];
         var colorAttrs = ['background', 'color'];
-        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width;
+        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width, target = dirtyAttrs.target;
         var sanitizedAttrs = booleanAttrs.concat(colorAttrs, ['font', 'size', 'link', 'script', 'list', 'header', 'align',
             'direction', 'indent', 'mentions', 'mention', 'width']);
         booleanAttrs.forEach(function (prop) {
@@ -43,6 +43,9 @@ var OpAttributeSanitizer = (function () {
         }
         if (link) {
             cleanAttrs.link = (link + '')._scrubUrl();
+        }
+        if (target && OpAttributeSanitizer.isValidTarget(target)) {
+            cleanAttrs.target = target;
         }
         if (script === value_types_1.ScriptType.Sub || value_types_1.ScriptType.Super === script) {
             cleanAttrs.script = script;
@@ -91,6 +94,9 @@ var OpAttributeSanitizer = (function () {
     };
     OpAttributeSanitizer.IsValidWidth = function (width) {
         return !!width.match(/^[0-9]*(px|em|%)?$/);
+    };
+    OpAttributeSanitizer.isValidTarget = function (target) {
+        return !!target.match(/^[_a-zA-Z0-9\-]{1,50}$/);
     };
     return OpAttributeSanitizer;
 }());

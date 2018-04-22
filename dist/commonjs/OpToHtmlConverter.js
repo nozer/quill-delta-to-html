@@ -121,11 +121,16 @@ var OpToHtmlConverter = (function () {
         tagAttrs = tagAttrs
             .concat(styleAttr)
             .concat(this.op.isLink() ? [
-            makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link)),
-            makeAttr('target', '_blank')
+            makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link))
         ] : []);
-        if (this.op.isLink() && !!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
-            tagAttrs.push(makeAttr('rel', this.options.linkRel));
+        if (this.op.isLink()) {
+            var target = this.op.attributes.target || this.options.linkTarget;
+            tagAttrs = tagAttrs
+                .concat(makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link)))
+                .concat(target ? makeAttr('target', target) : []);
+            if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
+                tagAttrs.push(makeAttr('rel', this.options.linkRel));
+            }
         }
         return tagAttrs;
     };

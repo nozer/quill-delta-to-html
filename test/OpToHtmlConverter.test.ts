@@ -172,15 +172,13 @@ describe('OpToHtmlConverter', function () {
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), [
                 { key: 'style', value: 'color:red' },
-                { key: 'href', value: 'l' },
-                { key: 'target', value: '_blank' }
+                { key: 'href', value: 'l' }
             ]);
 
             var c = new OpToHtmlConverter(o, {linkRel: 'nofollow'});
             assert.deepEqual(c.getTagAttributes(), [
                 { key: 'style', value: 'color:red' },
                 { key: 'href', value: 'l' },
-                { key: 'target', value: '_blank' },
                 { key: 'rel', value: 'nofollow' }
             ]);
 
@@ -225,7 +223,7 @@ describe('OpToHtmlConverter', function () {
         var c1 = new OpToHtmlConverter(op1);
         var result = [
             '<a class="ql-font-verdana ql-size-small"',
-            ' style="color:red;background-color:#fff" href="http://" target="_blank">',
+            ' style="color:red;background-color:#fff" href="http://">',
             '<sup>',
             '<strong><em><s><u>aaa</u></s></em></strong>',
             '</sup>',

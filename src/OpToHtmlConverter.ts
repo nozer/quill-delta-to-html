@@ -1,239 +1,240 @@
-import {makeStartTag, makeEndTag, encodeHtml, encodeLink, ITagKeyValue} from './funcs-html';
-import {DeltaInsertOp} from './DeltaInsertOp';
-import {ScriptType, NewLine} from './value-types';
+import { makeStartTag, makeEndTag, encodeHtml, encodeLink, ITagKeyValue } from './funcs-html';
+import { DeltaInsertOp } from './DeltaInsertOp';
+import { ScriptType, NewLine } from './value-types';
 import './extensions/String';
 import './extensions/Object';
-import {IMention} from "./mentions/MentionSanitizer";
+import { IMention } from "./mentions/MentionSanitizer";
 import './extensions/Array';
-import {OpAttributeSanitizer, IOpAttributes} from "./OpAttributeSanitizer";
+import { OpAttributeSanitizer, IOpAttributes } from "./OpAttributeSanitizer";
 
 
 interface IOpToHtmlConverterOptions {
-    classPrefix?: string,
-    encodeHtml?: boolean,
-    listItemTag?: string,
-    paragraphTag?: string,
-    linkRel?: string,
-    allowBackgroundClasses?: boolean
+   classPrefix?: string,
+   encodeHtml?: boolean,
+   listItemTag?: string,
+   paragraphTag?: string,
+   linkRel?: string,
+   linkTarget?: string,
+   allowBackgroundClasses?: boolean
 }
 
 interface IHtmlParts {
-    openingTag: string,
-    content: string,
-    closingTag: string,
+   openingTag: string,
+   content: string,
+   closingTag: string,
 }
 
 class OpToHtmlConverter {
 
-    private options: IOpToHtmlConverterOptions;
-    private op: DeltaInsertOp;
+   private options: IOpToHtmlConverterOptions;
+   private op: DeltaInsertOp;
 
-    constructor(op: DeltaInsertOp, options?: IOpToHtmlConverterOptions) {
-        this.op = op;
-        this.options = Object._assign({}, {
-            classPrefix: 'ql',
-            encodeHtml: true,
-            listItemTag: 'li',
-            paragraphTag: 'p'
-        }, options);
-    }
+   constructor(op: DeltaInsertOp, options?: IOpToHtmlConverterOptions) {
+      this.op = op;
+      this.options = Object._assign({}, {
+         classPrefix: 'ql',
+         encodeHtml: true,
+         listItemTag: 'li',
+         paragraphTag: 'p'
+      }, options);
+   }
 
-    prefixClass(className: string): string {
-        if (!this.options.classPrefix) {
-            return className + '';
-        }
-        return this.options.classPrefix + '-' + className;
-    }
+   prefixClass(className: string): string {
+      if (!this.options.classPrefix) {
+         return className + '';
+      }
+      return this.options.classPrefix + '-' + className;
+   }
 
-    getHtml(): string {
-        var parts = this.getHtmlParts();
-        return parts.openingTag + parts.content + parts.closingTag;
-    }
+   getHtml(): string {
+      var parts = this.getHtmlParts();
+      return parts.openingTag + parts.content + parts.closingTag;
+   }
 
-    getHtmlParts(): IHtmlParts {
-        
-        if (this.op.isJustNewline() && !this.op.isContainerBlock()) {
-            return {openingTag: '', closingTag: '', content: NewLine};
-        }
+   getHtmlParts(): IHtmlParts {
 
-        let tags = this.getTags(), attrs = this.getTagAttributes();
+      if (this.op.isJustNewline() && !this.op.isContainerBlock()) {
+         return { openingTag: '', closingTag: '', content: NewLine };
+      }
 
-        if (!tags.length && attrs.length) {
-            tags.push('span');
-        }
+      let tags = this.getTags(), attrs = this.getTagAttributes();
 
-        let beginTags = [], endTags = [];
+      if (!tags.length && attrs.length) {
+         tags.push('span');
+      }
 
-        for (var tag of tags) {
-            beginTags.push(makeStartTag(tag, attrs));
-            endTags.push(tag === 'img' ? '' : makeEndTag(tag));
-            // consumed in first tag
-            attrs = null;
-        }
-        endTags.reverse();
+      let beginTags = [], endTags = [];
 
-        return {
-            openingTag: beginTags.join(''),
-            content: this.getContent(),
-            closingTag: endTags.join('')
-        };
-    }
+      for (var tag of tags) {
+         beginTags.push(makeStartTag(tag, attrs));
+         endTags.push(tag === 'img' ? '' : makeEndTag(tag));
+         // consumed in first tag
+         attrs = null;
+      }
+      endTags.reverse();
 
-    getContent(): string {
-        if (this.op.isContainerBlock()) {
-            return '';
-        }
+      return {
+         openingTag: beginTags.join(''),
+         content: this.getContent(),
+         closingTag: endTags.join('')
+      };
+   }
 
-        if (this.op.isMentions()) {
-            return this.op.insert.value;
-        }
+   getContent(): string {
+      if (this.op.isContainerBlock()) {
+         return '';
+      }
 
-        var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
+      if (this.op.isMentions()) {
+         return this.op.insert.value;
+      }
 
-        return this.options.encodeHtml && encodeHtml(content) || content;
-    }
+      var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
 
-    getCssClasses(): string[] {
+      return this.options.encodeHtml && encodeHtml(content) || content;
+   }
 
-        var attrs: any = this.op.attributes;
+   getCssClasses(): string[] {
 
-        type Str2StrType = { (x: string): string };
+      var attrs: any = this.op.attributes;
 
-        var propsArr = ['indent', 'align', 'direction', 'font', 'size'];
-        if (this.options.allowBackgroundClasses) {
-            propsArr.push('background');
-        }
-        return propsArr
-            .filter((prop) => !!attrs[prop])
-            .filter((prop) => prop === 'background' ? OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true)
-            .map((prop) => prop + '-' + attrs[prop])
-            .concat(this.op.isFormula() ? 'formula' : [])
-            .concat(this.op.isVideo() ? 'video' : [])
-            .concat(this.op.isImage() ? 'image' : [])
-            .map(<Str2StrType>this.prefixClass.bind(this));
-    }
+      type Str2StrType = { (x: string): string };
+
+      var propsArr = ['indent', 'align', 'direction', 'font', 'size'];
+      if (this.options.allowBackgroundClasses) {
+         propsArr.push('background');
+      }
+      return propsArr
+         .filter((prop) => !!attrs[prop])
+         .filter((prop) => prop === 'background' ? OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true)
+         .map((prop) => prop + '-' + attrs[prop])
+         .concat(this.op.isFormula() ? 'formula' : [])
+         .concat(this.op.isVideo() ? 'video' : [])
+         .concat(this.op.isImage() ? 'image' : [])
+         .map(<Str2StrType>this.prefixClass.bind(this));
+   }
 
 
-    getCssStyles(): string[] {
+   getCssStyles(): string[] {
 
-        var attrs: any = this.op.attributes;
+      var attrs: any = this.op.attributes;
 
-        var propsArr = [['color']];
-        if (!this.options.allowBackgroundClasses) {
-            propsArr.push(['background', 'background-color']);
-        }
-        return propsArr
-            .filter((item) => !!attrs[item[0]])
-            .map((item: any[]) => item._preferSecond() + ':' + attrs[item[0]]);
-    }
+      var propsArr = [['color']];
+      if (!this.options.allowBackgroundClasses) {
+         propsArr.push(['background', 'background-color']);
+      }
+      return propsArr
+         .filter((item) => !!attrs[item[0]])
+         .map((item: any[]) => item._preferSecond() + ':' + attrs[item[0]]);
+   }
 
-    getTagAttributes(): Array<ITagKeyValue> {
-        if (this.op.attributes.code) {
-            return [];
-        }
+   getTagAttributes(): Array<ITagKeyValue> {
+      if (this.op.attributes.code) {
+         return [];
+      }
 
-        const makeAttr = (k: string, v: string): ITagKeyValue => ({key: k, value: v});
+      const makeAttr = (k: string, v: string): ITagKeyValue => ({ key: k, value: v });
 
-        var classes = this.getCssClasses();
-        var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
+      var classes = this.getCssClasses();
+      var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
 
-        if (this.op.isImage()) {
-            this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
-        }
+      if (this.op.isImage()) {
+         this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
+         return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
+      }
 
-        if (this.op.isFormula() || this.op.isContainerBlock()) {
-            return tagAttrs;
-        }
+      if (this.op.isFormula() || this.op.isContainerBlock()) {
+         return tagAttrs;
+      }
 
-        if (this.op.isVideo()) {
-            return tagAttrs.concat(
-                makeAttr('frameborder', '0'),
-                makeAttr('allowfullscreen', 'true'),
-                makeAttr('src', (this.op.insert.value + '')._scrubUrl())
+      if (this.op.isVideo()) {
+         return tagAttrs.concat(
+            makeAttr('frameborder', '0'),
+            makeAttr('allowfullscreen', 'true'),
+            makeAttr('src', (this.op.insert.value + '')._scrubUrl())
+         );
+      }
+
+      if (this.op.isMentions()) {
+         var mention: IMention = this.op.attributes.mention;
+         if (mention.class) {
+            tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
+         }
+         if (mention['end-point'] && mention.slug) {
+            tagAttrs = tagAttrs.concat(
+               makeAttr('href', encodeLink(mention['end-point'] + '/' + mention.slug))
             );
-        }
+         } else {
+            tagAttrs = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
+         }
+         if (mention.target) {
+            tagAttrs = tagAttrs.concat(makeAttr('target', mention.target));
+         }
+         return tagAttrs;
+      }
 
-        if (this.op.isMentions()) {
-            var mention: IMention = this.op.attributes.mention;
-            if (mention.class) {
-                tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
-            }
-            if (mention['end-point'] && mention.slug) {
-                tagAttrs = tagAttrs.concat(
-                    makeAttr('href', encodeLink(mention['end-point'] + '/' + mention.slug))
-                );
-            } else {
-                tagAttrs  = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
-            }
-            if (mention.target) {
-                tagAttrs = tagAttrs.concat(makeAttr('target', mention.target));
-            }
-            return tagAttrs;
-        }
+      var styles = this.getCssStyles();
+      var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
 
-        var styles = this.getCssStyles();
-        var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
-
-        tagAttrs = tagAttrs
-            .concat(styleAttr)
-            .concat(this.op.isLink() ? [
-                makeAttr('href', encodeLink(this.op.attributes.link)),
-                makeAttr('target', '_blank')
-            ] : []);
-
-        if (this.op.isLink() && !!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
+      tagAttrs = tagAttrs.concat(styleAttr);
+      if (this.op.isLink()) {
+         let target = this.op.attributes.target || this.options.linkTarget;
+         tagAttrs = tagAttrs
+         .concat(makeAttr('href', encodeLink(this.op.attributes.link)))
+         .concat(target ? makeAttr('target', target) : []);
+         if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));
-        }
+         }
+      }
 
-        return tagAttrs;
-    }
+      return tagAttrs;
+   }
 
-    getTags(): string[] {
-        var attrs: any = this.op.attributes;
+   getTags(): string[] {
+      var attrs: any = this.op.attributes;
 
-        // code
-        if (attrs.code) {
-            return ['code'];
-        }
+      // code
+      if (attrs.code) {
+         return ['code'];
+      }
 
-        // embeds
-        if (!this.op.isText()) {
-            return [this.op.isVideo() ? 'iframe'
-                : this.op.isImage() ? 'img'
-                    : 'span' // formula
-            ]
-        }
+      // embeds
+      if (!this.op.isText()) {
+         return [this.op.isVideo() ? 'iframe'
+            : this.op.isImage() ? 'img'
+               : 'span' // formula
+         ]
+      }
 
-        // blocks
-        var positionTag = this.options.paragraphTag || 'p';
+      // blocks
+      var positionTag = this.options.paragraphTag || 'p';
 
-        var blocks = [['blockquote'], ['code-block', 'pre'],
-            ['list', this.options.listItemTag], ['header'],
-            ['align', positionTag], ['direction', positionTag],
-            ['indent', positionTag]];
-        for (var item of blocks) {
-            if (attrs[item[0]]) {
-                return item[0] === 'header' ? ['h' + attrs[item[0]]] : [item._preferSecond()];
-            }
-        }
+      var blocks = [['blockquote'], ['code-block', 'pre'],
+      ['list', this.options.listItemTag], ['header'],
+      ['align', positionTag], ['direction', positionTag],
+      ['indent', positionTag]];
+      for (var item of blocks) {
+         if (attrs[item[0]]) {
+            return item[0] === 'header' ? ['h' + attrs[item[0]]] : [item._preferSecond()];
+         }
+      }
 
-        // inlines
-        return [['link', 'a'], ['script'],
-            ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u'],
-            ['mentions', 'a']]
-            .filter((item: any[]) => !!attrs[item[0]])
-            .map((item) => {
-                return item[0] === 'script' ?
-                    (attrs[item[0]] === ScriptType.Sub ? 'sub' : 'sup')
-                    : item._preferSecond();
-            });
-    }
+      // inlines
+      return [['link', 'a'], ['script'],
+      ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u'],
+      ['mentions', 'a']]
+         .filter((item: any[]) => !!attrs[item[0]])
+         .map((item) => {
+            return item[0] === 'script' ?
+               (attrs[item[0]] === ScriptType.Sub ? 'sub' : 'sup')
+               : item._preferSecond();
+         });
+   }
 
-    static IsValidRel(relStr: string) {
-        return !!relStr.match(/^[a-z\s]{1,50}$/i);
-    }
+   static IsValidRel(relStr: string) {
+      return !!relStr.match(/^[a-z\s]{1,50}$/i);
+   }
 
 }
 
-export {OpToHtmlConverter, IOpToHtmlConverterOptions, IHtmlParts};
+export { OpToHtmlConverter, IOpToHtmlConverterOptions, IHtmlParts };
