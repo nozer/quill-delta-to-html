@@ -90,7 +90,7 @@ var OpAttributeSanitizer = (function () {
         return !!fontName.match(/^[a-z\s0-9\- ]{1,30}$/i);
     };
     OpAttributeSanitizer.IsValidSize = function (size) {
-        return !!size.match(/^[a-z\-]{1,20}$/i);
+        return !!size.match(/^[a-z0-9\-]{1,20}$/i);
     };
     OpAttributeSanitizer.IsValidWidth = function (width) {
         return !!width.match(/^[0-9]*(px|em|%)?$/);

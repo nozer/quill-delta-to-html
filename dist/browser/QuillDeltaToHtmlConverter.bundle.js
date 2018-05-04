@@ -289,7 +289,7 @@ var OpAttributeSanitizer = (function () {
         return !!fontName.match(/^[a-z\s0-9\- ]{1,30}$/i);
     };
     OpAttributeSanitizer.IsValidSize = function (size) {
-        return !!size.match(/^[a-z\-]{1,20}$/i);
+        return !!size.match(/^[a-z0-9\-]{1,20}$/i);
     };
     OpAttributeSanitizer.IsValidWidth = function (width) {
         return !!width.match(/^[0-9]*(px|em|%)?$/);
@@ -422,11 +422,7 @@ var OpToHtmlConverter = (function () {
         }
         var styles = this.getCssStyles();
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
-        tagAttrs = tagAttrs
-            .concat(styleAttr)
-            .concat(this.op.isLink() ? [
-            makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link))
-        ] : []);
+        tagAttrs = tagAttrs.concat(styleAttr);
         if (this.op.isLink()) {
             var target = this.op.attributes.target || this.options.linkTarget;
             tagAttrs = tagAttrs
