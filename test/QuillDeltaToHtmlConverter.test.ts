@@ -9,6 +9,8 @@ import { callWhenAlltrue, callWhenXEqualY } from './_helper';
 
 import { delta1 } from './data/delta1';
 import { GroupType } from './../src/value-types';
+import { encodeHtml } from './../src/funcs-html';
+
 
 describe('QuillDeltaToHtmlConverter', function () {
 
@@ -345,19 +347,32 @@ describe('QuillDeltaToHtmlConverter', function () {
                      "code-block": true
                   },
                   "insert": "\n"
+               },
+               {
+                  "insert": "<p>line 4</p>"
+               },
+               {
+                  "attributes": {
+                     "code-block": true
+                  },
+                  "insert": "\n"
                }
             ]
-
+            console.log(encodeHtml("<p>line 4</p>"));
             var qdc = new QuillDeltaToHtmlConverter(ops);
             let html = qdc.convert();
-            assert.equal(html, "<pre>line 1\nline 2\nline 3</pre>");
+            assert.equal(html, ["<pre>line 1\nline 2\nline 3\n", 
+               encodeHtml("<p>line 4</p>"), 
+               "</pre>"].join("")
+            );
 
             qdc = new QuillDeltaToHtmlConverter(ops, {
                multiLineCodeblock: false
             });
             html = qdc.convert();
             assert.equal(
-               '<pre>line 1</pre><pre>line 2</pre><pre>line 3</pre>',
+               '<pre>line 1</pre><pre>line 2</pre><pre>line 3</pre>'+
+               '<pre>'+ encodeHtml("<p>line 4</p>") + '</pre>',
                html);
             qdc = new QuillDeltaToHtmlConverter([ops[0], ops[1]]);
             html = qdc.convert();

@@ -7,7 +7,7 @@ import {
    VideoItem, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup
 } from './grouper/group-types';
 import { ListNester } from './grouper/ListNester';
-import { makeStartTag, makeEndTag } from './funcs-html';
+import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
 import './extensions/Object';
 import { NewLine, GroupType } from './value-types';
 
@@ -169,9 +169,11 @@ class QuillDeltaToHtmlConverter {
 
       if (bop.isCodeBlock()) {
          return htmlParts.openingTag +
-            ops.map((iop) => 
-               iop.isCustom() ? this.renderCustom(iop, bop) : iop.insert.value
-            ).join("")
+            encodeHtml(
+               ops.map((iop) => 
+                  iop.isCustom() ? this.renderCustom(iop, bop) : iop.insert.value
+               ).join("")
+            )
             + htmlParts.closingTag;
       }
 

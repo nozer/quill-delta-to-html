@@ -116,9 +116,9 @@ var QuillDeltaToHtmlConverter = (function () {
         var htmlParts = converter.getHtmlParts();
         if (bop.isCodeBlock()) {
             return htmlParts.openingTag +
-                ops.map(function (iop) {
+                funcs_html_1.encodeHtml(ops.map(function (iop) {
                     return iop.isCustom() ? _this.renderCustom(iop, bop) : iop.insert.value;
-                }).join("")
+                }).join(""))
                 + htmlParts.closingTag;
         }
         var inlines = ops.map(function (op) { return _this._renderInline(op, bop); }).join('');
