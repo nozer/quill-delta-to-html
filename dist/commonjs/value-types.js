@@ -2,36 +2,44 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var NewLine = "\n";
 exports.NewLine = NewLine;
-var ListType = {
-    Ordered: 'ordered',
-    Bullet: 'bullet'
-};
+var ListType;
+(function (ListType) {
+    ListType["Ordered"] = "ordered";
+    ListType["Bullet"] = "bullet";
+})(ListType || (ListType = {}));
 exports.ListType = ListType;
-var ScriptType = {
-    Sub: "sub",
-    Super: "super"
-};
+var ScriptType;
+(function (ScriptType) {
+    ScriptType["Sub"] = "sub";
+    ScriptType["Super"] = "super";
+})(ScriptType || (ScriptType = {}));
 exports.ScriptType = ScriptType;
-var DirectionType = {
-    Rtl: "rtl"
-};
+var DirectionType;
+(function (DirectionType) {
+    DirectionType["Rtl"] = "rtl";
+})(DirectionType || (DirectionType = {}));
 exports.DirectionType = DirectionType;
-var AlignType = {
-    Center: "center",
-    Right: "right"
-};
+var AlignType;
+(function (AlignType) {
+    AlignType["Center"] = "center";
+    AlignType["Right"] = "right";
+})(AlignType || (AlignType = {}));
 exports.AlignType = AlignType;
-var DataType = {
-    Image: "image",
-    Video: "video",
-    Formula: "formula",
-    Text: "text"
-};
+var DataType;
+(function (DataType) {
+    DataType["Image"] = "image";
+    DataType["Video"] = "video";
+    DataType["Formula"] = "formula";
+    DataType["Text"] = "text";
+})(DataType || (DataType = {}));
 exports.DataType = DataType;
-var GroupType = {
-    Block: 'block',
-    InlineGroup: 'inline-group',
-    List: 'list',
-    Video: 'video'
-};
+;
+var GroupType;
+(function (GroupType) {
+    GroupType["Block"] = "block";
+    GroupType["InlineGroup"] = "inline-group";
+    GroupType["List"] = "list";
+    GroupType["Video"] = "video";
+})(GroupType || (GroupType = {}));
 exports.GroupType = GroupType;
+;

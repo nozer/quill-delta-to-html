@@ -514,7 +514,7 @@ var QuillDeltaToHtmlConverter = (function () {
         };
         this.rawDeltaOps = deltaOps;
     }
-    QuillDeltaToHtmlConverter.prototype.getListTag = function (op) {
+    QuillDeltaToHtmlConverter.prototype._getListTag = function (op) {
         return op.isOrderedList() ? this.options.orderedListTag + ''
             : op.isBulletList() ? this.options.bulletListTag + ''
                 : '';
@@ -536,28 +536,28 @@ var QuillDeltaToHtmlConverter = (function () {
         return this.getGroupedOps()
             .map(function (group) {
             if (group instanceof group_types_1.ListGroup) {
-                return _this.renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this.renderList(group); });
+                return _this._renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this._renderList(group); });
             }
             else if (group instanceof group_types_1.BlockGroup) {
                 var g = group;
-                return _this.renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this.renderBlock(g.op, g.ops); });
+                return _this._renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this._renderBlock(g.op, g.ops); });
             }
             else if (group instanceof group_types_1.VideoItem) {
-                return _this.renderWithCallbacks(value_types_1.GroupType.Video, group, function () {
+                return _this._renderWithCallbacks(value_types_1.GroupType.Video, group, function () {
                     var g = group;
                     var converter = new OpToHtmlConverter_1.OpToHtmlConverter(g.op, _this.converterOptions);
                     return converter.getHtml();
                 });
             }
             else {
-                return _this.renderWithCallbacks(value_types_1.GroupType.InlineGroup, group, function () {
-                    return _this.renderInlines(group.ops);
+                return _this._renderWithCallbacks(value_types_1.GroupType.InlineGroup, group, function () {
+                    return _this._renderInlines(group.ops);
                 });
             }
         })
             .join("");
     };
-    QuillDeltaToHtmlConverter.prototype.renderWithCallbacks = function (groupType, group, myRenderFn) {
+    QuillDeltaToHtmlConverter.prototype._renderWithCallbacks = function (groupType, group, myRenderFn) {
         var html = '';
         var beforeCb = this.callbacks['beforeRender_cb'];
         html = typeof beforeCb === 'function' ? beforeCb.apply(null, [groupType, group]) : '';
@@ -568,39 +568,39 @@ var QuillDeltaToHtmlConverter = (function () {
         html = typeof afterCb === 'function' ? afterCb.apply(null, [groupType, html]) : html;
         return html;
     };
-    QuillDeltaToHtmlConverter.prototype.renderList = function (list, isOuterMost) {
+    QuillDeltaToHtmlConverter.prototype._renderList = function (list, isOuterMost) {
         var _this = this;
         if (isOuterMost === void 0) { isOuterMost = true; }
         var firstItem = list.items[0];
-        return funcs_html_1.makeStartTag(this.getListTag(firstItem.item.op))
-            + list.items.map(function (li) { return _this.renderListItem(li, isOuterMost); }).join('')
-            + funcs_html_1.makeEndTag(this.getListTag(firstItem.item.op));
+        return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op))
+            + list.items.map(function (li) { return _this._renderListItem(li, isOuterMost); }).join('')
+            + funcs_html_1.makeEndTag(this._getListTag(firstItem.item.op));
     };
-    QuillDeltaToHtmlConverter.prototype.renderListItem = function (li, isOuterMost) {
+    QuillDeltaToHtmlConverter.prototype._renderListItem = function (li, isOuterMost) {
         var converterOptions = Object._assign({}, this.converterOptions);
         li.item.op.attributes.indent = 0;
         var converter = new OpToHtmlConverter_1.OpToHtmlConverter(li.item.op, this.converterOptions);
         var parts = converter.getHtmlParts();
-        var liElementsHtml = this.renderInlines(li.item.ops, false);
+        var liElementsHtml = this._renderInlines(li.item.ops, false);
         return parts.openingTag + (liElementsHtml) +
-            (li.innerList ? this.renderList(li.innerList, false) : '')
+            (li.innerList ? this._renderList(li.innerList, false) : '')
             + parts.closingTag;
     };
-    QuillDeltaToHtmlConverter.prototype.renderBlock = function (bop, ops) {
+    QuillDeltaToHtmlConverter.prototype._renderBlock = function (bop, ops) {
         var _this = this;
         var converter = new OpToHtmlConverter_1.OpToHtmlConverter(bop, this.converterOptions);
         var htmlParts = converter.getHtmlParts();
         if (bop.isCodeBlock()) {
             return htmlParts.openingTag +
                 funcs_html_1.encodeHtml(ops.map(function (iop) {
-                    return iop.isCustom() ? _this.renderCustom(iop, bop) : iop.insert.value;
+                    return iop.isCustom() ? _this._renderCustom(iop, bop) : iop.insert.value;
                 }).join(""))
                 + htmlParts.closingTag;
         }
         var inlines = ops.map(function (op) { return _this._renderInline(op, bop); }).join('');
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
     };
-    QuillDeltaToHtmlConverter.prototype.renderInlines = function (ops, wrapInParagraphTag) {
+    QuillDeltaToHtmlConverter.prototype._renderInlines = function (ops, wrapInParagraphTag) {
         var _this = this;
         if (wrapInParagraphTag === void 0) { wrapInParagraphTag = true; }
         var opsLen = ops.length - 1;
@@ -618,12 +618,12 @@ var QuillDeltaToHtmlConverter = (function () {
     };
     QuillDeltaToHtmlConverter.prototype._renderInline = function (op, contextOp) {
         if (op.isCustom()) {
-            return this.renderCustom(op, contextOp);
+            return this._renderCustom(op, contextOp);
         }
         var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, this.converterOptions);
         return converter.getHtml().replace(/\n/g, BrTag);
     };
-    QuillDeltaToHtmlConverter.prototype.renderCustom = function (op, contextOp) {
+    QuillDeltaToHtmlConverter.prototype._renderCustom = function (op, contextOp) {
         var renderCb = this.callbacks['renderCustomOp_cb'];
         if (typeof renderCb === 'function') {
             return renderCb.apply(null, [op, contextOp]);
@@ -1104,39 +1104,47 @@ exports.MentionSanitizer = MentionSanitizer;
 Object.defineProperty(exports, "__esModule", { value: true });
 var NewLine = "\n";
 exports.NewLine = NewLine;
-var ListType = {
-    Ordered: 'ordered',
-    Bullet: 'bullet'
-};
+var ListType;
+(function (ListType) {
+    ListType["Ordered"] = "ordered";
+    ListType["Bullet"] = "bullet";
+})(ListType || (ListType = {}));
 exports.ListType = ListType;
-var ScriptType = {
-    Sub: "sub",
-    Super: "super"
-};
+var ScriptType;
+(function (ScriptType) {
+    ScriptType["Sub"] = "sub";
+    ScriptType["Super"] = "super";
+})(ScriptType || (ScriptType = {}));
 exports.ScriptType = ScriptType;
-var DirectionType = {
-    Rtl: "rtl"
-};
+var DirectionType;
+(function (DirectionType) {
+    DirectionType["Rtl"] = "rtl";
+})(DirectionType || (DirectionType = {}));
 exports.DirectionType = DirectionType;
-var AlignType = {
-    Center: "center",
-    Right: "right"
-};
+var AlignType;
+(function (AlignType) {
+    AlignType["Center"] = "center";
+    AlignType["Right"] = "right";
+})(AlignType || (AlignType = {}));
 exports.AlignType = AlignType;
-var DataType = {
-    Image: "image",
-    Video: "video",
-    Formula: "formula",
-    Text: "text"
-};
+var DataType;
+(function (DataType) {
+    DataType["Image"] = "image";
+    DataType["Video"] = "video";
+    DataType["Formula"] = "formula";
+    DataType["Text"] = "text";
+})(DataType || (DataType = {}));
 exports.DataType = DataType;
-var GroupType = {
-    Block: 'block',
-    InlineGroup: 'inline-group',
-    List: 'list',
-    Video: 'video'
-};
+;
+var GroupType;
+(function (GroupType) {
+    GroupType["Block"] = "block";
+    GroupType["InlineGroup"] = "inline-group";
+    GroupType["List"] = "list";
+    GroupType["Video"] = "video";
+})(GroupType || (GroupType = {}));
 exports.GroupType = GroupType;
+;
 
 },{}]},{},[7])(7)
 });; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter; 

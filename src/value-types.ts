@@ -2,43 +2,37 @@
 type NewLine = "\n";
 const NewLine = "\n" as NewLine;
 
-type ListType = "ordered" | "bullet";
-const ListType = {
-    Ordered: 'ordered' as ListType,
-    Bullet: 'bullet' as ListType
+enum ListType {
+   Ordered = 'ordered',
+   Bullet = 'bullet'
 }
 
-type ScriptType = "sub" | "super";
-const ScriptType = {
-    Sub: "sub" as ScriptType,
-    Super: "super" as ScriptType
+enum ScriptType {
+   Sub = "sub",
+   Super = "super"
 }
 
-type DirectionType = "rtl";
-const DirectionType = {
-    Rtl: "rtl" as DirectionType
+enum DirectionType {
+   Rtl = 'rtl'
 }
 
-type AlignType = "center" | "right";
-const AlignType = {
-    Center: "center" as AlignType,
-    Right: "right" as AlignType
+enum AlignType {
+   Center = "center",
+   Right = "right"
 }
 
-type DataType = "text" | "image" | "video" | "formula";
-const DataType = {
-    Image: "image" as DataType,
-    Video: "video" as DataType,
-    Formula: "formula" as DataType,
-    Text: "text" as DataType
+enum DataType {
+   Image = "image",
+   Video = "video",
+   Formula = "formula",
+   Text = "text"
 };
 
-type GroupType = "block" | "inline-group" | "list" | "video";
-const GroupType = {
-    Block: 'block' as GroupType,
-    InlineGroup: 'inline-group' as GroupType,
-    List: 'list' as GroupType,
-    Video: 'video' as GroupType
+enum GroupType {
+   Block = 'block',
+   InlineGroup = 'inline-group',
+   List = 'list',
+   Video = 'video'
 };
 
 export { NewLine, ListType, ScriptType, DirectionType, AlignType, DataType, GroupType };

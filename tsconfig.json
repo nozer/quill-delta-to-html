@@ -13,7 +13,8 @@
         "types": [
             "node",
             "mocha"
-        ]
+        ],
+        "declaration": true
     },
     "include": [
         "src/**/*.ts"
