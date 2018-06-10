@@ -71,15 +71,15 @@ describe('OpToHtmlConverter', function () {
                 'ql-font-roman', 'ql-size-small'];
             assert.deepEqual(c.getCssClasses(), classes);
 
-            o = new DeltaInsertOp(new InsertDataQuill("image", ""), attrs);
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, ""), attrs);
             c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getCssClasses(), classes.concat('ql-image'));
 
-            o = new DeltaInsertOp(new InsertDataQuill("video", ""), attrs);
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Video, ""), attrs);
             c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getCssClasses(), classes.concat('ql-video'));
 
-            o = new DeltaInsertOp(new InsertDataQuill("formula", ""), attrs);
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Formula, ""), attrs);
             c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getCssClasses(), classes.concat('ql-formula'));
 
@@ -137,14 +137,14 @@ describe('OpToHtmlConverter', function () {
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), []);
 
-            var o = new DeltaInsertOp(new InsertDataQuill("image", "-"), { color: 'red' });
+            var o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, "-"), { color: 'red' });
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), [
                 { key: 'class', value: "ql-image" },
                 { key: 'src', value: "-" }
             ]);
 
-            var o = new DeltaInsertOp(new InsertDataQuill("image", "-"), { width: '200' });
+            var o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, "-"), { width: '200' });
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), [
                 { key: 'class', value: "ql-image" },
@@ -152,13 +152,13 @@ describe('OpToHtmlConverter', function () {
                 { key: 'src', value: "-" }
             ]);
 
-            var o = new DeltaInsertOp(new InsertDataQuill('formula', "-"), { color: 'red' });
+            var o = new DeltaInsertOp(new InsertDataQuill(DataType.Formula, "-"), { color: 'red' });
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), [
                 { key: 'class', value: "ql-formula" }
             ]);
 
-            var o = new DeltaInsertOp(new InsertDataQuill('video', "-"), { color: 'red' });
+            var o = new DeltaInsertOp(new InsertDataQuill(DataType.Video, "-"), { color: 'red' });
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), [
                 { key: 'class', value: "ql-video" },
@@ -195,11 +195,11 @@ describe('OpToHtmlConverter', function () {
             c = new OpToHtmlConverter(o);
             assert.equal(c.getContent(), 'sss&lt;&amp;&gt;,');
 
-            o = new DeltaInsertOp(new InsertDataQuill('formula', 'ff'), { bold: true });
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Formula, 'ff'), { bold: true });
             c = new OpToHtmlConverter(o);
             assert.equal(c.getContent(), 'ff');
 
-            o = new DeltaInsertOp(new InsertDataQuill('video', 'ff'), { bold: true });
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Video, 'ff'), { bold: true });
             c = new OpToHtmlConverter(o);
             assert.equal(c.getContent(), '');
         });
@@ -258,7 +258,7 @@ describe('OpToHtmlConverter', function () {
                 c1 = new OpToHtmlConverter(op);
                 assert.equal(c1.getHtml(), '\n');
 
-                var op = new DeltaInsertOp(new InsertDataQuill("image", "http://"));
+                var op = new DeltaInsertOp(new InsertDataQuill(DataType.Image, "http://"));
                 c1 = new OpToHtmlConverter(op);
                 assert.equal(c1.getHtml(), '<img class="ql-image" src="http://"/>');
             });
