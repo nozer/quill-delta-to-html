@@ -1,6 +1,6 @@
 {
   "name": "quill-delta-to-html",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "Converts Quill's delta ops to HTML",
   "main": "./dist/commonjs/main.js",
   "types":"./dist/commonjs/main.d.ts",

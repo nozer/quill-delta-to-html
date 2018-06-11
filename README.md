@@ -19,6 +19,9 @@ Usage
 ```javascript
 var QuillDeltaToHtmlConverter = require('quill-delta-to-html');
 
+// or, in TypeScript:
+// import QuillDeltaToHtmlConverter = require('quill-delta-to-html'); 
+
 var deltaOps =  [
     {insert: "Hello\n"},
     {insert: "This is colorful", attributes: {color: '#f00'}}
