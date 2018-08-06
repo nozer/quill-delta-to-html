@@ -34,10 +34,38 @@ describe("String Extensions Module", function(){
         });
     });
 
-    describe('String#_scrubUrl()', function() {
-        it('should rremove undesired chars from url', function() {
-            var act = "http://www><.yahoo'.com"._scrubUrl();
-            assert.equal(act, "http://www.yahoo.com");
+    describe('String#_sanitizeUrl() ', function() {
+        it('should add unsafe: for invalid protocols', function() {
+            var act = "http://www><.yahoo'.com"._sanitizeUrl();
+            assert.equal(act, act);
+
+            act = "https://abc"._sanitizeUrl();
+            assert.equal(act, act);
+
+            act = "sftp://abc"._sanitizeUrl();
+            assert.equal(act, act);
+
+            act = " ftp://abc"._sanitizeUrl();
+            assert.equal(act, act);
+
+            act = "  file://abc"._sanitizeUrl();
+            assert.equal(act, act);
+
+            act = "   blob://abc"._sanitizeUrl();
+            assert.equal(act, act);
+
+            act = "mailto://abc"._sanitizeUrl();
+            assert.equal(act, act);
+
+            act = "tel://abc"._sanitizeUrl();
+            assert.equal(act, act);
+
+            act = " data:image//abc"._sanitizeUrl();
+            assert.equal(act, act);
+
+            act = "javascript:alert('hi')"._sanitizeUrl();
+            assert.equal(act, "unsafe:javascript:alert('hi')");
+
         });
     });
 });

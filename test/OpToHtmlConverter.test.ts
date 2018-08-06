@@ -137,19 +137,19 @@ describe('OpToHtmlConverter', function () {
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), []);
 
-            var o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, "-"), { color: 'red' });
+            var o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, "http:"), { color: 'red' });
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), [
                 { key: 'class', value: "ql-image" },
-                { key: 'src', value: "-" }
+                { key: 'src', value: "http:" }
             ]);
 
-            var o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, "-"), { width: '200' });
+            var o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, "http:"), { width: '200' });
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), [
                 { key: 'class', value: "ql-image" },
                 { key: 'width', value: "200"},
-                { key: 'src', value: "-" }
+                { key: 'src', value: "http:" }
             ]);
 
             var o = new DeltaInsertOp(new InsertDataQuill(DataType.Formula, "-"), { color: 'red' });
@@ -158,13 +158,13 @@ describe('OpToHtmlConverter', function () {
                 { key: 'class', value: "ql-formula" }
             ]);
 
-            var o = new DeltaInsertOp(new InsertDataQuill(DataType.Video, "-"), { color: 'red' });
+            var o = new DeltaInsertOp(new InsertDataQuill(DataType.Video, "http:"), { color: 'red' });
             var c = new OpToHtmlConverter(o);
             assert.deepEqual(c.getTagAttributes(), [
                 { key: 'class', value: "ql-video" },
                 { key: 'frameborder', value: '0' },
                 { key: 'allowfullscreen', value: 'true' },
-                { key: 'src', 'value': '-' }
+                { key: 'src', 'value': 'http:' }
             ]);
 
             var o = new DeltaInsertOp("link", { color: 'red', link: 'l' });

@@ -12,7 +12,7 @@ var delta1 = {
         { "insert": " " }, { "attributes": { "background": "#ffebcc" }, "insert": "test" },
         { "insert": " " }, { "attributes": { "script": "sub" }, "insert": "the" },
         { "insert": " " }, { "attributes": { "script": "super" }, "insert": "rendering" },
-        { "insert": " of " }, { "attributes": { "link": "yahoo" }, "insert": "inline" },
+        { "insert": " of " }, { "attributes": { "link": "http://yahoo" }, "insert": "inline" },
         { "insert": " " },
         { "insert": { "formula": "x=data" } },
         { "insert": " formats.\n" }
@@ -25,7 +25,7 @@ var delta1 = {
         ' is ', '<span style="color:#e60000">will</span>', ' ',
         '<span style="background-color:#ffebcc">test</span>', ' ',
         '<sub>the</sub>', ' ', '<sup>rendering</sup>', ' of ',
-        '<a href="yahoo" target="_blank">inline</a>', ' ', '<span class="noz-formula">x=data</span>',
+        '<a href="http://yahoo" target="_blank">inline</a>', ' ', '<span class="noz-formula">x=data</span>',
         ' formats.</p>'
     ].join('')
 };

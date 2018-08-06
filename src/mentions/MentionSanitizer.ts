@@ -35,15 +35,15 @@ class MentionSanitizer {
       }
 
       if (dirtyObj.avatar) {
-         cleanObj.avatar = (dirtyObj.avatar + '')._scrubUrl();
+         cleanObj.avatar = (dirtyObj.avatar + '')._sanitizeUrl();
       }
 
       if (dirtyObj['end-point']) {
-         cleanObj['end-point'] = (dirtyObj['end-point'] + '')._scrubUrl();
+         cleanObj['end-point'] = (dirtyObj['end-point'] + '')._sanitizeUrl();
       }
 
       if (dirtyObj.slug) {
-         cleanObj.slug = (dirtyObj.slug + '')._scrubUrl();
+         cleanObj.slug = (dirtyObj.slug + '');
       }
 
       return cleanObj;

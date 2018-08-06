@@ -85,7 +85,7 @@ class OpAttributeSanitizer {
       }
 
       if (link) {
-         cleanAttrs.link = (link + '')._scrubUrl();
+         cleanAttrs.link = (link + '')._sanitizeUrl();
       }
       if (target && OpAttributeSanitizer.isValidTarget(target)) {
          cleanAttrs.target = target;

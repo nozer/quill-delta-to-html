@@ -96,7 +96,7 @@ describe('OpAttributeSanitizer', function () {
                 bold: true,
                 background: '#333',
                 font: 'times new roman',
-                link: 'http://',
+                link: 'http://<',
                 list: 'ordered',
                 header: 3,
                 indent: 30,

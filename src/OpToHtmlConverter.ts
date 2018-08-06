@@ -140,7 +140,7 @@ class OpToHtmlConverter {
 
       if (this.op.isImage()) {
          this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-         return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
+         return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()));
       }
 
       if (this.op.isFormula() || this.op.isContainerBlock()) {
@@ -151,7 +151,7 @@ class OpToHtmlConverter {
          return tagAttrs.concat(
             makeAttr('frameborder', '0'),
             makeAttr('allowfullscreen', 'true'),
-            makeAttr('src', (this.op.insert.value + '')._scrubUrl())
+            makeAttr('src', (this.op.insert.value + '')._sanitizeUrl())
          );
       }
 
@@ -165,7 +165,7 @@ class OpToHtmlConverter {
                makeAttr('href', encodeLink(mention['end-point'] + '/' + mention.slug))
             );
          } else {
-            tagAttrs = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
+            tagAttrs = tagAttrs.concat(makeAttr('href', 'about:blank'));
          }
          if (mention.target) {
             tagAttrs = tagAttrs.concat(makeAttr('target', mention.target));
