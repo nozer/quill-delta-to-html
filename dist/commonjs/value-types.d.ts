@@ -13,7 +13,8 @@ declare enum DirectionType {
 }
 declare enum AlignType {
     Center = "center",
-    Right = "right"
+    Right = "right",
+    Justify = "justify"
 }
 declare enum DataType {
     Image = "image",

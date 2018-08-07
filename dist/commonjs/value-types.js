@@ -23,6 +23,7 @@ var AlignType;
 (function (AlignType) {
     AlignType["Center"] = "center";
     AlignType["Right"] = "right";
+    AlignType["Justify"] = "justify";
 })(AlignType || (AlignType = {}));
 exports.AlignType = AlignType;
 var DataType;

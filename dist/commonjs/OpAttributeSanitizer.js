@@ -42,7 +42,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.width = width;
         }
         if (link) {
-            cleanAttrs.link = (link + '')._scrubUrl();
+            cleanAttrs.link = (link + '')._sanitizeUrl();
         }
         if (target && OpAttributeSanitizer.isValidTarget(target)) {
             cleanAttrs.target = target;
@@ -56,7 +56,7 @@ var OpAttributeSanitizer = (function () {
         if (Number(header)) {
             cleanAttrs.header = Math.min(Number(header), 6);
         }
-        if (align === value_types_1.AlignType.Center || align === value_types_1.AlignType.Right) {
+        if (align === value_types_1.AlignType.Center || align === value_types_1.AlignType.Right || align === value_types_1.AlignType.Justify) {
             cleanAttrs.align = align;
         }
         if (direction === value_types_1.DirectionType.Rtl) {

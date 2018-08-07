@@ -1,4 +1,4 @@
 interface String {
     _tokenizeWithNewLines(): string[];
-    _scrubUrl(): string;
+    _sanitizeUrl(): string;
 }

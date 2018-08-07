@@ -241,7 +241,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.width = width;
         }
         if (link) {
-            cleanAttrs.link = (link + '')._scrubUrl();
+            cleanAttrs.link = (link + '')._sanitizeUrl();
         }
         if (target && OpAttributeSanitizer.isValidTarget(target)) {
             cleanAttrs.target = target;
@@ -255,7 +255,7 @@ var OpAttributeSanitizer = (function () {
         if (Number(header)) {
             cleanAttrs.header = Math.min(Number(header), 6);
         }
-        if (align === value_types_1.AlignType.Center || align === value_types_1.AlignType.Right) {
+        if (align === value_types_1.AlignType.Center || align === value_types_1.AlignType.Right || align === value_types_1.AlignType.Justify) {
             cleanAttrs.align = align;
         }
         if (direction === value_types_1.DirectionType.Rtl) {
@@ -396,13 +396,13 @@ var OpToHtmlConverter = (function () {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
             this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
+            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()));
         }
         if (this.op.isFormula() || this.op.isContainerBlock()) {
             return tagAttrs;
         }
         if (this.op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()));
         }
         if (this.op.isMentions()) {
             var mention = this.op.attributes.mention;
@@ -413,7 +413,7 @@ var OpToHtmlConverter = (function () {
                 tagAttrs = tagAttrs.concat(makeAttr('href', funcs_html_1.encodeLink(mention['end-point'] + '/' + mention.slug)));
             }
             else {
-                tagAttrs = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
+                tagAttrs = tagAttrs.concat(makeAttr('href', 'about:blank'));
             }
             if (mention.target) {
                 tagAttrs = tagAttrs.concat(makeAttr('target', mention.target));
@@ -746,8 +746,14 @@ String.prototype._tokenizeWithNewLines = function () {
         return pv;
     }, []);
 };
-String.prototype._scrubUrl = function () {
-    return this.replace(/[^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)]/g, '');
+String.prototype._sanitizeUrl = function () {
+    var val = this;
+    val = val.replace(/^\s*/gm, '');
+    var whiteList = /^\s*((https?|s?ftp|file|blob|mailto|tel):|data:image\/)/;
+    if (whiteList.test(val)) {
+        return val;
+    }
+    return 'unsafe:' + val;
 };
 
 },{}],11:[function(require,module,exports){
@@ -1076,13 +1082,13 @@ var MentionSanitizer = (function () {
             cleanObj.target = dirtyObj.target;
         }
         if (dirtyObj.avatar) {
-            cleanObj.avatar = (dirtyObj.avatar + '')._scrubUrl();
+            cleanObj.avatar = (dirtyObj.avatar + '')._sanitizeUrl();
         }
         if (dirtyObj['end-point']) {
-            cleanObj['end-point'] = (dirtyObj['end-point'] + '')._scrubUrl();
+            cleanObj['end-point'] = (dirtyObj['end-point'] + '')._sanitizeUrl();
         }
         if (dirtyObj.slug) {
-            cleanObj.slug = (dirtyObj.slug + '')._scrubUrl();
+            cleanObj.slug = (dirtyObj.slug + '');
         }
         return cleanObj;
     };
@@ -1125,6 +1131,7 @@ var AlignType;
 (function (AlignType) {
     AlignType["Center"] = "center";
     AlignType["Right"] = "right";
+    AlignType["Justify"] = "justify";
 })(AlignType || (AlignType = {}));
 exports.AlignType = AlignType;
 var DataType;

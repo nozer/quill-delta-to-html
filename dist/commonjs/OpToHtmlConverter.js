@@ -92,13 +92,13 @@ var OpToHtmlConverter = (function () {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
             this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
+            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()));
         }
         if (this.op.isFormula() || this.op.isContainerBlock()) {
             return tagAttrs;
         }
         if (this.op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._scrubUrl()));
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()));
         }
         if (this.op.isMentions()) {
             var mention = this.op.attributes.mention;
@@ -109,7 +109,7 @@ var OpToHtmlConverter = (function () {
                 tagAttrs = tagAttrs.concat(makeAttr('href', funcs_html_1.encodeLink(mention['end-point'] + '/' + mention.slug)));
             }
             else {
-                tagAttrs = tagAttrs.concat(makeAttr('href', 'javascript:void(0)'));
+                tagAttrs = tagAttrs.concat(makeAttr('href', 'about:blank'));
             }
             if (mention.target) {
                 tagAttrs = tagAttrs.concat(makeAttr('target', mention.target));

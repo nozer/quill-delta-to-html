@@ -24,6 +24,12 @@ String.prototype._tokenizeWithNewLines = function () {
         return pv;
     }, []);
 };
-String.prototype._scrubUrl = function () {
-    return this.replace(/[^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)]/g, '');
+String.prototype._sanitizeUrl = function () {
+    var val = this;
+    val = val.replace(/^\s*/gm, '');
+    var whiteList = /^\s*((https?|s?ftp|file|blob|mailto|tel):|data:image\/)/;
+    if (whiteList.test(val)) {
+        return val;
+    }
+    return 'unsafe:' + val;
 };
