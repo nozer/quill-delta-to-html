@@ -2,8 +2,6 @@
 import 'mocha';
 import * as assert from 'assert';
 
-import {DeltaInsertOp} from './../src/DeltaInsertOp';
-
 import {
     InsertOpDenormalizer
 } from "./../src/InsertOpDenormalizer";

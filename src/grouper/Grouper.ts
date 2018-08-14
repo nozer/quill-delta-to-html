@@ -1,12 +1,10 @@
 
 import { DeltaInsertOp } from './../DeltaInsertOp';
-import { NewLine } from './../value-types';
 import './../extensions/Array';
 
 import {
-   VideoItem, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup
+   VideoItem, InlineGroup, BlockGroup, TDataGroup
 } from './group-types';
-import { ListNester } from './ListNester';
 
 class Grouper {
 

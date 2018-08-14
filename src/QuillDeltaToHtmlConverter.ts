@@ -1,6 +1,6 @@
 
 import { InsertOpsConverter } from './InsertOpsConverter';
-import { OpToHtmlConverter, IOpToHtmlConverterOptions, IHtmlParts } from './OpToHtmlConverter';
+import { OpToHtmlConverter, IOpToHtmlConverterOptions } from './OpToHtmlConverter';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { Grouper } from './grouper/Grouper';
 import {
@@ -9,7 +9,7 @@ import {
 import { ListNester } from './grouper/ListNester';
 import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
 import './extensions/Object';
-import { NewLine, GroupType } from './value-types';
+import { GroupType } from './value-types';
 
 
 interface IQuillDeltaToHtmlConverterOptions {
@@ -142,16 +142,16 @@ class QuillDeltaToHtmlConverter {
       return html;
    }
 
-   _renderList(list: ListGroup, isOuterMost = true): string {
+   _renderList(list: ListGroup): string {
 
       var firstItem = list.items[0];
       return makeStartTag(this._getListTag(firstItem.item.op))
-         + list.items.map((li: ListItem) => this._renderListItem(li, isOuterMost)).join('')
+         + list.items.map((li: ListItem) => this._renderListItem(li)).join('')
          + makeEndTag(this._getListTag(firstItem.item.op));
    }
 
-   _renderListItem(li: ListItem, isOuterMost: boolean): string {
-      var converterOptions = Object._assign({}, this.converterOptions);
+   _renderListItem(li: ListItem ): string {
+      
       //if (!isOuterMost) {
       li.item.op.attributes.indent = 0;
       //}
@@ -159,7 +159,7 @@ class QuillDeltaToHtmlConverter {
       var parts = converter.getHtmlParts();
       var liElementsHtml = this._renderInlines(li.item.ops, false);
       return parts.openingTag + (liElementsHtml) +
-         (li.innerList ? this._renderList(li.innerList, false) : '')
+         (li.innerList ? this._renderList(li.innerList) : '')
          + parts.closingTag;
    }
 

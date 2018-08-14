@@ -2,7 +2,7 @@
 import 'mocha';
 import * as assert from "assert";
 
-import { InsertData, InsertDataQuill, InsertDataCustom } from './../src/InsertData';
+import {InsertDataQuill, InsertDataCustom } from './../src/InsertData';
 import {DataType} from './../src/value-types';
 
 describe('InsertData', function () {

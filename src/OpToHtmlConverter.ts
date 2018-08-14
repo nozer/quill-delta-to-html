@@ -5,7 +5,7 @@ import './extensions/String';
 import './extensions/Object';
 import { IMention } from "./mentions/MentionSanitizer";
 import './extensions/Array';
-import { OpAttributeSanitizer, IOpAttributes } from "./OpAttributeSanitizer";
+import { OpAttributeSanitizer } from "./OpAttributeSanitizer";
 
 
 interface IOpToHtmlConverterOptions {

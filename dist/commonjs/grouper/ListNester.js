@@ -6,7 +6,6 @@ var ListNester = (function () {
     }
     ListNester.prototype.nest = function (groups) {
         var _this = this;
-        var result = [];
         var listBlocked = this.convertListBlocksToListGroups(groups);
         var groupedByListGroups = this.groupConsecutiveListGroups(listBlocked);
         var nested = groupedByListGroups.map(function (group) {

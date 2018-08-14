@@ -4,8 +4,8 @@ import * as assert from "assert";
 
 import { Grouper } from './../../src/grouper/Grouper';
 import { DeltaInsertOp } from './../../src/DeltaInsertOp';
-import { InsertData, InsertDataQuill } from './../../src/InsertData';
-import {  ListGroup, ListItem, VideoItem, InlineGroup, BlockGroup, TDataGroup 
+import { InsertDataQuill } from './../../src/InsertData';
+import { VideoItem, InlineGroup, BlockGroup 
 } from './../../src/grouper/group-types';
 import {DataType} from './../../src/value-types';
 describe('Grouper', function () {

@@ -5,7 +5,7 @@ interface ObjectConstructor {
 
 
 // Copied from mdn's Object.assign 
-Object._assign = function (target: any, varArg1: any, varArg2: any = null) {
+Object._assign = function (target: any) {
 
     // TypeError if undefined or null
     if (target == null) {

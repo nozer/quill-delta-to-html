@@ -26,8 +26,8 @@ declare class QuillDeltaToHtmlConverter {
     getGroupedOps(): TDataGroup[];
     convert(): string;
     _renderWithCallbacks(groupType: GroupType, group: TDataGroup, myRenderFn: () => string): string;
-    _renderList(list: ListGroup, isOuterMost?: boolean): string;
-    _renderListItem(li: ListItem, isOuterMost: boolean): string;
+    _renderList(list: ListGroup): string;
+    _renderListItem(li: ListItem): string;
     _renderBlock(bop: DeltaInsertOp, ops: DeltaInsertOp[]): string;
     _renderInlines(ops: DeltaInsertOp[], wrapInParagraphTag?: boolean): string;
     _renderInline(op: DeltaInsertOp, contextOp: DeltaInsertOp | null): any;

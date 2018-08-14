@@ -1,12 +1,11 @@
 
 import {
-    ListGroup, ListItem, BlockGroup, VideoItem, InlineGroup, TDataGroup
+    ListGroup, ListItem, BlockGroup, TDataGroup
 } from './group-types';
 
 class ListNester {
     nest(groups: TDataGroup[]): TDataGroup[] {
 
-        var result: TDataGroup[] = [];
         var listBlocked = this.convertListBlocksToListGroups(groups);
         var groupedByListGroups = this.groupConsecutiveListGroups(listBlocked);
 

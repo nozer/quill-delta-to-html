@@ -2,7 +2,6 @@ import 'mocha';
 import * as assert from 'assert';
 
 import {MentionSanitizer} from "./../../src/mentions/MentionSanitizer";
-import { IMention } from '../../src/mentions/MentionSanitizer';
 
 describe('MentionSanitizer', function () {
 

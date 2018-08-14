@@ -2,7 +2,7 @@
 import 'mocha';
 import * as assert from "assert";
 
-import {InsertData, InsertDataQuill} from './../src/InsertData';
+import {InsertDataQuill} from './../src/InsertData';
 import {DeltaInsertOp} from './../src/DeltaInsertOp';
 import {DataType, AlignType, ListType} from './../src/value-types';
 

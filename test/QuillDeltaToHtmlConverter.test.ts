@@ -3,9 +3,8 @@ import 'mocha';
 import * as assert from 'assert';
 
 import { DeltaInsertOp } from './../src/DeltaInsertOp';
-import { OpToHtmlConverter } from './../src/OpToHtmlConverter';
 import { QuillDeltaToHtmlConverter } from "./../src/QuillDeltaToHtmlConverter";
-import { callWhenAlltrue, callWhenXEqualY } from './_helper';
+import { callWhenXEqualY } from './_helper';
 
 import { delta1 } from './data/delta1';
 import { GroupType, ListType } from './../src/value-types';
@@ -154,7 +153,7 @@ describe('QuillDeltaToHtmlConverter', function () {
             { insert: { blah: 1 } }
          ];
          let qdc = new QuillDeltaToHtmlConverter(ops);
-         qdc.renderCustomWith((op, ctx) => {
+         qdc.renderCustomWith((op) => {
             if (op.insert.type === 'bolditalic') {
                return '<b><i>' + op.insert.value + '</i></b>';
             }
@@ -173,7 +172,7 @@ describe('QuillDeltaToHtmlConverter', function () {
             { insert: { colonizer: ':' }},
             { insert: "\n", attributes: { 'code-block': true } }
          ];
-         let renderer = (op: DeltaInsertOp, ctx: DeltaInsertOp) => {
+         let renderer = (op: DeltaInsertOp) => {
             if (op.insert.type === 'colonizer') {
                return  op.insert.value;
             }
@@ -197,7 +196,7 @@ describe('QuillDeltaToHtmlConverter', function () {
             { insert: { colonizer: ':' }},
             { insert: "\n", attributes: { header: 1 } }
          ];
-         let renderer = (op: DeltaInsertOp, ctx: DeltaInsertOp) => {
+         let renderer = (op: DeltaInsertOp) => {
             if (op.insert.type === 'colonizer') {
                return  op.insert.value;
             }
@@ -444,7 +443,7 @@ describe('QuillDeltaToHtmlConverter', function () {
             ];
             let status = {x:0, y: 3};
             let qdc = new QuillDeltaToHtmlConverter(ops);
-            qdc.beforeRender((gtype: any, data: any) => {
+            qdc.beforeRender((gtype: any) => {
                gtype === 'block' && status.x++;
                return '';
             });
@@ -464,7 +463,6 @@ describe('QuillDeltaToHtmlConverter', function () {
          });
 
          it('should register and use callbacks if they are functions', function () {
-            var jobstatus = [false, false];
             var c = new QuillDeltaToHtmlConverter([
                { insert: { video: "http" } }, { insert: 'aa' }]);
             var dummy = (): any => '';

@@ -1,6 +1,5 @@
 "use strict";
-Object._assign = function (target, varArg1, varArg2) {
-    if (varArg2 === void 0) { varArg2 = null; }
+Object._assign = function (target) {
     if (target == null) {
         throw new TypeError('Cannot convert undefined or null to object');
     }

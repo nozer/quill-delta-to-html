@@ -569,22 +569,20 @@ var QuillDeltaToHtmlConverter = (function () {
         html = typeof afterCb === 'function' ? afterCb.apply(null, [groupType, html]) : html;
         return html;
     };
-    QuillDeltaToHtmlConverter.prototype._renderList = function (list, isOuterMost) {
+    QuillDeltaToHtmlConverter.prototype._renderList = function (list) {
         var _this = this;
-        if (isOuterMost === void 0) { isOuterMost = true; }
         var firstItem = list.items[0];
         return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op))
-            + list.items.map(function (li) { return _this._renderListItem(li, isOuterMost); }).join('')
+            + list.items.map(function (li) { return _this._renderListItem(li); }).join('')
             + funcs_html_1.makeEndTag(this._getListTag(firstItem.item.op));
     };
-    QuillDeltaToHtmlConverter.prototype._renderListItem = function (li, isOuterMost) {
-        var converterOptions = Object._assign({}, this.converterOptions);
+    QuillDeltaToHtmlConverter.prototype._renderListItem = function (li) {
         li.item.op.attributes.indent = 0;
         var converter = new OpToHtmlConverter_1.OpToHtmlConverter(li.item.op, this.converterOptions);
         var parts = converter.getHtmlParts();
         var liElementsHtml = this._renderInlines(li.item.ops, false);
         return parts.openingTag + (liElementsHtml) +
-            (li.innerList ? this._renderList(li.innerList, false) : '')
+            (li.innerList ? this._renderList(li.innerList) : '')
             + parts.closingTag;
     };
     QuillDeltaToHtmlConverter.prototype._renderBlock = function (bop, ops) {
@@ -703,8 +701,7 @@ Array.prototype._intersperse = function (item) {
 
 },{}],9:[function(require,module,exports){
 "use strict";
-Object._assign = function (target, varArg1, varArg2) {
-    if (varArg2 === void 0) { varArg2 = null; }
+Object._assign = function (target) {
     if (target == null) {
         throw new TypeError('Cannot convert undefined or null to object');
     }
@@ -934,7 +931,6 @@ var ListNester = (function () {
     }
     ListNester.prototype.nest = function (groups) {
         var _this = this;
-        var result = [];
         var listBlocked = this.convertListBlocksToListGroups(groups);
         var groupedByListGroups = this.groupConsecutiveListGroups(listBlocked);
         var nested = groupedByListGroups.map(function (group) {

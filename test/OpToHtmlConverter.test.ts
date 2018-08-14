@@ -1,8 +1,8 @@
 
 import { OpToHtmlConverter } from "./../src/OpToHtmlConverter";
 import { DeltaInsertOp } from './../src/DeltaInsertOp';
-import { InsertData, InsertDataQuill, InsertDataCustom } from './../src/InsertData';
-import { ListType, ScriptType, DirectionType, AlignType, DataType } from './../src/value-types';
+import { InsertDataQuill } from './../src/InsertData';
+import { ScriptType, DirectionType, AlignType, DataType } from './../src/value-types';
 
 let assert = require('assert');
 

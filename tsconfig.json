@@ -1,7 +1,6 @@
 {
    "compilerOptions": {
       "module": "commonjs",
-      "noImplicitAny": true,
       "removeComments": true,
       "preserveConstEnums": true,
       "sourceMap": false,
@@ -16,8 +15,12 @@
       ],
       "declaration": true,
       "noImplicitThis": true,
+      "noImplicitAny": true,
       "strictNullChecks": true,
-      "alwaysStrict": true
+      "alwaysStrict": true,
+      "noUnusedParameters": true,
+      "noUnusedLocals": true,
+      "noFallthroughCasesInSwitch": true
    },
    "include": [
       "src/**/*.ts"

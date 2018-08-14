@@ -5,8 +5,7 @@ import * as assert from "assert";
 import { Grouper } from './../../src/grouper/Grouper';
 import { ListNester } from './../../src/grouper/ListNester';
 import { DeltaInsertOp } from './../../src/DeltaInsertOp';
-import { InsertData } from './../../src/InsertData';
-import { ListGroup, ListItem, VideoItem, InlineGroup, BlockGroup, TDataGroup 
+import { ListGroup, ListItem, InlineGroup, BlockGroup 
 } from './../../src/grouper/group-types';
 import {ListType} from './../../src/value-types';
 

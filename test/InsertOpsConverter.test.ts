@@ -3,7 +3,7 @@ import 'mocha';
 import * as assert from 'assert';
 
 import {DeltaInsertOp} from './../src/DeltaInsertOp';
-import {InsertData, InsertDataCustom, InsertDataQuill} from './../src/InsertData';
+import {InsertDataQuill} from './../src/InsertData';
 import { InsertOpsConverter } from "./../src/InsertOpsConverter";
 
 var data = [
@@ -69,7 +69,7 @@ describe('InsertOpsConverter', function () {
                 assert.equal(act, null);
             });
 
-            ["fdsf", {image: 'ff'}, {video: ''}, {formula: ''}].forEach((v, i) => {
+            ["fdsf", {image: 'ff'}, {video: ''}, {formula: ''}].forEach((v) => {
                 var act = InsertOpsConverter.convertInsertVal(v);
                 assert.notEqual(act, null);
                 assert.ok(act instanceof InsertDataQuill);
