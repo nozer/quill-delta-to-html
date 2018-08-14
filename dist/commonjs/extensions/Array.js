@@ -1,3 +1,4 @@
+"use strict";
 Array.prototype._preferSecond = function () {
     if (this.length === 0) {
         return null;

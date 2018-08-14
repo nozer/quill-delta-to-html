@@ -1,3 +1,4 @@
+"use strict";
 String.prototype._tokenizeWithNewLines = function () {
     var NewLine = "\n";
     var this_ = this.toString();
@@ -28,7 +29,7 @@ String.prototype._sanitizeUrl = function () {
     var val = this;
     val = val.replace(/^\s*/gm, '');
     var whiteList = /^\s*((https?|s?ftp|file|blob|mailto|tel):|data:image\/)/;
-    if (whiteList.test(val)) {
+    if (whiteList.test(String(val))) {
         return val;
     }
     return 'unsafe:' + val;

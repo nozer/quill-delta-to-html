@@ -10,7 +10,7 @@ import { InsertOpDenormalizer } from './InsertOpDenormalizer';
  */
 class InsertOpsConverter {
 
-    static convert(deltaOps: any[]): DeltaInsertOp[] {
+    static convert(deltaOps: null | any[]): DeltaInsertOp[] {
 
         if (!Array.isArray(deltaOps)) {
             return [];

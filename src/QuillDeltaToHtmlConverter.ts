@@ -196,7 +196,7 @@ class QuillDeltaToHtmlConverter {
          html + makeEndTag(this.options.paragraphTag);
    }
 
-   _renderInline(op: DeltaInsertOp, contextOp: DeltaInsertOp) {
+   _renderInline(op: DeltaInsertOp, contextOp: DeltaInsertOp | null) {
       if (op.isCustom()) {
          return this._renderCustom(op, contextOp);
       }
@@ -204,7 +204,7 @@ class QuillDeltaToHtmlConverter {
       return converter.getHtml().replace(/\n/g, BrTag);
    }
 
-   _renderCustom(op: DeltaInsertOp, contextOp: DeltaInsertOp) {
+   _renderCustom(op: DeltaInsertOp, contextOp: DeltaInsertOp | null) {
       var renderCb = this.callbacks['renderCustomOp_cb'];
       if (typeof renderCb === 'function') {
          return renderCb.apply(null, [op, contextOp]);

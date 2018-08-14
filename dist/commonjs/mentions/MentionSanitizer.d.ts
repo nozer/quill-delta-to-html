@@ -1,6 +1,6 @@
 import './../extensions/String';
 interface IMention {
-    [index: string]: string;
+    [index: string]: string | undefined;
     'name'?: string;
     'target'?: string;
     'slug'?: string;

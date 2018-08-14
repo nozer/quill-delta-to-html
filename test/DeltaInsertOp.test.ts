@@ -49,7 +49,7 @@ describe('DeltaInsertOp', function() {
     describe('hasHigherIndentThan()', function() {
         it('should successfully if two ops have same align indent and direction', function() {
             var op1 = new DeltaInsertOp("\n", {indent: undefined});
-            var op2 = new DeltaInsertOp("\n", { indent: null});
+            var op2 = new DeltaInsertOp("\n", { indent: undefined});
             
             assert.ok(!op1.hasHigherIndentThan(op2));
 

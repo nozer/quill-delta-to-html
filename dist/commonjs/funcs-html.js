@@ -6,14 +6,14 @@ var EncodeTarget;
     EncodeTarget[EncodeTarget["Url"] = 1] = "Url";
 })(EncodeTarget || (EncodeTarget = {}));
 function makeStartTag(tag, attrs) {
-    if (attrs === void 0) { attrs = null; }
+    if (attrs === void 0) { attrs = undefined; }
     if (!tag) {
         return '';
     }
     var attrsStr = '';
     if (attrs) {
-        attrs = [].concat(attrs);
-        attrsStr = attrs.map(function (attr) {
+        var arrAttrs = [].concat(attrs);
+        attrsStr = arrAttrs.map(function (attr) {
             return attr.key + (attr.value ? '="' + attr.value + '"' : '');
         }).join(' ');
     }

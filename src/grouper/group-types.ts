@@ -33,8 +33,8 @@ class ListGroup {
 
 class ListItem {
     readonly item: BlockGroup;
-    innerList: ListGroup;
-    constructor(item: BlockGroup, innerList: ListGroup = null) {
+    innerList: ListGroup | null;
+    constructor(item: BlockGroup, innerList: ListGroup | null= null) {
         this.item = item;
         this.innerList = innerList;
     }

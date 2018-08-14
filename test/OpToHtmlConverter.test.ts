@@ -20,15 +20,16 @@ describe('OpToHtmlConverter', function () {
     describe('prefixClass()', function () {
 
         it('should prefix class if an empty string prefix is not given', () => {
-            var c = new OpToHtmlConverter(null, { classPrefix: '' });
+           var op = new DeltaInsertOp("aa")
+            var c = new OpToHtmlConverter(op, { classPrefix: '' });
             var act = c.prefixClass('my-class');
             assert.equal(act, 'my-class');
 
-            c = new OpToHtmlConverter(null, { classPrefix: 'xx' });
+            c = new OpToHtmlConverter(op, { classPrefix: 'xx' });
             act = c.prefixClass('my-class');
             assert.equal(act, 'xx-my-class');
 
-            c = new OpToHtmlConverter(null);
+            c = new OpToHtmlConverter(op);
             act = c.prefixClass('my-class');
             assert.equal(act, 'ql-my-class');
         });

@@ -2,7 +2,7 @@
 import './../extensions/String';
 
 interface IMention {
-   [index: string]: string,
+   [index: string]: string | undefined,
    'name'?: string,
    'target'?: string,
    'slug'?: string,
@@ -30,7 +30,7 @@ class MentionSanitizer {
          cleanObj.id = dirtyObj.id;
       }
 
-      if (MentionSanitizer.IsValidTarget(dirtyObj.target)) {
+      if (MentionSanitizer.IsValidTarget(dirtyObj.target+'')) {
          cleanObj.target = dirtyObj.target;
       }
 

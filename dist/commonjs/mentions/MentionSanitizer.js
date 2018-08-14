@@ -15,7 +15,7 @@ var MentionSanitizer = (function () {
         if (dirtyObj.id && MentionSanitizer.IsValidId(dirtyObj.id)) {
             cleanObj.id = dirtyObj.id;
         }
-        if (MentionSanitizer.IsValidTarget(dirtyObj.target)) {
+        if (MentionSanitizer.IsValidTarget(dirtyObj.target + '')) {
             cleanObj.target = dirtyObj.target;
         }
         if (dirtyObj.avatar) {

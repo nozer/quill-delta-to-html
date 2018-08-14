@@ -18,8 +18,8 @@ declare class ListGroup {
 }
 declare class ListItem {
     readonly item: BlockGroup;
-    innerList: ListGroup;
-    constructor(item: BlockGroup, innerList?: ListGroup);
+    innerList: ListGroup | null;
+    constructor(item: BlockGroup, innerList?: ListGroup | null);
 }
 declare type TDataGroup = VideoItem | InlineGroup | BlockGroup | ListItem | ListGroup;
 export { VideoItem, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup };

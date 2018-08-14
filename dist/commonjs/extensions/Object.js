@@ -1,3 +1,4 @@
+"use strict";
 Object._assign = function (target, varArg1, varArg2) {
     if (varArg2 === void 0) { varArg2 = null; }
     if (target == null) {

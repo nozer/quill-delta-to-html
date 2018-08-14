@@ -1,7 +1,7 @@
 
 interface String {
     _tokenizeWithNewLines(): string[],
-    _sanitizeUrl(): string
+    _sanitizeUrl(): String
 }
 
 
@@ -46,7 +46,7 @@ String.prototype._sanitizeUrl = function() {
    let val = this;
    val = val.replace(/^\s*/gm, '')
    let whiteList = /^\s*((https?|s?ftp|file|blob|mailto|tel):|data:image\/)/;
-   if (whiteList.test(val)) {
+   if (whiteList.test(String(val))) {
       return val;
    }
    return 'unsafe:' + val;

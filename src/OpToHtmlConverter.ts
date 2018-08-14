@@ -69,7 +69,7 @@ class OpToHtmlConverter {
          beginTags.push(makeStartTag(tag, attrs));
          endTags.push(tag === 'img' ? '' : makeEndTag(tag));
          // consumed in first tag
-         attrs = null;
+         attrs = [];
       }
       endTags.reverse();
 
@@ -140,7 +140,7 @@ class OpToHtmlConverter {
 
       if (this.op.isImage()) {
          this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-         return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()));
+         return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()+''));
       }
 
       if (this.op.isFormula() || this.op.isContainerBlock()) {
@@ -151,12 +151,12 @@ class OpToHtmlConverter {
          return tagAttrs.concat(
             makeAttr('frameborder', '0'),
             makeAttr('allowfullscreen', 'true'),
-            makeAttr('src', (this.op.insert.value + '')._sanitizeUrl())
+            makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()+'')
          );
       }
 
       if (this.op.isMentions()) {
-         var mention: IMention = this.op.attributes.mention;
+         var mention: IMention = this.op.attributes.mention!;
          if (mention.class) {
             tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
          }
@@ -180,7 +180,7 @@ class OpToHtmlConverter {
       if (this.op.isLink()) {
          let target = this.op.attributes.target || this.options.linkTarget;
          tagAttrs = tagAttrs
-         .concat(makeAttr('href', encodeLink(this.op.attributes.link)))
+         .concat(makeAttr('href', encodeLink(this.op.attributes.link!)))
          .concat(target ? makeAttr('target', target) : []);
          if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));
@@ -214,8 +214,9 @@ class OpToHtmlConverter {
       ['align', positionTag], ['direction', positionTag],
       ['indent', positionTag]];
       for (var item of blocks) {
-         if (attrs[item[0]]) {
-            return item[0] === 'header' ? ['h' + attrs[item[0]]] : [item._preferSecond()];
+         var firstItem = item[0]!
+         if (attrs[firstItem]) {
+            return firstItem === 'header' ? ['h' + attrs[firstItem]] : [item._preferSecond()!];
          }
       }
 
@@ -223,11 +224,11 @@ class OpToHtmlConverter {
       return [['link', 'a'], ['script'],
       ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u'],
       ['mentions', 'a']]
-         .filter((item: any[]) => !!attrs[item[0]])
+         .filter((item: string[]) => !!attrs[item[0]])
          .map((item) => {
             return item[0] === 'script' ?
                (attrs[item[0]] === ScriptType.Sub ? 'sub' : 'sup')
-               : item._preferSecond();
+               : item._preferSecond()!;
          });
    }
 

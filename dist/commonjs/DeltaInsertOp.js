@@ -19,7 +19,7 @@ var DeltaInsertOp = (function () {
             attrs.header || attrs.align || attrs.direction || attrs.indent);
     };
     DeltaInsertOp.prototype.isBlockquote = function () {
-        return this.attributes.blockquote;
+        return !!this.attributes.blockquote;
     };
     DeltaInsertOp.prototype.isHeader = function () {
         return !!this.attributes.header;

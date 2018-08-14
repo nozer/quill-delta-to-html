@@ -28,7 +28,7 @@ class DeltaInsertOp {
    }
 
    isBlockquote(): boolean {
-      return this.attributes.blockquote;
+      return !!this.attributes.blockquote;
    }
 
    isHeader():boolean {

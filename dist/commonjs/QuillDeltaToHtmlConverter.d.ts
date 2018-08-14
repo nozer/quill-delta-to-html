@@ -30,8 +30,8 @@ declare class QuillDeltaToHtmlConverter {
     _renderListItem(li: ListItem, isOuterMost: boolean): string;
     _renderBlock(bop: DeltaInsertOp, ops: DeltaInsertOp[]): string;
     _renderInlines(ops: DeltaInsertOp[], wrapInParagraphTag?: boolean): string;
-    _renderInline(op: DeltaInsertOp, contextOp: DeltaInsertOp): any;
-    _renderCustom(op: DeltaInsertOp, contextOp: DeltaInsertOp): any;
+    _renderInline(op: DeltaInsertOp, contextOp: DeltaInsertOp | null): any;
+    _renderCustom(op: DeltaInsertOp, contextOp: DeltaInsertOp | null): any;
     beforeRender(cb: (group: GroupType, data: TDataGroup) => string): void;
     afterRender(cb: (group: GroupType, html: string) => string): void;
     renderCustomWith(cb: (op: DeltaInsertOp, contextOp: DeltaInsertOp) => string): void;

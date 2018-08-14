@@ -39,7 +39,7 @@ var OpToHtmlConverter = (function () {
             var tag = tags_1[_i];
             beginTags.push(funcs_html_1.makeStartTag(tag, attrs));
             endTags.push(tag === 'img' ? '' : funcs_html_1.makeEndTag(tag));
-            attrs = null;
+            attrs = [];
         }
         endTags.reverse();
         return {
@@ -92,13 +92,13 @@ var OpToHtmlConverter = (function () {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
             this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()));
+            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl() + ''));
         }
         if (this.op.isFormula() || this.op.isContainerBlock()) {
             return tagAttrs;
         }
         if (this.op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()));
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._sanitizeUrl() + ''));
         }
         if (this.op.isMentions()) {
             var mention = this.op.attributes.mention;
@@ -148,8 +148,9 @@ var OpToHtmlConverter = (function () {
             ['indent', positionTag]];
         for (var _i = 0, blocks_1 = blocks; _i < blocks_1.length; _i++) {
             var item = blocks_1[_i];
-            if (attrs[item[0]]) {
-                return item[0] === 'header' ? ['h' + attrs[item[0]]] : [item._preferSecond()];
+            var firstItem = item[0];
+            if (attrs[firstItem]) {
+                return firstItem === 'header' ? ['h' + attrs[firstItem]] : [item._preferSecond()];
             }
         }
         return [['link', 'a'], ['script'],

@@ -9,14 +9,14 @@ enum EncodeTarget {
     Url = 1
 }
 
-function makeStartTag(tag:any, attrs: ITagKeyValue | ITagKeyValue[] = null) {
+function makeStartTag(tag:any, attrs: ITagKeyValue | ITagKeyValue[] | undefined = undefined ) {
     if (!tag) {return ''; }
     
 
     var attrsStr = '';
     if (attrs) {
-        attrs = [].concat(attrs);
-        attrsStr = attrs.map(function(attr:any){
+        var arrAttrs = ([] as ITagKeyValue[]).concat(attrs);
+        attrsStr = arrAttrs.map(function(attr:any){
             return attr.key + (attr.value ? '="' + attr.value + '"' : '');
         }).join(' ');
     }
