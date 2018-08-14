@@ -63,6 +63,9 @@ describe("String Extensions Module", function(){
             act = "#abc"._sanitizeUrl();
             assert.equal(act, "#abc");
 
+            act = "/abc"._sanitizeUrl();
+            assert.equal(act, "/abc");
+
             act = " data:image//abc"._sanitizeUrl();
             assert.equal(act, "data:image//abc");
 

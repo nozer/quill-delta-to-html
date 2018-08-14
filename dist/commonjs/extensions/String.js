@@ -28,7 +28,7 @@ String.prototype._tokenizeWithNewLines = function () {
 String.prototype._sanitizeUrl = function () {
     var val = this;
     val = val.replace(/^\s*/gm, '');
-    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|data:image\/)/;
+    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
     if (whiteList.test(String(val))) {
         return val;
     }
