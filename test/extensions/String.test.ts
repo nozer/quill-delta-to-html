@@ -37,31 +37,34 @@ describe("String Extensions Module", function(){
     describe('String#_sanitizeUrl() ', function() {
         it('should add unsafe: for invalid protocols', function() {
             var act = "http://www><.yahoo'.com"._sanitizeUrl();
-            assert.equal(act, act);
+            assert.equal(act, "http://www><.yahoo'.com");
 
             act = "https://abc"._sanitizeUrl();
-            assert.equal(act, act);
+            assert.equal(act, "https://abc");
 
             act = "sftp://abc"._sanitizeUrl();
-            assert.equal(act, act);
+            assert.equal(act, "sftp://abc");
 
             act = " ftp://abc"._sanitizeUrl();
-            assert.equal(act, act);
+            assert.equal(act, "ftp://abc");
 
             act = "  file://abc"._sanitizeUrl();
-            assert.equal(act, act);
+            assert.equal(act, "file://abc");
 
             act = "   blob://abc"._sanitizeUrl();
-            assert.equal(act, act);
+            assert.equal(act, "blob://abc");
 
             act = "mailto://abc"._sanitizeUrl();
-            assert.equal(act, act);
+            assert.equal(act, "mailto://abc");
 
             act = "tel://abc"._sanitizeUrl();
-            assert.equal(act, act);
+            assert.equal(act, "tel://abc");
+
+            act = "#abc"._sanitizeUrl();
+            assert.equal(act, "#abc");
 
             act = " data:image//abc"._sanitizeUrl();
-            assert.equal(act, act);
+            assert.equal(act, "data:image//abc");
 
             act = "javascript:alert('hi')"._sanitizeUrl();
             assert.equal(act, "unsafe:javascript:alert('hi')");

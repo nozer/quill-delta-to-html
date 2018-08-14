@@ -115,25 +115,25 @@ describe('QuillDeltaToHtmlConverter', function () {
          let qdc = new QuillDeltaToHtmlConverter(ops, {linkTarget: ''});
          let html = qdc.convert();
          assert.equal(html, [
-            `<p><a href="unsafe:#" target="_self">A</a>`,
-            `<a href="unsafe:#" target="_blank">B</a>`,
-            `<a href="unsafe:#">C</a></p>`
+            `<p><a href="#" target="_self">A</a>`,
+            `<a href="#" target="_blank">B</a>`,
+            `<a href="#">C</a></p>`
          ].join(''));
          
          qdc = new QuillDeltaToHtmlConverter(ops);
          html = qdc.convert();
          assert.equal(html, [
-            `<p><a href="unsafe:#" target="_self">A</a>`,
-            `<a href="unsafe:#" target="_blank">B</a>`,
-            `<a href="unsafe:#" target="_blank">C</a></p>`
+            `<p><a href="#" target="_self">A</a>`,
+            `<a href="#" target="_blank">B</a>`,
+            `<a href="#" target="_blank">C</a></p>`
          ].join(''));
 
          qdc = new QuillDeltaToHtmlConverter(ops, {linkTarget: '_top'});
          html = qdc.convert();
          assert.equal(html, [
-            `<p><a href="unsafe:#" target="_self">A</a>`,
-            `<a href="unsafe:#" target="_blank">B</a>`,
-            `<a href="unsafe:#" target="_top">C</a></p>`
+            `<p><a href="#" target="_self">A</a>`,
+            `<a href="#" target="_blank">B</a>`,
+            `<a href="#" target="_top">C</a></p>`
          ].join(''));
       });
    });
