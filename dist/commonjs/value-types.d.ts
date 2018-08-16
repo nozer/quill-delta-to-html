@@ -2,9 +2,7 @@ declare type NewLine = "\n";
 declare const NewLine: "\n";
 declare enum ListType {
     Ordered = "ordered",
-    Bullet = "bullet",
-    Checked = "checked",
-    Unchecked = "unchecked"
+    Bullet = "bullet"
 }
 declare enum ScriptType {
     Sub = "sub",
