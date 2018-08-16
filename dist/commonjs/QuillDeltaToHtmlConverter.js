@@ -102,7 +102,7 @@ var QuillDeltaToHtmlConverter = (function () {
     QuillDeltaToHtmlConverter.prototype._renderList = function (list) {
         var _this = this;
         var firstItem = list.items[0];
-        return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op), this._getListAttr(firstItem.item.op))
+        return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op))
             + list.items.map(function (li) { return _this._renderListItem(li); }).join('')
             + funcs_html_1.makeEndTag(this._getListTag(firstItem.item.op));
     };

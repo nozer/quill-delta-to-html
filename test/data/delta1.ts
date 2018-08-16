@@ -33,7 +33,7 @@ var delta1 = {
         '<a href="http://yahoo" target="_blank">inline</a>', ' ', '<span class="noz-formula">x=data</span>',
         ' formats.</p>',
         '<ul><li>list</li></ul>',
-        '<ul data-checked="true"><li>list</li></ul>'
+        '<ul><li data-checked="true">list</li></ul>'
     ].join('')
 };
 

@@ -66,8 +66,13 @@ var DeltaInsertOp = (function () {
     DeltaInsertOp.prototype.isUncheckedList = function () {
         return this.attributes.list === value_types_1.ListType.Unchecked;
     };
+    DeltaInsertOp.prototype.isACheckList = function () {
+        return this.attributes.list == value_types_1.ListType.Unchecked ||
+            this.attributes.list === value_types_1.ListType.Checked;
+    };
     DeltaInsertOp.prototype.isSameListAs = function (op) {
-        return this.attributes.list === op.attributes.list && !!op.attributes.list;
+        return !!op.attributes.list && (this.attributes.list === op.attributes.list ||
+            op.isACheckList() && this.isACheckList());
     };
     DeltaInsertOp.prototype.isText = function () {
         return this.insert.type === value_types_1.DataType.Text;
@@ -407,6 +412,9 @@ var OpToHtmlConverter = (function () {
             this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
             return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl() + ''));
         }
+        if (this.op.isACheckList()) {
+            return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'));
+        }
         if (this.op.isFormula() || this.op.isContainerBlock()) {
             return tagAttrs;
         }
@@ -588,7 +596,7 @@ var QuillDeltaToHtmlConverter = (function () {
     QuillDeltaToHtmlConverter.prototype._renderList = function (list) {
         var _this = this;
         var firstItem = list.items[0];
-        return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op), this._getListAttr(firstItem.item.op))
+        return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op))
             + list.items.map(function (li) { return _this._renderListItem(li); }).join('')
             + funcs_html_1.makeEndTag(this._getListTag(firstItem.item.op));
     };

@@ -38,8 +38,8 @@ describe('ListNester', function () {
                 new ListItem(<BlockGroup>groups[2])]),
                 new InlineGroup([ops[6], ops[7]]),
                 new ListGroup([new ListItem(new BlockGroup(ops[8], []))]),
-                new ListGroup([new ListItem(new BlockGroup(ops[9], []))]),
-                new ListGroup([new ListItem(new BlockGroup(ops[10], []))])
+                new ListGroup([new ListItem(new BlockGroup(ops[9], [])),
+                new ListItem(new BlockGroup(ops[10], []))])
             ]);
         });
 

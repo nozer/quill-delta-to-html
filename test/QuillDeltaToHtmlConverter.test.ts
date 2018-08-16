@@ -87,6 +87,30 @@ describe('QuillDeltaToHtmlConverter', function () {
          assert.equal(html.indexOf('</ol><ul><li>there') > -1, true);
       });
 
+      it('should create checked/unchecked lists', function () {
+         var ops4 = [
+            { insert: "hello" },
+            { insert: "\n", attributes: { list: 'checked' } },
+            { insert: "there" },
+            { insert: "\n", attributes: { list: 'unchecked' } },
+            { insert: "man" },
+            { insert: "\n", attributes: { list: 'checked' } },
+            { insert: 'not done'},
+            { insert: "\n", attributes: {indent:1, list: 'unchecked'}}
+         ]
+         var qdc = new QuillDeltaToHtmlConverter(ops4);
+         var html = qdc.convert();
+         assert.equal(html, [
+            '<ul>',
+            '<li data-checked="true">hello</li>',
+            '<li data-checked="false">there</li>',
+            '<li data-checked="true">man', 
+               '<ul><li data-checked="false">not done</li></ul>',
+            '</li>',
+            '</ul>'
+         ].join(''));
+      });
+
       it('should wrap positional styles in right tag', function () {
          var ops4 = [
             { insert: "mr" },
@@ -234,28 +258,6 @@ describe('QuillDeltaToHtmlConverter', function () {
       });
    });
 
-   describe('_getListAttr()', function () {
-
-      it('should return proper list attr', function () {
-         var op = new DeltaInsertOp("\n", { list: ListType.Ordered });
-         var qdc = new QuillDeltaToHtmlConverter(delta1.ops)
-         assert.equal(qdc._getListAttr(op), undefined);
-
-         var op = new DeltaInsertOp("\n", { list: ListType.Bullet });
-         assert.equal(qdc._getListAttr(op), undefined);
-
-         var op = new DeltaInsertOp("\n", { list: ListType.Checked });
-         assert.deepEqual(qdc._getListAttr(op), { key: 'data-checked', value: 'true' });
-
-         var op = new DeltaInsertOp("\n", { list: ListType.Unchecked });
-         assert.deepEqual(qdc._getListAttr(op), { key: 'data-checked', value: 'false' });
-
-         var op = new DeltaInsertOp("d");
-         assert.equal(qdc._getListAttr(op), undefined);
-
-      });
-   });
-
    describe(' prepare data before inline and block renders', function () {
       var ops: any;
       beforeEach(function () {
@@ -385,7 +387,7 @@ describe('QuillDeltaToHtmlConverter', function () {
                   "insert": "\n"
                }
             ]
-            console.log(encodeHtml("<p>line 4</p>"));
+            //console.log(encodeHtml("<p>line 4</p>"));
             var qdc = new QuillDeltaToHtmlConverter(ops);
             let html = qdc.convert();
             assert.equal(html, ["<pre>line 1\nline 2\nline 3\n",

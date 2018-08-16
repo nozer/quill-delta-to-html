@@ -65,8 +65,13 @@ var DeltaInsertOp = (function () {
     DeltaInsertOp.prototype.isUncheckedList = function () {
         return this.attributes.list === value_types_1.ListType.Unchecked;
     };
+    DeltaInsertOp.prototype.isACheckList = function () {
+        return this.attributes.list == value_types_1.ListType.Unchecked ||
+            this.attributes.list === value_types_1.ListType.Checked;
+    };
     DeltaInsertOp.prototype.isSameListAs = function (op) {
-        return this.attributes.list === op.attributes.list && !!op.attributes.list;
+        return !!op.attributes.list && (this.attributes.list === op.attributes.list ||
+            op.isACheckList() && this.isACheckList());
     };
     DeltaInsertOp.prototype.isText = function () {
         return this.insert.type === value_types_1.DataType.Text;

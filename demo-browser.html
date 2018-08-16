@@ -55,113 +55,54 @@
             border-radius: 3px;
             padding: 6px 10px;
         }
+        
+        .ql-viewer ul > li[data-checked=true]::before {
+         content: '\2611';
+         }
+         .ql-viewer ul > li[data-checked=false]::before {
+         content: '\2610';
+         }
 
-        .ql-viewer ol > li,
+        .ql-viewer ol > li, 
         .ql-viewer ul > li {
         list-style-type: none ;
         }
-
-        .ql-viewer ol li {
-        counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
-        counter-increment: list-num;
+        
+        
+        .ql-viewer ol  {
+           counter-reset: mylist
         }
-        .ql-viewer ol li:before {
-        content: counter(list-num, decimal) '. ';
+        
+        .ql-viewer ol > li:before {
+           counter-increment: mylist;
+           content: counter(mylist, decimal) '. ';
         }
-        /* indent 1 */
-        .ql-viewer ol ol li {
-        counter-increment: list-1;
+        .ql-viewer ol ol > li:before {
+           content: counter(mylist, lower-alpha) '. ';
         }
-        .ql-viewer ol ol li:before {
-        content: counter(list-1, lower-alpha) '. ' !important;
+        .ql-viewer ol ol ol > li:before {
+           content: counter(mylist, lower-roman) '. ';
         }
-        .ql-viewer ol ol li {
-        counter-reset: list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
+        .ql-viewer ol ol ol ol > li:before {
+           content: counter(mylist, decimal) '. ';
         }
-        /* indent 2 */
-        .ql-viewer ol ol ol li {
-        counter-increment: list-2;
+        .ql-viewer ol ol ol ol ol > li:before {
+           content: counter(mylist, lower-alpha) '. ';
         }
-        .ql-viewer ol ol ol li:before {
-        content: counter(list-2, lower-roman) '. ' !important;
+        .ql-viewer ol ol ol ol ol ol > li:before {
+           content: counter(mylist, lower-roman) '. ';
         }
-        .ql-viewer ol ol ol li {
-        counter-reset: list-3 list-4 list-5 list-6 list-7 list-8 list-9;
+        .ql-viewer ol ol ol ol ol ol ol > li:before {
+           content: counter(mylist, decimal) '. ';
         }
-        /* indent 3 */
-        .ql-viewer ol ol ol ol li {
-        counter-increment: list-3;
+        .ql-viewer ol ol ol ol ol ol ol ol > li:before {
+           content: counter(mylist, lower-alpha) '. ';
         }
-        .ql-viewer ol ol ol ol li:before {
-        content: counter(list-3, decimal) '. ' !important;
+        .ql-viewer ol ol ol ol ol ol ol ol ol > li:before {
+           content: counter(mylist, lower-roman) '. ';
         }
-        .ql-viewer ol ol ol ol li {
-        counter-reset: list-4 list-5 list-6 list-7 list-8 list-9;
-        }
-
-        /* indent 4 */
-        .ql-viewer ol ol ol ol ol li {
-        counter-increment: list-4;
-        }
-        .ql-viewer ol ol ol ol ol li:before {
-        content: counter(list-4, lower-alpha) '. ' !important;
-        }
-        .ql-viewer ol ol ol ol ol li {
-        counter-reset: list-5 list-6 list-7 list-8 list-9;
-        }
-
-        /* indent 5 */
-        .ql-viewer ol ol ol ol ol ol li {
-        counter-increment: list-5;
-        }
-        .ql-viewer ol ol ol ol ol ol li:before {
-        content: counter(list-5, lower-roman) '. ' !important;
-        }
-        .ql-viewer ol ol ol ol ol ol li {
-        counter-reset:  list-6 list-7 list-8 list-9;
-        }
-
-        /* indent 6 */
-        .ql-viewer ol ol ol ol ol ol ol li {
-        counter-increment: list-6;
-        }
-        .ql-viewer ol ol ol ol ol ol ol li:before {
-        content: counter(list-6, decimal) '. ' !important;
-        }
-        .ql-viewer ol ol ol ol ol ol ol li {
-        counter-reset:  list-7 list-8 list-9;
-        }
-
-        /* indent 7 */
-        .ql-viewer ol ol ol ol ol ol ol ol li {
-        counter-increment: list-7;
-        }
-        .ql-viewer ol ol ol ol ol ol ol ol li:before {
-        content: counter(list-7, lower-alpha) '. ' !important;
-        }
-        .ql-viewer ol ol ol ol ol ol ol ol li {
-        counter-reset:  list-8 list-9;
-        }
-
-        /* indent 8 */
-        .ql-viewer ol ol ol ol ol ol ol ol ol li {
-        counter-increment: list-8;
-        }
-        .ql-viewer ol ol ol ol ol ol ol ol ol li:before {
-        content: counter(list-8, lower-roman) '. ' !important;
-        }
-        .ql-viewer ol ol ol ol ol ol ol ol ol li {
-        counter-reset:  list-9;
-        }
-
-        /* indent 9 */
-        .ql-viewer ol ol ol ol ol ol ol ol ol ol li {
-        counter-increment: list-9;
-        }
-        .ql-viewer ol ol ol ol ol ol ol ol ol ol li:before {
-        content: counter(list-9, decimal) '. ' !important;
-        }
-
+        
+        
         /* ql indent */
         .ql-viewer .ql-indent-1:not(.ql-direction-rtl) {
         padding-left: 3em;

@@ -17,7 +17,7 @@ describe('MentionSanitizer', function () {
                   slug: 'my-name'
                 }
             );
-            console.log(sanitized);
+            //console.log(sanitized);
             assert.deepEqual(sanitized, {
                'class': 'A-cls-9',
                id: 'An-id_9:.',

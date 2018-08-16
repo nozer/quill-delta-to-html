@@ -94,6 +94,9 @@ var OpToHtmlConverter = (function () {
             this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
             return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl() + ''));
         }
+        if (this.op.isACheckList()) {
+            return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'));
+        }
         if (this.op.isFormula() || this.op.isContainerBlock()) {
             return tagAttrs;
         }

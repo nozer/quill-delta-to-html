@@ -7,7 +7,7 @@ import {
    VideoItem, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup
 } from './grouper/group-types';
 import { ListNester } from './grouper/ListNester';
-import { makeStartTag, makeEndTag, encodeHtml, ITagKeyValue } from './funcs-html';
+import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
 import './extensions/Object';
 import { GroupType } from './value-types';
 
@@ -81,12 +81,6 @@ class QuillDeltaToHtmlConverter {
                   : '';
    }
 
-   _getListAttr(op: DeltaInsertOp): ITagKeyValue | ITagKeyValue[] | undefined {
-      return op.isCheckedList() ? { key: 'data-checked', value: 'true' }
-         : op.isUncheckedList() ? { key: 'data-checked', value: 'false' }
-            : undefined;
-   }
-
    getGroupedOps(): TDataGroup[] {
       var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
 
@@ -153,7 +147,7 @@ class QuillDeltaToHtmlConverter {
    _renderList(list: ListGroup): string {
 
       var firstItem = list.items[0];
-      return makeStartTag(this._getListTag(firstItem.item.op), this._getListAttr(firstItem.item.op))
+      return makeStartTag(this._getListTag(firstItem.item.op))
          + list.items.map((li: ListItem) => this._renderListItem(li)).join('')
          + makeEndTag(this._getListTag(firstItem.item.op));
    }

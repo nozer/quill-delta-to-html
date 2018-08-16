@@ -91,8 +91,16 @@ class DeltaInsertOp {
       return this.attributes.list === ListType.Unchecked;
    }
 
+   isACheckList() {
+      return this.attributes.list == ListType.Unchecked ||
+      this.attributes.list === ListType.Checked
+   }
+
    isSameListAs(op: DeltaInsertOp): boolean {
-      return this.attributes.list === op.attributes.list && !!op.attributes.list;
+      return !!op.attributes.list && (
+         this.attributes.list === op.attributes.list || 
+         op.isACheckList() && this.isACheckList()
+      );
    }
 
    isText() {
