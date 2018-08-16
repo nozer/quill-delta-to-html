@@ -4,7 +4,9 @@ const NewLine = "\n" as NewLine;
 
 enum ListType {
    Ordered = 'ordered',
-   Bullet = 'bullet'
+   Bullet = 'bullet',
+   Checked = 'checked',
+   Unchecked = 'unchecked'
 }
 
 enum ScriptType {

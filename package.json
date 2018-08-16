@@ -3,7 +3,7 @@
   "version": "0.9.5",
   "description": "Converts Quill's delta ops to HTML",
   "main": "./dist/commonjs/main.js",
-  "types":"./dist/commonjs/main.d.ts",
+  "types": "./dist/commonjs/main.d.ts",
   "dependencies": {},
   "devDependencies": {
     "@types/mocha": "^2.2.40",

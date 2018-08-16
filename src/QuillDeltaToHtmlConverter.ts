@@ -7,7 +7,7 @@ import {
    VideoItem, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup
 } from './grouper/group-types';
 import { ListNester } from './grouper/ListNester';
-import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
+import { makeStartTag, makeEndTag, encodeHtml, ITagKeyValue } from './funcs-html';
 import './extensions/Object';
 import { GroupType } from './value-types';
 
@@ -76,10 +76,18 @@ class QuillDeltaToHtmlConverter {
    _getListTag(op: DeltaInsertOp): string {
       return op.isOrderedList() ? this.options.orderedListTag + ''
          : op.isBulletList() ? this.options.bulletListTag + ''
-            : '';
+            : op.isCheckedList() ? this.options.bulletListTag + ''
+               : op.isUncheckedList() ? this.options.bulletListTag + ''
+                  : '';
    }
 
-   getGroupedOps (): TDataGroup[] {
+   _getListAttr(op: DeltaInsertOp): ITagKeyValue | ITagKeyValue[] | undefined {
+      return op.isCheckedList() ? { key: 'data-checked', value: 'true' }
+         : op.isUncheckedList() ? { key: 'data-checked', value: 'false' }
+            : undefined;
+   }
+
+   getGroupedOps(): TDataGroup[] {
       var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
 
       var pairedOps = Grouper.pairOpsWithTheirBlock(deltaOps);
@@ -97,34 +105,34 @@ class QuillDeltaToHtmlConverter {
 
    convert() {
       return this.getGroupedOps()
-      .map(group => {
-         if (group instanceof ListGroup) {
+         .map(group => {
+            if (group instanceof ListGroup) {
 
-            return this._renderWithCallbacks(
-               GroupType.List, group, () => this._renderList(<ListGroup>group));
+               return this._renderWithCallbacks(
+                  GroupType.List, group, () => this._renderList(<ListGroup>group));
 
-         } else if (group instanceof BlockGroup) {
+            } else if (group instanceof BlockGroup) {
 
-            var g = <BlockGroup>group;
+               var g = <BlockGroup>group;
 
-            return this._renderWithCallbacks(
-               GroupType.Block, group, () => this._renderBlock(g.op, g.ops));
+               return this._renderWithCallbacks(
+                  GroupType.Block, group, () => this._renderBlock(g.op, g.ops));
 
-         } else if (group instanceof VideoItem) {
+            } else if (group instanceof VideoItem) {
 
-            return this._renderWithCallbacks(GroupType.Video, group, () => {
-               var g = <VideoItem>group;
-               var converter = new OpToHtmlConverter(g.op, this.converterOptions);
-               return converter.getHtml();
-            });
+               return this._renderWithCallbacks(GroupType.Video, group, () => {
+                  var g = <VideoItem>group;
+                  var converter = new OpToHtmlConverter(g.op, this.converterOptions);
+                  return converter.getHtml();
+               });
 
-         } else { // InlineGroup
-            return this._renderWithCallbacks(GroupType.InlineGroup, group, () => {
-               return this._renderInlines((<InlineGroup>group).ops);
-            });
-         }
-      })
-      .join("");
+            } else { // InlineGroup
+               return this._renderWithCallbacks(GroupType.InlineGroup, group, () => {
+                  return this._renderInlines((<InlineGroup>group).ops);
+               });
+            }
+         })
+         .join("");
    }
 
    _renderWithCallbacks(groupType: GroupType, group: TDataGroup, myRenderFn: () => string) {
@@ -145,13 +153,13 @@ class QuillDeltaToHtmlConverter {
    _renderList(list: ListGroup): string {
 
       var firstItem = list.items[0];
-      return makeStartTag(this._getListTag(firstItem.item.op))
+      return makeStartTag(this._getListTag(firstItem.item.op), this._getListAttr(firstItem.item.op))
          + list.items.map((li: ListItem) => this._renderListItem(li)).join('')
          + makeEndTag(this._getListTag(firstItem.item.op));
    }
 
-   _renderListItem(li: ListItem ): string {
-      
+   _renderListItem(li: ListItem): string {
+
       //if (!isOuterMost) {
       li.item.op.attributes.indent = 0;
       //}
@@ -170,29 +178,29 @@ class QuillDeltaToHtmlConverter {
       if (bop.isCodeBlock()) {
          return htmlParts.openingTag +
             encodeHtml(
-               ops.map((iop) => 
+               ops.map((iop) =>
                   iop.isCustom() ? this._renderCustom(iop, bop) : iop.insert.value
                ).join("")
             )
             + htmlParts.closingTag;
       }
 
-      var inlines = ops.map(op => this._renderInline(op, bop)).join(''); 
+      var inlines = ops.map(op => this._renderInline(op, bop)).join('');
       return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
    }
 
    _renderInlines(ops: DeltaInsertOp[], wrapInParagraphTag = true) {
       var opsLen = ops.length - 1;
       var html = ops.map((op: DeltaInsertOp, i: number) => {
-            if (i > 0 && i === opsLen && op.isJustNewline()) {
-               return '';
-            }
-            return this._renderInline(op, null);
-         }).join('');
+         if (i > 0 && i === opsLen && op.isJustNewline()) {
+            return '';
+         }
+         return this._renderInline(op, null);
+      }).join('');
       if (!wrapInParagraphTag) {
          return html;
       }
-      return makeStartTag(this.options.paragraphTag) + 
+      return makeStartTag(this.options.paragraphTag) +
          html + makeEndTag(this.options.paragraphTag);
    }
 
