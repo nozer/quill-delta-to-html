@@ -49,7 +49,7 @@ class OpAttributeSanitizer {
 
       let colorAttrs = ['background', 'color'];
 
-      let { font, size, link, script, list, header, align,
+      let { font, size, link, script, list, header, align, 
          direction, indent, mentions, mention, width, target
       } = dirtyAttrs;
 
@@ -95,7 +95,7 @@ class OpAttributeSanitizer {
          cleanAttrs.script = script;
       }
 
-      if (list === ListType.Bullet || list === ListType.Ordered || list === ListType.Checked || list === ListType.Unchecked) {
+      if (list === ListType.Bullet || list === ListType.Ordered) {
          cleanAttrs.list = list;
       }
 
@@ -114,7 +114,7 @@ class OpAttributeSanitizer {
       if (indent && Number(indent)) {
          cleanAttrs.indent = Math.min(Number(indent), 30);
       }
-
+      
       if (mentions && mention) {
          let sanitizedMention = MentionSanitizer.sanitize(mention);
          if (Object.keys(sanitizedMention).length > 0) {

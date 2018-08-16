@@ -48,22 +48,13 @@ var DeltaInsertOp = (function () {
         return this.insert.value === value_types_1.NewLine;
     };
     DeltaInsertOp.prototype.isList = function () {
-        return (this.isOrderedList() ||
-            this.isBulletList() ||
-            this.isCheckedList() ||
-            this.isUncheckedList());
+        return this.isOrderedList() || this.isBulletList();
     };
     DeltaInsertOp.prototype.isOrderedList = function () {
         return this.attributes.list === value_types_1.ListType.Ordered;
     };
     DeltaInsertOp.prototype.isBulletList = function () {
         return this.attributes.list === value_types_1.ListType.Bullet;
-    };
-    DeltaInsertOp.prototype.isCheckedList = function () {
-        return this.attributes.list === value_types_1.ListType.Checked;
-    };
-    DeltaInsertOp.prototype.isUncheckedList = function () {
-        return this.attributes.list === value_types_1.ListType.Unchecked;
     };
     DeltaInsertOp.prototype.isSameListAs = function (op) {
         return this.attributes.list === op.attributes.list && !!op.attributes.list;

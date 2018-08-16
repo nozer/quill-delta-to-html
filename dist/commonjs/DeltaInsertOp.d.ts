@@ -18,8 +18,6 @@ declare class DeltaInsertOp {
     isList(): boolean;
     isOrderedList(): boolean;
     isBulletList(): boolean;
-    isCheckedList(): boolean;
-    isUncheckedList(): boolean;
     isSameListAs(op: DeltaInsertOp): boolean;
     isText(): boolean;
     isImage(): boolean;

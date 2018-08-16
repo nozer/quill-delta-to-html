@@ -31,7 +31,7 @@ class DeltaInsertOp {
       return !!this.attributes.blockquote;
    }
 
-   isHeader(): boolean {
+   isHeader():boolean {
       return !!this.attributes.header;
    }
 
@@ -67,12 +67,7 @@ class DeltaInsertOp {
    }
 
    isList() {
-      return (
-         this.isOrderedList() ||
-         this.isBulletList() ||
-         this.isCheckedList() ||
-         this.isUncheckedList()
-      );
+      return this.isOrderedList() || this.isBulletList();
    }
 
    isOrderedList() {
@@ -81,14 +76,6 @@ class DeltaInsertOp {
 
    isBulletList() {
       return this.attributes.list === ListType.Bullet;
-   }
-
-   isCheckedList() {
-      return this.attributes.list === ListType.Checked;
-   }
-
-   isUncheckedList() {
-      return this.attributes.list === ListType.Unchecked;
    }
 
    isSameListAs(op: DeltaInsertOp): boolean {

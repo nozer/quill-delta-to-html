@@ -6,8 +6,6 @@ var ListType;
 (function (ListType) {
     ListType["Ordered"] = "ordered";
     ListType["Bullet"] = "bullet";
-    ListType["Checked"] = "checked";
-    ListType["Unchecked"] = "unchecked";
 })(ListType || (ListType = {}));
 exports.ListType = ListType;
 var ScriptType;
