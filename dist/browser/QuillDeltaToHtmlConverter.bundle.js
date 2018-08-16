@@ -49,13 +49,22 @@ var DeltaInsertOp = (function () {
         return this.insert.value === value_types_1.NewLine;
     };
     DeltaInsertOp.prototype.isList = function () {
-        return this.isOrderedList() || this.isBulletList();
+        return (this.isOrderedList() ||
+            this.isBulletList() ||
+            this.isCheckedList() ||
+            this.isUncheckedList());
     };
     DeltaInsertOp.prototype.isOrderedList = function () {
         return this.attributes.list === value_types_1.ListType.Ordered;
     };
     DeltaInsertOp.prototype.isBulletList = function () {
         return this.attributes.list === value_types_1.ListType.Bullet;
+    };
+    DeltaInsertOp.prototype.isCheckedList = function () {
+        return this.attributes.list === value_types_1.ListType.Checked;
+    };
+    DeltaInsertOp.prototype.isUncheckedList = function () {
+        return this.attributes.list === value_types_1.ListType.Unchecked;
     };
     DeltaInsertOp.prototype.isSameListAs = function (op) {
         return this.attributes.list === op.attributes.list && !!op.attributes.list;
@@ -249,7 +258,7 @@ var OpAttributeSanitizer = (function () {
         if (script === value_types_1.ScriptType.Sub || value_types_1.ScriptType.Super === script) {
             cleanAttrs.script = script;
         }
-        if (list === value_types_1.ListType.Bullet || list === value_types_1.ListType.Ordered) {
+        if (list === value_types_1.ListType.Bullet || list === value_types_1.ListType.Ordered || list === value_types_1.ListType.Checked || list === value_types_1.ListType.Unchecked) {
             cleanAttrs.list = list;
         }
         if (Number(header)) {
@@ -518,7 +527,14 @@ var QuillDeltaToHtmlConverter = (function () {
     QuillDeltaToHtmlConverter.prototype._getListTag = function (op) {
         return op.isOrderedList() ? this.options.orderedListTag + ''
             : op.isBulletList() ? this.options.bulletListTag + ''
-                : '';
+                : op.isCheckedList() ? this.options.bulletListTag + ''
+                    : op.isUncheckedList() ? this.options.bulletListTag + ''
+                        : '';
+    };
+    QuillDeltaToHtmlConverter.prototype._getListAttr = function (op) {
+        return op.isCheckedList() ? { key: 'data-checked', value: 'true' }
+            : op.isUncheckedList() ? { key: 'data-checked', value: 'false' }
+                : undefined;
     };
     QuillDeltaToHtmlConverter.prototype.getGroupedOps = function () {
         var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
@@ -572,7 +588,7 @@ var QuillDeltaToHtmlConverter = (function () {
     QuillDeltaToHtmlConverter.prototype._renderList = function (list) {
         var _this = this;
         var firstItem = list.items[0];
-        return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op))
+        return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op), this._getListAttr(firstItem.item.op))
             + list.items.map(function (li) { return _this._renderListItem(li); }).join('')
             + funcs_html_1.makeEndTag(this._getListTag(firstItem.item.op));
     };
@@ -1114,6 +1130,8 @@ var ListType;
 (function (ListType) {
     ListType["Ordered"] = "ordered";
     ListType["Bullet"] = "bullet";
+    ListType["Checked"] = "checked";
+    ListType["Unchecked"] = "unchecked";
 })(ListType || (ListType = {}));
 exports.ListType = ListType;
 var ScriptType;
