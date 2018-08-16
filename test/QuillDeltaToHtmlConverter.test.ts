@@ -225,6 +225,9 @@ describe('QuillDeltaToHtmlConverter', function () {
          var op = new DeltaInsertOp("\n", { list: ListType.Checked });
          assert.equal(qdc._getListTag(op), 'ul');
 
+         var op = new DeltaInsertOp("\n", { list: ListType.Unchecked });
+         assert.equal(qdc._getListTag(op), 'ul');
+
          var op = new DeltaInsertOp("d");
          assert.equal(qdc._getListTag(op), '');
 
