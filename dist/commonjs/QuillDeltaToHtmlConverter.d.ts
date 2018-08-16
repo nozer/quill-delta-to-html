@@ -1,5 +1,6 @@
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ListGroup, ListItem, TDataGroup } from './grouper/group-types';
+import { ITagKeyValue } from './funcs-html';
 import './extensions/Object';
 import { GroupType } from './value-types';
 interface IQuillDeltaToHtmlConverterOptions {
@@ -23,6 +24,7 @@ declare class QuillDeltaToHtmlConverter {
     private callbacks;
     constructor(deltaOps: any[], options?: IQuillDeltaToHtmlConverterOptions);
     _getListTag(op: DeltaInsertOp): string;
+    _getListAttr(op: DeltaInsertOp): ITagKeyValue | ITagKeyValue[] | undefined;
     getGroupedOps(): TDataGroup[];
     convert(): string;
     _renderWithCallbacks(groupType: GroupType, group: TDataGroup, myRenderFn: () => string): string;

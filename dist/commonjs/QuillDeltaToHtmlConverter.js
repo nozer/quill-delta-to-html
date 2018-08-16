@@ -41,7 +41,14 @@ var QuillDeltaToHtmlConverter = (function () {
     QuillDeltaToHtmlConverter.prototype._getListTag = function (op) {
         return op.isOrderedList() ? this.options.orderedListTag + ''
             : op.isBulletList() ? this.options.bulletListTag + ''
-                : '';
+                : op.isCheckedList() ? this.options.bulletListTag + ''
+                    : op.isUncheckedList() ? this.options.bulletListTag + ''
+                        : '';
+    };
+    QuillDeltaToHtmlConverter.prototype._getListAttr = function (op) {
+        return op.isCheckedList() ? { key: 'data-checked', value: 'true' }
+            : op.isUncheckedList() ? { key: 'data-checked', value: 'false' }
+                : undefined;
     };
     QuillDeltaToHtmlConverter.prototype.getGroupedOps = function () {
         var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
@@ -95,7 +102,7 @@ var QuillDeltaToHtmlConverter = (function () {
     QuillDeltaToHtmlConverter.prototype._renderList = function (list) {
         var _this = this;
         var firstItem = list.items[0];
-        return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op))
+        return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op), this._getListAttr(firstItem.item.op))
             + list.items.map(function (li) { return _this._renderListItem(li); }).join('')
             + funcs_html_1.makeEndTag(this._getListTag(firstItem.item.op));
     };
