@@ -45,11 +45,6 @@ var QuillDeltaToHtmlConverter = (function () {
                     : op.isUncheckedList() ? this.options.bulletListTag + ''
                         : '';
     };
-    QuillDeltaToHtmlConverter.prototype._getListAttr = function (op) {
-        return op.isCheckedList() ? { key: 'data-checked', value: 'true' }
-            : op.isUncheckedList() ? { key: 'data-checked', value: 'false' }
-                : undefined;
-    };
     QuillDeltaToHtmlConverter.prototype.getGroupedOps = function () {
         var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
         var pairedOps = Grouper_1.Grouper.pairOpsWithTheirBlock(deltaOps);
