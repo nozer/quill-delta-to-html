@@ -1,5 +1,5 @@
 
-import './../extensions/String';
+import * as url from './../helpers/url';
 
 interface IMention {
    [index: string]: string | undefined,
@@ -35,11 +35,11 @@ class MentionSanitizer {
       }
 
       if (dirtyObj.avatar) {
-         cleanObj.avatar = (dirtyObj.avatar + '')._sanitizeUrl();
+         cleanObj.avatar = url.sanitize(dirtyObj.avatar + '');
       }
 
       if (dirtyObj['end-point']) {
-         cleanObj['end-point'] = (dirtyObj['end-point'] + '')._sanitizeUrl();
+         cleanObj['end-point'] = url.sanitize(dirtyObj['end-point'] + '');
       }
 
       if (dirtyObj.slug) {

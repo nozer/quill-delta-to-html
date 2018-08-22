@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
 var MentionSanitizer_1 = require("./mentions/MentionSanitizer");
-require("./extensions/String");
+var url = require("./helpers/url");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
@@ -42,7 +42,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.width = width;
         }
         if (link) {
-            cleanAttrs.link = (link + '')._sanitizeUrl();
+            cleanAttrs.link = url.sanitize(link + '');
         }
         if (target && OpAttributeSanitizer.isValidTarget(target)) {
             cleanAttrs.target = target;

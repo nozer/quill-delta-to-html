@@ -1,5 +1,4 @@
 import { DeltaInsertOp } from './../DeltaInsertOp';
-import './../extensions/Array';
 import { BlockGroup, TDataGroup } from './group-types';
 declare class Grouper {
     static pairOpsWithTheirBlock(ops: DeltaInsertOp[]): TDataGroup[];

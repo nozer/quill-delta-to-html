@@ -1,8 +1,5 @@
 import { ITagKeyValue } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
-import './extensions/String';
-import './extensions/Object';
-import './extensions/Array';
 interface IOpToHtmlConverterOptions {
     classPrefix?: string;
     encodeHtml?: boolean;

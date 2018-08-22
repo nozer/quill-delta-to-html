@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var group_types_1 = require("./group-types");
+var array_1 = require("./../helpers/array");
 var ListNester = (function () {
     function ListNester() {
     }
@@ -8,14 +9,13 @@ var ListNester = (function () {
         var _this = this;
         var listBlocked = this.convertListBlocksToListGroups(groups);
         var groupedByListGroups = this.groupConsecutiveListGroups(listBlocked);
-        var nested = groupedByListGroups.map(function (group) {
+        var nested = array_1.flatten(groupedByListGroups.map(function (group) {
             if (!Array.isArray(group)) {
                 return group;
             }
             return _this.nestListSection(group);
-        })
-            ._flatten();
-        var groupRootLists = nested._groupConsecutiveElementsWhile(function (curr, prev) {
+        }));
+        var groupRootLists = array_1.groupConsecutiveElementsWhile(nested, function (curr, prev) {
             if (!(curr instanceof group_types_1.ListGroup && prev instanceof group_types_1.ListGroup)) {
                 return false;
             }
@@ -26,11 +26,11 @@ var ListNester = (function () {
                 return v;
             }
             var litems = v.map(function (g) { return g.items; });
-            return new group_types_1.ListGroup(litems._flatten());
+            return new group_types_1.ListGroup(array_1.flatten(litems));
         });
     };
     ListNester.prototype.convertListBlocksToListGroups = function (items) {
-        var grouped = items._groupConsecutiveElementsWhile(function (g, gPrev) {
+        var grouped = array_1.groupConsecutiveElementsWhile(items, function (g, gPrev) {
             return g instanceof group_types_1.BlockGroup && gPrev instanceof group_types_1.BlockGroup
                 && g.op.isList() && gPrev.op.isList() && g.op.isSameListAs(gPrev.op)
                 && g.op.hasSameIndentationAs(gPrev.op);
@@ -46,7 +46,7 @@ var ListNester = (function () {
         });
     };
     ListNester.prototype.groupConsecutiveListGroups = function (items) {
-        return items._groupConsecutiveElementsWhile(function (curr, prev) {
+        return array_1.groupConsecutiveElementsWhile(items, function (curr, prev) {
             return curr instanceof group_types_1.ListGroup && prev instanceof group_types_1.ListGroup;
         });
     };

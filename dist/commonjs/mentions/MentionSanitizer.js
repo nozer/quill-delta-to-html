@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-require("./../extensions/String");
+var url = require("./../helpers/url");
 var MentionSanitizer = (function () {
     function MentionSanitizer() {
     }
@@ -19,10 +19,10 @@ var MentionSanitizer = (function () {
             cleanObj.target = dirtyObj.target;
         }
         if (dirtyObj.avatar) {
-            cleanObj.avatar = (dirtyObj.avatar + '')._sanitizeUrl();
+            cleanObj.avatar = url.sanitize(dirtyObj.avatar + '');
         }
         if (dirtyObj['end-point']) {
-            cleanObj['end-point'] = (dirtyObj['end-point'] + '')._sanitizeUrl();
+            cleanObj['end-point'] = url.sanitize(dirtyObj['end-point'] + '');
         }
         if (dirtyObj.slug) {
             cleanObj.slug = (dirtyObj.slug + '');

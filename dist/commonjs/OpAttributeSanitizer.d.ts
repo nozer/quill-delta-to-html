@@ -1,5 +1,4 @@
 import { ListType, AlignType, DirectionType, ScriptType } from './value-types';
-import './extensions/String';
 import { IMention } from "./mentions/MentionSanitizer";
 interface IOpAttributes {
     background?: string | undefined;

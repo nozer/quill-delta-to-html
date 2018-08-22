@@ -1,7 +1,7 @@
 
 import { ListType, AlignType, DirectionType, ScriptType } from './value-types';
 import { MentionSanitizer } from "./mentions/MentionSanitizer";
-import './extensions/String';
+import * as url from './helpers/url';
 import { IMention } from "./mentions/MentionSanitizer";
 
 interface IOpAttributes {
@@ -85,7 +85,7 @@ class OpAttributeSanitizer {
       }
 
       if (link) {
-         cleanAttrs.link = (link + '')._sanitizeUrl();
+         cleanAttrs.link = url.sanitize(link + '');
       }
       if (target && OpAttributeSanitizer.isValidTarget(target)) {
          cleanAttrs.target = target;

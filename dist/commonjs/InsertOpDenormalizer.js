@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
-require("./extensions/String");
-require("./extensions/Object");
+var str = require("./helpers/string");
+var obj = require("./helpers/object");
 var InsertOpDenormalizer = (function () {
     function InsertOpDenormalizer() {
     }
@@ -13,16 +13,16 @@ var InsertOpDenormalizer = (function () {
         if (typeof op.insert === 'object' || op.insert === value_types_1.NewLine) {
             return [op];
         }
-        var newlinedArray = (op.insert + '')._tokenizeWithNewLines();
+        var newlinedArray = str.tokenizeWithNewLines(op.insert + '');
         if (newlinedArray.length === 1) {
             return [op];
         }
-        var nlObj = Object._assign({}, op, { insert: value_types_1.NewLine });
+        var nlObj = obj.assign({}, op, { insert: value_types_1.NewLine });
         return newlinedArray.map(function (line) {
             if (line === value_types_1.NewLine) {
                 return nlObj;
             }
-            return Object._assign({}, op, {
+            return obj.assign({}, op, {
                 insert: line
             });
         });

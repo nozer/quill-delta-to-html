@@ -8,7 +8,7 @@ import {
 } from './grouper/group-types';
 import { ListNester } from './grouper/ListNester';
 import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
-import './extensions/Object';
+import * as obj from './helpers/object';
 import { GroupType } from './value-types';
 
 
@@ -45,7 +45,7 @@ class QuillDeltaToHtmlConverter {
       deltaOps: any[],
       options?: IQuillDeltaToHtmlConverterOptions) {
 
-      this.options = Object._assign({
+      this.options = obj.assign({
          paragraphTag: 'p',
          encodeHtml: true,
          classPrefix: 'ql',

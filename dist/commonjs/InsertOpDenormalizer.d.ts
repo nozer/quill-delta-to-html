@@ -1,5 +1,3 @@
-import './extensions/String';
-import './extensions/Object';
 declare class InsertOpDenormalizer {
     static denormalize(op: any): any[];
 }

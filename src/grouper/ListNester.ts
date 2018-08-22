@@ -2,6 +2,8 @@
 import {
     ListGroup, ListItem, BlockGroup, TDataGroup
 } from './group-types';
+import {flatten, groupConsecutiveElementsWhile} from './../helpers/array';
+
 
 class ListNester {
     nest(groups: TDataGroup[]): TDataGroup[] {
@@ -10,15 +12,14 @@ class ListNester {
         var groupedByListGroups = this.groupConsecutiveListGroups(listBlocked);
 
         // convert grouped ones into listgroup
-        var nested = groupedByListGroups.map((group: TDataGroup) => {
+        var nested = flatten(groupedByListGroups.map((group: TDataGroup) => {
             if (!Array.isArray(group)) {
                 return group;
             }
             return this.nestListSection(group);
-        })
-            ._flatten();
+        }));
 
-        var groupRootLists = nested._groupConsecutiveElementsWhile(
+        var groupRootLists = groupConsecutiveElementsWhile(nested, 
             (curr: TDataGroup, prev: TDataGroup) => {
                 if (!(curr instanceof ListGroup && prev instanceof ListGroup)) {
                     return false;
@@ -31,13 +32,13 @@ class ListNester {
                 return v;
             }
             var litems = v.map((g: ListGroup): ListItem[] => g.items);
-            return new ListGroup(litems._flatten());
+            return new ListGroup(flatten(litems));
         });
     }
 
 
     private convertListBlocksToListGroups(items: TDataGroup[]): Array<TDataGroup> {
-        var grouped = items._groupConsecutiveElementsWhile((g: TDataGroup, gPrev: TDataGroup) => {
+        var grouped = groupConsecutiveElementsWhile(items, (g: TDataGroup, gPrev: TDataGroup) => {
             return g instanceof BlockGroup && gPrev instanceof BlockGroup
                 && g.op.isList() && gPrev.op.isList() && g.op.isSameListAs(gPrev.op)
                 && g.op.hasSameIndentationAs(gPrev.op);
@@ -56,7 +57,7 @@ class ListNester {
 
 
     private groupConsecutiveListGroups(items: TDataGroup[]): Array<TDataGroup | ListGroup[]> {
-        return items._groupConsecutiveElementsWhile((curr: TDataGroup, prev: TDataGroup) => {
+        return groupConsecutiveElementsWhile(items, (curr: TDataGroup, prev: TDataGroup) => {
             return curr instanceof ListGroup && prev instanceof ListGroup;
         });
     }

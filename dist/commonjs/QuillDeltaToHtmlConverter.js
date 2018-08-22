@@ -6,14 +6,14 @@ var Grouper_1 = require("./grouper/Grouper");
 var group_types_1 = require("./grouper/group-types");
 var ListNester_1 = require("./grouper/ListNester");
 var funcs_html_1 = require("./funcs-html");
-require("./extensions/Object");
+var obj = require("./helpers/object");
 var value_types_1 = require("./value-types");
 var BrTag = '<br/>';
 var QuillDeltaToHtmlConverter = (function () {
     function QuillDeltaToHtmlConverter(deltaOps, options) {
         this.rawDeltaOps = [];
         this.callbacks = {};
-        this.options = Object._assign({
+        this.options = obj.assign({
             paragraphTag: 'p',
             encodeHtml: true,
             classPrefix: 'ql',

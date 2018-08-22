@@ -99,7 +99,7 @@ var DeltaInsertOp = (function () {
 }());
 exports.DeltaInsertOp = DeltaInsertOp;
 
-},{"./InsertData":2,"./value-types":16}],2:[function(require,module,exports){
+},{"./InsertData":2,"./value-types":17}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertDataQuill = (function () {
@@ -125,8 +125,8 @@ exports.InsertDataCustom = InsertDataCustom;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
-require("./extensions/String");
-require("./extensions/Object");
+var str = require("./helpers/string");
+var obj = require("./helpers/object");
 var InsertOpDenormalizer = (function () {
     function InsertOpDenormalizer() {
     }
@@ -137,16 +137,16 @@ var InsertOpDenormalizer = (function () {
         if (typeof op.insert === 'object' || op.insert === value_types_1.NewLine) {
             return [op];
         }
-        var newlinedArray = (op.insert + '')._tokenizeWithNewLines();
+        var newlinedArray = str.tokenizeWithNewLines(op.insert + '');
         if (newlinedArray.length === 1) {
             return [op];
         }
-        var nlObj = Object._assign({}, op, { insert: value_types_1.NewLine });
+        var nlObj = obj.assign({}, op, { insert: value_types_1.NewLine });
         return newlinedArray.map(function (line) {
             if (line === value_types_1.NewLine) {
                 return nlObj;
             }
-            return Object._assign({}, op, {
+            return obj.assign({}, op, {
                 insert: line
             });
         });
@@ -155,7 +155,7 @@ var InsertOpDenormalizer = (function () {
 }());
 exports.InsertOpDenormalizer = InsertOpDenormalizer;
 
-},{"./extensions/Object":9,"./extensions/String":10,"./value-types":16}],4:[function(require,module,exports){
+},{"./helpers/object":13,"./helpers/string":14,"./value-types":17}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var DeltaInsertOp_1 = require("./DeltaInsertOp");
@@ -210,12 +210,12 @@ var InsertOpsConverter = (function () {
 }());
 exports.InsertOpsConverter = InsertOpsConverter;
 
-},{"./DeltaInsertOp":1,"./InsertData":2,"./InsertOpDenormalizer":3,"./OpAttributeSanitizer":5,"./value-types":16}],5:[function(require,module,exports){
+},{"./DeltaInsertOp":1,"./InsertData":2,"./InsertOpDenormalizer":3,"./OpAttributeSanitizer":5,"./value-types":17}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
 var MentionSanitizer_1 = require("./mentions/MentionSanitizer");
-require("./extensions/String");
+var url = require("./helpers/url");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
@@ -255,7 +255,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.width = width;
         }
         if (link) {
-            cleanAttrs.link = (link + '')._sanitizeUrl();
+            cleanAttrs.link = url.sanitize(link + '');
         }
         if (target && OpAttributeSanitizer.isValidTarget(target)) {
             cleanAttrs.target = target;
@@ -315,19 +315,19 @@ var OpAttributeSanitizer = (function () {
 }());
 exports.OpAttributeSanitizer = OpAttributeSanitizer;
 
-},{"./extensions/String":10,"./mentions/MentionSanitizer":15,"./value-types":16}],6:[function(require,module,exports){
+},{"./helpers/url":15,"./mentions/MentionSanitizer":16,"./value-types":17}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var funcs_html_1 = require("./funcs-html");
 var value_types_1 = require("./value-types");
-require("./extensions/String");
-require("./extensions/Object");
-require("./extensions/Array");
+var url = require("./helpers/url");
+var obj = require("./helpers/object");
+var arr = require("./helpers/array");
 var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
 var OpToHtmlConverter = (function () {
     function OpToHtmlConverter(op, options) {
         this.op = op;
-        this.options = Object._assign({}, {
+        this.options = obj.assign({}, {
             classPrefix: 'ql',
             encodeHtml: true,
             listItemTag: 'li',
@@ -399,7 +399,7 @@ var OpToHtmlConverter = (function () {
         }
         return propsArr
             .filter(function (item) { return !!attrs[item[0]]; })
-            .map(function (item) { return item._preferSecond() + ':' + attrs[item[0]]; });
+            .map(function (item) { return arr.preferSecond(item) + ':' + attrs[item[0]]; });
     };
     OpToHtmlConverter.prototype.getTagAttributes = function () {
         if (this.op.attributes.code) {
@@ -410,7 +410,7 @@ var OpToHtmlConverter = (function () {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
             this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl() + ''));
+            return tagAttrs.concat(makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
         }
         if (this.op.isACheckList()) {
             return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'));
@@ -419,7 +419,7 @@ var OpToHtmlConverter = (function () {
             return tagAttrs;
         }
         if (this.op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._sanitizeUrl() + ''));
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
         }
         if (this.op.isMentions()) {
             var mention = this.op.attributes.mention;
@@ -471,7 +471,7 @@ var OpToHtmlConverter = (function () {
             var item = blocks_1[_i];
             var firstItem = item[0];
             if (attrs[firstItem]) {
-                return firstItem === 'header' ? ['h' + attrs[firstItem]] : [item._preferSecond()];
+                return firstItem === 'header' ? ['h' + attrs[firstItem]] : [arr.preferSecond(item)];
             }
         }
         return [['link', 'a'], ['script'],
@@ -481,7 +481,7 @@ var OpToHtmlConverter = (function () {
             .map(function (item) {
             return item[0] === 'script' ?
                 (attrs[item[0]] === value_types_1.ScriptType.Sub ? 'sub' : 'sup')
-                : item._preferSecond();
+                : arr.preferSecond(item);
         });
     };
     OpToHtmlConverter.IsValidRel = function (relStr) {
@@ -491,7 +491,7 @@ var OpToHtmlConverter = (function () {
 }());
 exports.OpToHtmlConverter = OpToHtmlConverter;
 
-},{"./OpAttributeSanitizer":5,"./extensions/Array":8,"./extensions/Object":9,"./extensions/String":10,"./funcs-html":11,"./value-types":16}],7:[function(require,module,exports){
+},{"./OpAttributeSanitizer":5,"./funcs-html":8,"./helpers/array":12,"./helpers/object":13,"./helpers/url":15,"./value-types":17}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertOpsConverter_1 = require("./InsertOpsConverter");
@@ -500,14 +500,14 @@ var Grouper_1 = require("./grouper/Grouper");
 var group_types_1 = require("./grouper/group-types");
 var ListNester_1 = require("./grouper/ListNester");
 var funcs_html_1 = require("./funcs-html");
-require("./extensions/Object");
+var obj = require("./helpers/object");
 var value_types_1 = require("./value-types");
 var BrTag = '<br/>';
 var QuillDeltaToHtmlConverter = (function () {
     function QuillDeltaToHtmlConverter(deltaOps, options) {
         this.rawDeltaOps = [];
         this.callbacks = {};
-        this.options = Object._assign({
+        this.options = obj.assign({
             paragraphTag: 'p',
             encodeHtml: true,
             classPrefix: 'ql',
@@ -665,118 +665,7 @@ var QuillDeltaToHtmlConverter = (function () {
 }());
 exports.QuillDeltaToHtmlConverter = QuillDeltaToHtmlConverter;
 
-},{"./InsertOpsConverter":4,"./OpToHtmlConverter":6,"./extensions/Object":9,"./funcs-html":11,"./grouper/Grouper":12,"./grouper/ListNester":13,"./grouper/group-types":14,"./value-types":16}],8:[function(require,module,exports){
-"use strict";
-Array.prototype._preferSecond = function () {
-    if (this.length === 0) {
-        return null;
-    }
-    return this.length >= 2 ? this[1] : this[0];
-};
-Array.prototype._flatten = function () {
-    return this.reduce(function (pv, v) {
-        return pv.concat(Array.isArray(v) ? v._flatten() : v);
-    }, []);
-};
-Array.prototype._groupConsecutiveElementsWhile = function (predicate) {
-    var groups = [];
-    var currElm, currGroup;
-    for (var i = 0; i < this.length; i++) {
-        currElm = this[i];
-        if (i > 0 && predicate(currElm, this[i - 1])) {
-            currGroup = groups[groups.length - 1];
-            currGroup.push(currElm);
-        }
-        else {
-            groups.push([currElm]);
-        }
-    }
-    return groups.map(function (g) { return g.length === 1 ? g[0] : g; });
-};
-Array.prototype._sliceFromReverseWhile = function (startIndex, predicate) {
-    var result = {
-        elements: [],
-        sliceStartsAt: -1
-    };
-    for (var i = startIndex; i >= 0; i--) {
-        if (!predicate(this[i])) {
-            break;
-        }
-        result.sliceStartsAt = i;
-        result.elements.unshift(this[i]);
-    }
-    return result;
-};
-Array.prototype._intersperse = function (item) {
-    var _this = this;
-    return this.reduce(function (pv, v, index) {
-        pv.push(v);
-        if (index < (_this.length - 1)) {
-            pv.push(item);
-        }
-        return pv;
-    }, []);
-};
-
-},{}],9:[function(require,module,exports){
-"use strict";
-Object._assign = function (target) {
-    if (target == null) {
-        throw new TypeError('Cannot convert undefined or null to object');
-    }
-    var to = Object(target);
-    for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
-        if (nextSource != null) {
-            for (var nextKey in nextSource) {
-                if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-                    to[nextKey] = nextSource[nextKey];
-                }
-            }
-        }
-    }
-    return to;
-};
-
-},{}],10:[function(require,module,exports){
-"use strict";
-String.prototype._tokenizeWithNewLines = function () {
-    var NewLine = "\n";
-    var this_ = this.toString();
-    if (this_ === NewLine) {
-        return [this_];
-    }
-    var lines = this.split(NewLine);
-    if (lines.length === 1) {
-        return lines;
-    }
-    var lastIndex = lines.length - 1;
-    return lines.reduce(function (pv, line, ind) {
-        if (ind !== lastIndex) {
-            if (line !== "") {
-                pv = pv.concat(line, NewLine);
-            }
-            else {
-                pv.push(NewLine);
-            }
-        }
-        else if (line !== "") {
-            pv.push(line);
-        }
-        return pv;
-    }, []);
-};
-String.prototype._sanitizeUrl = function () {
-    var val = this;
-    val = val.replace(/^\s*/gm, '');
-    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
-    if (whiteList.test(String(val))) {
-        return val;
-    }
-    return 'unsafe:' + val;
-};
-
-},{}],11:[function(require,module,exports){
+},{"./InsertOpsConverter":4,"./OpToHtmlConverter":6,"./funcs-html":8,"./grouper/Grouper":9,"./grouper/ListNester":10,"./grouper/group-types":11,"./helpers/object":13,"./value-types":17}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var EncodeTarget;
@@ -857,11 +746,11 @@ function decodeMapping(str, mapping) {
     return str.replace(new RegExp(mapping[1], 'g'), mapping[0].replace('\\', ''));
 }
 
-},{}],12:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var DeltaInsertOp_1 = require("./../DeltaInsertOp");
-require("./../extensions/Array");
+var array_1 = require("./../helpers/array");
 var group_types_1 = require("./group-types");
 var Grouper = (function () {
     function Grouper() {
@@ -880,12 +769,12 @@ var Grouper = (function () {
                 result.push(new group_types_1.VideoItem(op));
             }
             else if (op.isContainerBlock()) {
-                opsSlice = ops._sliceFromReverseWhile(i - 1, canBeInBlock);
+                opsSlice = array_1.sliceFromReverseWhile(ops, i - 1, canBeInBlock);
                 result.push(new group_types_1.BlockGroup(op, opsSlice.elements));
                 i = opsSlice.sliceStartsAt > -1 ? opsSlice.sliceStartsAt : i;
             }
             else {
-                opsSlice = ops._sliceFromReverseWhile(i - 1, isInlineData);
+                opsSlice = array_1.sliceFromReverseWhile(ops, i - 1, isInlineData);
                 result.push(new group_types_1.InlineGroup(opsSlice.elements.concat(op)));
                 i = opsSlice.sliceStartsAt > -1 ? opsSlice.sliceStartsAt : i;
             }
@@ -899,7 +788,7 @@ var Grouper = (function () {
             codeBlocks: true,
             blockquotes: true
         }; }
-        return groups._groupConsecutiveElementsWhile(function (g, gPrev) {
+        return array_1.groupConsecutiveElementsWhile(groups, function (g, gPrev) {
             if (!(g instanceof group_types_1.BlockGroup) || !(gPrev instanceof group_types_1.BlockGroup)) {
                 return false;
             }
@@ -918,12 +807,12 @@ var Grouper = (function () {
                 return elm;
             }
             var groupsLastInd = elm.length - 1;
-            elm[0].ops = elm.map(function (g, i) {
+            elm[0].ops = array_1.flatten(elm.map(function (g, i) {
                 if (!g.ops.length) {
                     return [newLineOp];
                 }
                 return g.ops.concat(i < groupsLastInd ? [newLineOp] : []);
-            })._flatten();
+            }));
             return elm[0];
         });
     };
@@ -941,10 +830,11 @@ var Grouper = (function () {
 }());
 exports.Grouper = Grouper;
 
-},{"./../DeltaInsertOp":1,"./../extensions/Array":8,"./group-types":14}],13:[function(require,module,exports){
+},{"./../DeltaInsertOp":1,"./../helpers/array":12,"./group-types":11}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var group_types_1 = require("./group-types");
+var array_1 = require("./../helpers/array");
 var ListNester = (function () {
     function ListNester() {
     }
@@ -952,14 +842,13 @@ var ListNester = (function () {
         var _this = this;
         var listBlocked = this.convertListBlocksToListGroups(groups);
         var groupedByListGroups = this.groupConsecutiveListGroups(listBlocked);
-        var nested = groupedByListGroups.map(function (group) {
+        var nested = array_1.flatten(groupedByListGroups.map(function (group) {
             if (!Array.isArray(group)) {
                 return group;
             }
             return _this.nestListSection(group);
-        })
-            ._flatten();
-        var groupRootLists = nested._groupConsecutiveElementsWhile(function (curr, prev) {
+        }));
+        var groupRootLists = array_1.groupConsecutiveElementsWhile(nested, function (curr, prev) {
             if (!(curr instanceof group_types_1.ListGroup && prev instanceof group_types_1.ListGroup)) {
                 return false;
             }
@@ -970,11 +859,11 @@ var ListNester = (function () {
                 return v;
             }
             var litems = v.map(function (g) { return g.items; });
-            return new group_types_1.ListGroup(litems._flatten());
+            return new group_types_1.ListGroup(array_1.flatten(litems));
         });
     };
     ListNester.prototype.convertListBlocksToListGroups = function (items) {
-        var grouped = items._groupConsecutiveElementsWhile(function (g, gPrev) {
+        var grouped = array_1.groupConsecutiveElementsWhile(items, function (g, gPrev) {
             return g instanceof group_types_1.BlockGroup && gPrev instanceof group_types_1.BlockGroup
                 && g.op.isList() && gPrev.op.isList() && g.op.isSameListAs(gPrev.op)
                 && g.op.hasSameIndentationAs(gPrev.op);
@@ -990,7 +879,7 @@ var ListNester = (function () {
         });
     };
     ListNester.prototype.groupConsecutiveListGroups = function (items) {
-        return items._groupConsecutiveElementsWhile(function (curr, prev) {
+        return array_1.groupConsecutiveElementsWhile(items, function (curr, prev) {
             return curr instanceof group_types_1.ListGroup && prev instanceof group_types_1.ListGroup;
         });
     };
@@ -1037,7 +926,7 @@ var ListNester = (function () {
 }());
 exports.ListNester = ListNester;
 
-},{"./group-types":14}],14:[function(require,module,exports){
+},{"./../helpers/array":12,"./group-types":11}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InlineGroup = (function () {
@@ -1079,10 +968,144 @@ var ListItem = (function () {
 }());
 exports.ListItem = ListItem;
 
+},{}],12:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function preferSecond(arr) {
+    if (arr.length === 0) {
+        return null;
+    }
+    return arr.length >= 2 ? arr[1] : arr[0];
+}
+exports.preferSecond = preferSecond;
+;
+function flatten(arr) {
+    return arr.reduce(function (pv, v) {
+        return pv.concat(Array.isArray(v) ? flatten(v) : v);
+    }, []);
+}
+exports.flatten = flatten;
+;
+function groupConsecutiveElementsWhile(arr, predicate) {
+    var groups = [];
+    var currElm, currGroup;
+    for (var i = 0; i < arr.length; i++) {
+        currElm = arr[i];
+        if (i > 0 && predicate(currElm, arr[i - 1])) {
+            currGroup = groups[groups.length - 1];
+            currGroup.push(currElm);
+        }
+        else {
+            groups.push([currElm]);
+        }
+    }
+    return groups.map(function (g) { return g.length === 1 ? g[0] : g; });
+}
+exports.groupConsecutiveElementsWhile = groupConsecutiveElementsWhile;
+;
+function sliceFromReverseWhile(arr, startIndex, predicate) {
+    var result = {
+        elements: [],
+        sliceStartsAt: -1
+    };
+    for (var i = startIndex; i >= 0; i--) {
+        if (!predicate(arr[i])) {
+            break;
+        }
+        result.sliceStartsAt = i;
+        result.elements.unshift(arr[i]);
+    }
+    return result;
+}
+exports.sliceFromReverseWhile = sliceFromReverseWhile;
+;
+function intersperse(arr, item) {
+    return arr.reduce(function (pv, v, index) {
+        pv.push(v);
+        if (index < (arr.length - 1)) {
+            pv.push(item);
+        }
+        return pv;
+    }, []);
+}
+exports.intersperse = intersperse;
+
+},{}],13:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function assign(target) {
+    var sources = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        sources[_i - 1] = arguments[_i];
+    }
+    if (target == null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+    }
+    var to = Object(target);
+    for (var index = 0; index < sources.length; index++) {
+        var nextSource = sources[index];
+        if (nextSource != null) {
+            for (var nextKey in nextSource) {
+                if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                    to[nextKey] = nextSource[nextKey];
+                }
+            }
+        }
+    }
+    return to;
+}
+exports.assign = assign;
+;
+
+},{}],14:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function tokenizeWithNewLines(str) {
+    var NewLine = "\n";
+    if (str === NewLine) {
+        return [str];
+    }
+    var lines = str.split(NewLine);
+    if (lines.length === 1) {
+        return lines;
+    }
+    var lastIndex = lines.length - 1;
+    return lines.reduce(function (pv, line, ind) {
+        if (ind !== lastIndex) {
+            if (line !== "") {
+                pv = pv.concat(line, NewLine);
+            }
+            else {
+                pv.push(NewLine);
+            }
+        }
+        else if (line !== "") {
+            pv.push(line);
+        }
+        return pv;
+    }, []);
+}
+exports.tokenizeWithNewLines = tokenizeWithNewLines;
+;
+
 },{}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-require("./../extensions/String");
+function sanitize(str) {
+    var val = str;
+    val = val.replace(/^\s*/gm, '');
+    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
+    if (whiteList.test(val)) {
+        return val;
+    }
+    return 'unsafe:' + val;
+}
+exports.sanitize = sanitize;
+
+},{}],16:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var url = require("./../helpers/url");
 var MentionSanitizer = (function () {
     function MentionSanitizer() {
     }
@@ -1101,10 +1124,10 @@ var MentionSanitizer = (function () {
             cleanObj.target = dirtyObj.target;
         }
         if (dirtyObj.avatar) {
-            cleanObj.avatar = (dirtyObj.avatar + '')._sanitizeUrl();
+            cleanObj.avatar = url.sanitize(dirtyObj.avatar + '');
         }
         if (dirtyObj['end-point']) {
-            cleanObj['end-point'] = (dirtyObj['end-point'] + '')._sanitizeUrl();
+            cleanObj['end-point'] = url.sanitize(dirtyObj['end-point'] + '');
         }
         if (dirtyObj.slug) {
             cleanObj.slug = (dirtyObj.slug + '');
@@ -1124,7 +1147,7 @@ var MentionSanitizer = (function () {
 }());
 exports.MentionSanitizer = MentionSanitizer;
 
-},{"./../extensions/String":10}],16:[function(require,module,exports){
+},{"./../helpers/url":15}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var NewLine = "\n";

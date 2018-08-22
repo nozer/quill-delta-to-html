@@ -1,6 +1,5 @@
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ListGroup, ListItem, TDataGroup } from './grouper/group-types';
-import './extensions/Object';
 import { GroupType } from './value-types';
 interface IQuillDeltaToHtmlConverterOptions {
     orderedListTag?: string;

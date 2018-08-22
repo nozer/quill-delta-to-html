@@ -1,11 +1,7 @@
 
-interface ObjectConstructor {
-    _assign(target: any, obj1: any, obj2?: any): any,
-}
-
 
 // Copied from mdn's Object.assign 
-Object._assign = function (target: any) {
+function assign (target: any, ...sources: any[] /*, one or more source objects */) {
 
     // TypeError if undefined or null
     if (target == null) {
@@ -14,8 +10,8 @@ Object._assign = function (target: any) {
 
     var to = Object(target);
 
-    for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
+    for (var index = 0; index < sources.length; index++) {
+        var nextSource = sources[index];
 
         if (nextSource != null) { // Skip over if undefined or null
             for (var nextKey in nextSource) {
@@ -28,5 +24,7 @@ Object._assign = function (target: any) {
     }
     return to;
 };
+
+export {assign}
 
 

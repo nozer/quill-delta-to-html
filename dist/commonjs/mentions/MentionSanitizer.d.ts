@@ -1,4 +1,3 @@
-import './../extensions/String';
 interface IMention {
     [index: string]: string | undefined;
     'name'?: string;

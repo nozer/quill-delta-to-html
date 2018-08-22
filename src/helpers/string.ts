@@ -1,25 +1,19 @@
 
-interface String {
-    _tokenizeWithNewLines(): string[],
-    _sanitizeUrl(): String
-}
-
 
 /**
  *  Splits by new line character ("\n") by putting new line characters into the 
  *  array as well. Ex: "hello\n\nworld\n " => ["hello", "\n", "\n", "world", "\n", " "]
  */
 
-String.prototype._tokenizeWithNewLines = function() {
+function tokenizeWithNewLines(str: string): string[] {
 
     const NewLine = "\n";
-    var this_ = this.toString();
 
-    if (this_ === NewLine) {
-        return [this_];
+    if (str === NewLine) {
+        return [str];
     }
 
-    var lines = this.split(NewLine);
+    var lines = str.split(NewLine);
 
     if (lines.length === 1) {
         return lines;
@@ -42,12 +36,4 @@ String.prototype._tokenizeWithNewLines = function() {
     }, []);
 };
 
-String.prototype._sanitizeUrl = function() {
-   let val = this;
-   val = val.replace(/^\s*/gm, '')
-   let whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
-   if (whiteList.test(String(val))) {
-      return val;
-   }
-   return 'unsafe:' + val;
-}
+export {tokenizeWithNewLines}

@@ -4,28 +4,17 @@ interface IArraySlice {
     elements: any[]
 }
 
-interface Array<T> {
-    _preferSecond(): T | null,
-    _flatten(): any[],
-    _groupConsecutiveElementsWhile(
-        predicate: (currElm: any, prevElm: any) => boolean): any[],
-    _sliceFromReverseWhile(startIndex: number,
-        predicate: (currElm: any) => boolean): IArraySlice,
-    _intersperse(item: any): any[]
-}
-
-
-Array.prototype._preferSecond = function () {
-    if (this.length === 0) {
+function preferSecond(arr: any[]): any {
+    if (arr.length === 0) {
         return null;
     }
-    return this.length >= 2 ? this[1] : this[0];
+    return arr.length >= 2 ? arr[1] : arr[0];
 };
 
 
-Array.prototype._flatten = function () {
-    return this.reduce((pv: any[], v: any) => {
-        return pv.concat(Array.isArray(v) ? v._flatten() : v);
+function flatten (arr: any[]): any[] {
+    return arr.reduce((pv: any[], v: any) => {
+        return pv.concat(Array.isArray(v) ? flatten(v) : v);
     }, []);
 };
 
@@ -36,16 +25,16 @@ Array.prototype._flatten = function () {
  * Ex: [1, "ha", 3, "ha", "ha"] => [1, "ha", 3, ["ha", "ha"]] 
  *      where predicate: (v, vprev) => typeof v === typeof vPrev
  */
-Array.prototype._groupConsecutiveElementsWhile = function (
+function groupConsecutiveElementsWhile (arr: any[], 
     predicate: (currElm: any, prevElm: any) => boolean): any[] {
     var groups = [];
 
     var currElm, currGroup;
-    for (var i = 0; i < this.length; i++) {
+    for (var i = 0; i < arr.length; i++) {
 
-        currElm = this[i];
+        currElm = arr[i];
 
-        if (i > 0 && predicate(currElm, this[i - 1])) {
+        if (i > 0 && predicate(currElm, arr[i - 1])) {
             currGroup = groups[groups.length - 1];
             currGroup.push(currElm);
 
@@ -62,7 +51,7 @@ Array.prototype._groupConsecutiveElementsWhile = function (
  * Returns consecutive list of elements satisfying the predicate starting from startIndex 
  * and traversing the array in reverse order. 
  */
-Array.prototype._sliceFromReverseWhile = function (startIndex: number,
+function sliceFromReverseWhile (arr: any[], startIndex: number,
     predicate: (currElm: any) => boolean): IArraySlice {
 
     var result = {
@@ -70,21 +59,23 @@ Array.prototype._sliceFromReverseWhile = function (startIndex: number,
         sliceStartsAt: -1
     };
     for (var i = startIndex; i >= 0; i--) {
-        if (!predicate(this[i])) {
+        if (!predicate(arr[i])) {
             break;
         }
         result.sliceStartsAt = i;
-        result.elements.unshift(this[i]);
+        result.elements.unshift(arr[i]);
     }
     return result;
 };
 
-Array.prototype._intersperse = function (item) {
-    return this.reduce((pv: any[], v: any, index: number) => {
+function intersperse (arr: any[], item: any): any[] {
+    return arr.reduce((pv: any[], v: any, index: number) => {
         pv.push(v);
-        if (index < (this.length - 1)) {
+        if (index < (arr.length - 1)) {
             pv.push(item);
         }
         return pv;
     }, []);
 }
+
+export {IArraySlice, preferSecond, flatten, groupConsecutiveElementsWhile, sliceFromReverseWhile, intersperse}

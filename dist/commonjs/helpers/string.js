@@ -1,11 +1,11 @@
 "use strict";
-String.prototype._tokenizeWithNewLines = function () {
+Object.defineProperty(exports, "__esModule", { value: true });
+function tokenizeWithNewLines(str) {
     var NewLine = "\n";
-    var this_ = this.toString();
-    if (this_ === NewLine) {
-        return [this_];
+    if (str === NewLine) {
+        return [str];
     }
-    var lines = this.split(NewLine);
+    var lines = str.split(NewLine);
     if (lines.length === 1) {
         return lines;
     }
@@ -24,13 +24,6 @@ String.prototype._tokenizeWithNewLines = function () {
         }
         return pv;
     }, []);
-};
-String.prototype._sanitizeUrl = function () {
-    var val = this;
-    val = val.replace(/^\s*/gm, '');
-    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
-    if (whiteList.test(String(val))) {
-        return val;
-    }
-    return 'unsafe:' + val;
-};
+}
+exports.tokenizeWithNewLines = tokenizeWithNewLines;
+;

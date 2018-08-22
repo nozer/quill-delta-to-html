@@ -2,14 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var funcs_html_1 = require("./funcs-html");
 var value_types_1 = require("./value-types");
-require("./extensions/String");
-require("./extensions/Object");
-require("./extensions/Array");
+var url = require("./helpers/url");
+var obj = require("./helpers/object");
+var arr = require("./helpers/array");
 var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
 var OpToHtmlConverter = (function () {
     function OpToHtmlConverter(op, options) {
         this.op = op;
-        this.options = Object._assign({}, {
+        this.options = obj.assign({}, {
             classPrefix: 'ql',
             encodeHtml: true,
             listItemTag: 'li',
@@ -81,7 +81,7 @@ var OpToHtmlConverter = (function () {
         }
         return propsArr
             .filter(function (item) { return !!attrs[item[0]]; })
-            .map(function (item) { return item._preferSecond() + ':' + attrs[item[0]]; });
+            .map(function (item) { return arr.preferSecond(item) + ':' + attrs[item[0]]; });
     };
     OpToHtmlConverter.prototype.getTagAttributes = function () {
         if (this.op.attributes.code) {
@@ -92,7 +92,7 @@ var OpToHtmlConverter = (function () {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
             this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-            return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl() + ''));
+            return tagAttrs.concat(makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
         }
         if (this.op.isACheckList()) {
             return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'));
@@ -101,7 +101,7 @@ var OpToHtmlConverter = (function () {
             return tagAttrs;
         }
         if (this.op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', (this.op.insert.value + '')._sanitizeUrl() + ''));
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
         }
         if (this.op.isMentions()) {
             var mention = this.op.attributes.mention;
@@ -153,7 +153,7 @@ var OpToHtmlConverter = (function () {
             var item = blocks_1[_i];
             var firstItem = item[0];
             if (attrs[firstItem]) {
-                return firstItem === 'header' ? ['h' + attrs[firstItem]] : [item._preferSecond()];
+                return firstItem === 'header' ? ['h' + attrs[firstItem]] : [arr.preferSecond(item)];
             }
         }
         return [['link', 'a'], ['script'],
@@ -163,7 +163,7 @@ var OpToHtmlConverter = (function () {
             .map(function (item) {
             return item[0] === 'script' ?
                 (attrs[item[0]] === value_types_1.ScriptType.Sub ? 'sub' : 'sup')
-                : item._preferSecond();
+                : arr.preferSecond(item);
         });
     };
     OpToHtmlConverter.IsValidRel = function (relStr) {

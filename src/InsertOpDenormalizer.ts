@@ -1,7 +1,7 @@
 
 import { NewLine } from './value-types';
-import './extensions/String';
-import './extensions/Object';
+import * as str from './helpers/string';
+import * as obj from './helpers/object';
 
 
 /**
@@ -35,19 +35,19 @@ class InsertOpDenormalizer {
             return [op];
         }
 
-        let newlinedArray = (op.insert + '')._tokenizeWithNewLines();
+        let newlinedArray = str.tokenizeWithNewLines(op.insert + '');
 
         if (newlinedArray.length === 1) {
             return [op];
         }
 
-        let nlObj = Object._assign({}, op, { insert: NewLine });
+        let nlObj = obj.assign({}, op, { insert: NewLine });
 
         return newlinedArray.map((line: string) => {
             if (line === NewLine) {
                 return nlObj;
             }
-            return Object._assign({}, op, {
+            return obj.assign({}, op, {
                 insert: line
             });
         });

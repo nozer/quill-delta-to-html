@@ -1,10 +1,10 @@
 import { makeStartTag, makeEndTag, encodeHtml, encodeLink, ITagKeyValue } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ScriptType, NewLine } from './value-types';
-import './extensions/String';
-import './extensions/Object';
+import * as url from './helpers/url';
+import * as obj from './helpers/object';
 import { IMention } from "./mentions/MentionSanitizer";
-import './extensions/Array';
+import * as arr from './helpers/array';
 import { OpAttributeSanitizer } from "./OpAttributeSanitizer";
 
 
@@ -31,7 +31,7 @@ class OpToHtmlConverter {
 
    constructor(op: DeltaInsertOp, options?: IOpToHtmlConverterOptions) {
       this.op = op;
-      this.options = Object._assign({}, {
+      this.options = obj.assign({}, {
          classPrefix: 'ql',
          encodeHtml: true,
          listItemTag: 'li',
@@ -125,7 +125,7 @@ class OpToHtmlConverter {
       }
       return propsArr
          .filter((item) => !!attrs[item[0]])
-         .map((item: any[]) => item._preferSecond() + ':' + attrs[item[0]]);
+         .map((item: any[]) => arr.preferSecond(item) + ':' + attrs[item[0]]);
    }
 
    getTagAttributes(): Array<ITagKeyValue> {
@@ -140,7 +140,7 @@ class OpToHtmlConverter {
 
       if (this.op.isImage()) {
          this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-         return tagAttrs.concat(makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()+''));
+         return tagAttrs.concat(makeAttr('src', url.sanitize(this.op.insert.value + '')+''));
       }
 
       if (this.op.isACheckList()) {
@@ -155,7 +155,7 @@ class OpToHtmlConverter {
          return tagAttrs.concat(
             makeAttr('frameborder', '0'),
             makeAttr('allowfullscreen', 'true'),
-            makeAttr('src', (this.op.insert.value + '')._sanitizeUrl()+'')
+            makeAttr('src', url.sanitize(this.op.insert.value + '')+'')
          );
       }
 
@@ -220,7 +220,7 @@ class OpToHtmlConverter {
       for (var item of blocks) {
          var firstItem = item[0]!
          if (attrs[firstItem]) {
-            return firstItem === 'header' ? ['h' + attrs[firstItem]] : [item._preferSecond()!];
+            return firstItem === 'header' ? ['h' + attrs[firstItem]] : [arr.preferSecond(item)!];
          }
       }
 
@@ -232,7 +232,7 @@ class OpToHtmlConverter {
          .map((item) => {
             return item[0] === 'script' ?
                (attrs[item[0]] === ScriptType.Sub ? 'sub' : 'sup')
-               : item._preferSecond()!;
+               : arr.preferSecond(item)!;
          });
    }
 
