@@ -1198,4 +1198,4 @@ exports.GroupType = GroupType;
 ;
 
 },{}]},{},[7])(7)
-});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter; 
+});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter ? window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter : window.QuillDeltaToHtmlConverter; 
