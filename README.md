@@ -47,7 +47,7 @@ var html = converter.convert();
 |multiLineHeader| true | Same deal as `multiLineBlockquote` for headers|
 |multiLineCodeblock| true | Same deal as `multiLineBlockquote` for code-blocks|
 |linkRel| '' | Specifies a value to put on the `rel` attr on links|
-|linkTarget| '_blank' | Specifies target for all links; use `''` (empty string) to not generate `target` attribute. This can be overridden by an individual link op by specifiying the `target` with a value in the respective op's attributes|
+|linkTarget| '_blank' | Specifies target for all links; use `''` (empty string) to not generate `target` attribute. This can be overridden by an individual link op by specifiying the `target` with a value in the respective op's attributes. This is ignored for anchor links|
 |allowBackgroundClasses| false | If true, css classes will be added for background attr|
 
 ## Rendering Quill Formats ##
