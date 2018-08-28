@@ -129,7 +129,7 @@ class OpToHtmlConverter {
    }
 
    getTagAttributes(): Array<ITagKeyValue> {
-      if (this.op.attributes.code) {
+      if (this.op.attributes.code && !this.op.isLink()) {
          return [];
       }
 
@@ -182,10 +182,13 @@ class OpToHtmlConverter {
 
       tagAttrs = tagAttrs.concat(styleAttr);
       if (this.op.isLink()) {
-         let target = this.op.attributes.target || this.options.linkTarget;
          tagAttrs = tagAttrs
-         .concat(makeAttr('href', encodeLink(this.op.attributes.link!)))
-         .concat(target ? makeAttr('target', target) : []);
+         .concat(makeAttr('href', encodeLink(this.op.attributes.link!)));
+         //.concat(target ? makeAttr('target', target) : []);
+         if (!this.op.isAnchorLink()) {
+            let target = this.op.attributes.target || this.options.linkTarget;
+            tagAttrs = tagAttrs.concat(target ? makeAttr('target', target) : []);
+         }
          if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));
          }
@@ -196,11 +199,6 @@ class OpToHtmlConverter {
 
    getTags(): string[] {
       var attrs: any = this.op.attributes;
-
-      // code
-      if (attrs.code) {
-         return ['code'];
-      }
 
       // embeds
       if (!this.op.isText()) {
@@ -225,9 +223,9 @@ class OpToHtmlConverter {
       }
 
       // inlines
-      return [['link', 'a'], ['script'],
+      return [['link', 'a'], ['mentions', 'a'], ['script'],
       ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u'],
-      ['mentions', 'a']]
+      ['code']]
          .filter((item: string[]) => !!attrs[item[0]])
          .map((item) => {
             return item[0] === 'script' ?

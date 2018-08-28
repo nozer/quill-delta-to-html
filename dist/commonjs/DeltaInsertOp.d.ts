@@ -27,6 +27,7 @@ declare class DeltaInsertOp {
     isFormula(): boolean;
     isVideo(): boolean;
     isLink(): boolean;
+    isAnchorLink(): boolean;
     isCustom(): boolean;
     isMentions(): boolean;
 }

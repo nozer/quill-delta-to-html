@@ -20,7 +20,8 @@ var delta1 = {
         { "insert": "\n", "attributes": { "list": "bullet" } },
         { "insert": "list" },
         { "insert": "\n", "attributes": { "list": "checked" } },
-
+        {"insert": "some code", "attributes":{code:true, bold:true}},
+        {"attributes":{"italic":true,"link":"#top","code":true},"insert":"Top"},{"insert":"\n"},
     ],
     html: [
         '<p>', '<a href="http://a.com/?x=a&amp;b=&#40;&#41;" target="_blank">link</a>', 'This ', '<span class="noz-font-monospace">is</span>',
@@ -33,7 +34,9 @@ var delta1 = {
         '<a href="http://yahoo" target="_blank">inline</a>', ' ', '<span class="noz-formula">x=data</span>',
         ' formats.</p>',
         '<ul><li>list</li></ul>',
-        '<ul><li data-checked="true">list</li></ul>'
+        '<ul><li data-checked="true">list</li></ul>',
+        '<p><strong><code>some code</code></strong>',
+        '<a href="#top"><em><code>Top</code></em></a></p>'
     ].join('')
 };
 

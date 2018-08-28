@@ -132,32 +132,32 @@ describe('QuillDeltaToHtmlConverter', function () {
       });
       it('should render target attr correctly', () => {
          let ops = [
-            { "attributes": { "target": "_self", "link": "#" }, "insert": "A" },
-            { "attributes": { "target": "_blank", "link": "#" }, "insert": "B" },
-            { "attributes": { "link": "#" }, "insert": "C" }, { "insert": "\n" }
+            { "attributes": { "target": "_self", "link": "http://#" }, "insert": "A" },
+            { "attributes": { "target": "_blank", "link": "http://#" }, "insert": "B" },
+            { "attributes": { "link": "http://#" }, "insert": "C" }, { "insert": "\n" }
          ];
          let qdc = new QuillDeltaToHtmlConverter(ops, { linkTarget: '' });
          let html = qdc.convert();
          assert.equal(html, [
-            `<p><a href="#" target="_self">A</a>`,
-            `<a href="#" target="_blank">B</a>`,
-            `<a href="#">C</a></p>`
+            `<p><a href="http://#" target="_self">A</a>`,
+            `<a href="http://#" target="_blank">B</a>`,
+            `<a href="http://#">C</a></p>`
          ].join(''));
 
          qdc = new QuillDeltaToHtmlConverter(ops);
          html = qdc.convert();
          assert.equal(html, [
-            `<p><a href="#" target="_self">A</a>`,
-            `<a href="#" target="_blank">B</a>`,
-            `<a href="#" target="_blank">C</a></p>`
+            `<p><a href="http://#" target="_self">A</a>`,
+            `<a href="http://#" target="_blank">B</a>`,
+            `<a href="http://#" target="_blank">C</a></p>`
          ].join(''));
 
          qdc = new QuillDeltaToHtmlConverter(ops, { linkTarget: '_top' });
          html = qdc.convert();
          assert.equal(html, [
-            `<p><a href="#" target="_self">A</a>`,
-            `<a href="#" target="_blank">B</a>`,
-            `<a href="#" target="_top">C</a></p>`
+            `<p><a href="http://#" target="_self">A</a>`,
+            `<a href="http://#" target="_blank">B</a>`,
+            `<a href="http://#" target="_top">C</a></p>`
          ].join(''));
       });
    });

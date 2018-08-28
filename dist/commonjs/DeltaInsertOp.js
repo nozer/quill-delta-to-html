@@ -88,6 +88,9 @@ var DeltaInsertOp = (function () {
     DeltaInsertOp.prototype.isLink = function () {
         return this.isText() && !!this.attributes.link;
     };
+    DeltaInsertOp.prototype.isAnchorLink = function () {
+        return this.isLink() && this.attributes.link.indexOf('#') === 0;
+    };
     DeltaInsertOp.prototype.isCustom = function () {
         return this.insert instanceof InsertData_1.InsertDataCustom;
     };

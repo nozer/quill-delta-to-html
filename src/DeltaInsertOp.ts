@@ -123,6 +123,10 @@ class DeltaInsertOp {
       return this.isText() && !!this.attributes.link;
    }
 
+   isAnchorLink() {
+      return this.isLink() && this.attributes.link!.indexOf('#') === 0
+   }
+
    isCustom() {
       return this.insert instanceof InsertDataCustom;
       // return !(this.isText() || 
