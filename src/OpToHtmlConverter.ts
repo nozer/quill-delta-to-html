@@ -182,13 +182,10 @@ class OpToHtmlConverter {
 
       tagAttrs = tagAttrs.concat(styleAttr);
       if (this.op.isLink()) {
+         let target = this.op.attributes.target || this.options.linkTarget;
          tagAttrs = tagAttrs
-         .concat(makeAttr('href', encodeLink(this.op.attributes.link!)));
-         //.concat(target ? makeAttr('target', target) : []);
-         if (!this.op.isAnchorLink()) {
-            let target = this.op.attributes.target || this.options.linkTarget;
-            tagAttrs = tagAttrs.concat(target ? makeAttr('target', target) : []);
-         }
+         .concat(makeAttr('href', encodeLink(this.op.attributes.link!)))
+         .concat(target ? makeAttr('target', target) : []);
          if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));
          }

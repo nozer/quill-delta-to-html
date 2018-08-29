@@ -36,7 +36,7 @@ var delta1 = {
         '<ul><li>list</li></ul>',
         '<ul><li data-checked="true">list</li></ul>',
         '<p><strong><code>some code</code></strong>',
-        '<a href="#top"><em><code>Top</code></em></a></p>'
+        '<a href="#top" target="_blank"><em><code>Top</code></em></a></p>'
     ].join('')
 };
 
