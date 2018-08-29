@@ -89,9 +89,6 @@ var DeltaInsertOp = (function () {
     DeltaInsertOp.prototype.isLink = function () {
         return this.isText() && !!this.attributes.link;
     };
-    DeltaInsertOp.prototype.isAnchorLink = function () {
-        return this.isLink() && this.attributes.link.indexOf('#') === 0;
-    };
     DeltaInsertOp.prototype.isCustom = function () {
         return this.insert instanceof InsertData_1.InsertDataCustom;
     };
@@ -444,12 +441,10 @@ var OpToHtmlConverter = (function () {
         var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
         tagAttrs = tagAttrs.concat(styleAttr);
         if (this.op.isLink()) {
+            var target = this.op.attributes.target || this.options.linkTarget;
             tagAttrs = tagAttrs
-                .concat(makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link)));
-            if (!this.op.isAnchorLink()) {
-                var target = this.op.attributes.target || this.options.linkTarget;
-                tagAttrs = tagAttrs.concat(target ? makeAttr('target', target) : []);
-            }
+                .concat(makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link)))
+                .concat(target ? makeAttr('target', target) : []);
             if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
                 tagAttrs.push(makeAttr('rel', this.options.linkRel));
             }
