@@ -62,7 +62,7 @@ function encodeMappings(mtype: EncodeTarget) {
     ];
     if (mtype === EncodeTarget.Html) {
         return maps.filter(([v,_]) => 
-            v.indexOf('(') === -1 || v.indexOf(')') === -1
+            v.indexOf('(') === -1 && v.indexOf(')') === -1
         );
     } else { // for url
         return maps.filter(([v,_]) => v.indexOf('/') === -1);

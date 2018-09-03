@@ -53,11 +53,11 @@ describe('html module', function () {
     describe('encodeHtml()', function () {
         it('should encode < > & " \' / characters', function() {
 
-            var act = encodeHtml('hello"my<lovely\'/>&amp;friend&here', false);
-            assert.equal(act, 'hello&quot;my&lt;lovely&#x27;&#x2F;&gt;&amp;amp;friend&amp;here');
+            var act = encodeHtml('hello"my<lovely\'/>&amp;friend&here()', false);
+            assert.equal(act, 'hello&quot;my&lt;lovely&#x27;&#x2F;&gt;&amp;amp;friend&amp;here()');
 
-            var act = encodeHtml('hello"my<lovely\'/>&amp;friend&here');
-            assert.equal(act, 'hello&quot;my&lt;lovely&#x27;&#x2F;&gt;&amp;friend&amp;here');
+            var act = encodeHtml('hello"my<lovely\'/>&amp;friend&here()');
+            assert.equal(act, 'hello&quot;my&lt;lovely&#x27;&#x2F;&gt;&amp;friend&amp;here()');
         });
     });
 
