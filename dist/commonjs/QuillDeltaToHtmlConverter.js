@@ -20,6 +20,7 @@ var QuillDeltaToHtmlConverter = (function () {
             multiLineBlockquote: true,
             multiLineHeader: true,
             multiLineCodeblock: true,
+            multiLineParagraph: true,
             allowBackgroundClasses: false,
             linkTarget: '_blank'
         }, options, {
@@ -59,8 +60,8 @@ var QuillDeltaToHtmlConverter = (function () {
     };
     QuillDeltaToHtmlConverter.prototype.convert = function () {
         var _this = this;
-        return this.getGroupedOps()
-            .map(function (group) {
+        var groups = this.getGroupedOps();
+        return groups.map(function (group) {
             if (group instanceof group_types_1.ListGroup) {
                 return _this._renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this._renderList(group); });
             }
@@ -80,7 +81,7 @@ var QuillDeltaToHtmlConverter = (function () {
             }
             else {
                 return _this._renderWithCallbacks(value_types_1.GroupType.InlineGroup, group, function () {
-                    return _this._renderInlines(group.ops);
+                    return _this._renderInlines(group.ops, true);
                 });
             }
         })
@@ -127,9 +128,9 @@ var QuillDeltaToHtmlConverter = (function () {
         var inlines = ops.map(function (op) { return _this._renderInline(op, bop); }).join('');
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
     };
-    QuillDeltaToHtmlConverter.prototype._renderInlines = function (ops, wrapInParagraphTag) {
+    QuillDeltaToHtmlConverter.prototype._renderInlines = function (ops, isInlineGroup) {
         var _this = this;
-        if (wrapInParagraphTag === void 0) { wrapInParagraphTag = true; }
+        if (isInlineGroup === void 0) { isInlineGroup = true; }
         var opsLen = ops.length - 1;
         var html = ops.map(function (op, i) {
             if (i > 0 && i === opsLen && op.isJustNewline()) {
@@ -137,11 +138,17 @@ var QuillDeltaToHtmlConverter = (function () {
             }
             return _this._renderInline(op, null);
         }).join('');
-        if (!wrapInParagraphTag) {
+        if (!isInlineGroup) {
             return html;
         }
-        return funcs_html_1.makeStartTag(this.options.paragraphTag) +
-            html + funcs_html_1.makeEndTag(this.options.paragraphTag);
+        var startParaTag = funcs_html_1.makeStartTag(this.options.paragraphTag);
+        var endParaTag = funcs_html_1.makeEndTag(this.options.paragraphTag);
+        if (html === BrTag || this.options.multiLineParagraph) {
+            return startParaTag + html + endParaTag;
+        }
+        return startParaTag + html.split(BrTag).map(function (v) {
+            return v === '' ? BrTag : v;
+        }).join(endParaTag + startParaTag) + endParaTag;
     };
     QuillDeltaToHtmlConverter.prototype._renderInline = function (op, contextOp) {
         if (op.isCustom()) {

@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QuillDeltaToHtmlConverter = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QuillDeltaToHtmlConverter = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
@@ -514,6 +514,7 @@ var QuillDeltaToHtmlConverter = (function () {
             multiLineBlockquote: true,
             multiLineHeader: true,
             multiLineCodeblock: true,
+            multiLineParagraph: true,
             allowBackgroundClasses: false,
             linkTarget: '_blank'
         }, options, {
@@ -553,8 +554,8 @@ var QuillDeltaToHtmlConverter = (function () {
     };
     QuillDeltaToHtmlConverter.prototype.convert = function () {
         var _this = this;
-        return this.getGroupedOps()
-            .map(function (group) {
+        var groups = this.getGroupedOps();
+        return groups.map(function (group) {
             if (group instanceof group_types_1.ListGroup) {
                 return _this._renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this._renderList(group); });
             }
@@ -574,7 +575,7 @@ var QuillDeltaToHtmlConverter = (function () {
             }
             else {
                 return _this._renderWithCallbacks(value_types_1.GroupType.InlineGroup, group, function () {
-                    return _this._renderInlines(group.ops);
+                    return _this._renderInlines(group.ops, true);
                 });
             }
         })
@@ -621,9 +622,9 @@ var QuillDeltaToHtmlConverter = (function () {
         var inlines = ops.map(function (op) { return _this._renderInline(op, bop); }).join('');
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
     };
-    QuillDeltaToHtmlConverter.prototype._renderInlines = function (ops, wrapInParagraphTag) {
+    QuillDeltaToHtmlConverter.prototype._renderInlines = function (ops, isInlineGroup) {
         var _this = this;
-        if (wrapInParagraphTag === void 0) { wrapInParagraphTag = true; }
+        if (isInlineGroup === void 0) { isInlineGroup = true; }
         var opsLen = ops.length - 1;
         var html = ops.map(function (op, i) {
             if (i > 0 && i === opsLen && op.isJustNewline()) {
@@ -631,11 +632,17 @@ var QuillDeltaToHtmlConverter = (function () {
             }
             return _this._renderInline(op, null);
         }).join('');
-        if (!wrapInParagraphTag) {
+        if (!isInlineGroup) {
             return html;
         }
-        return funcs_html_1.makeStartTag(this.options.paragraphTag) +
-            html + funcs_html_1.makeEndTag(this.options.paragraphTag);
+        var startParaTag = funcs_html_1.makeStartTag(this.options.paragraphTag);
+        var endParaTag = funcs_html_1.makeEndTag(this.options.paragraphTag);
+        if (html === BrTag || this.options.multiLineParagraph) {
+            return startParaTag + html + endParaTag;
+        }
+        return startParaTag + html.split(BrTag).map(function (v) {
+            return v === '' ? BrTag : v;
+        }).join(endParaTag + startParaTag) + endParaTag;
     };
     QuillDeltaToHtmlConverter.prototype._renderInline = function (op, contextOp) {
         if (op.isCustom()) {
@@ -1231,4 +1238,5 @@ exports.GroupType = GroupType;
 ;
 
 },{}]},{},[7])(7)
-});; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter ? window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter : window.QuillDeltaToHtmlConverter; 
+});
+; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter ? window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter : window.QuillDeltaToHtmlConverter; 

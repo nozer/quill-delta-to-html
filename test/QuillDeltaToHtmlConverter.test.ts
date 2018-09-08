@@ -87,6 +87,16 @@ describe('QuillDeltaToHtmlConverter', function () {
          assert.equal(html.indexOf('</ol><ul><li>there') > -1, true);
       });
 
+      it('should render as separate paragraphs', function () {
+         var ops4 = [
+            { insert: "hello\nhow areyou?\n\nbye" }
+         ]
+         var qdc = new QuillDeltaToHtmlConverter(ops4, {multiLineParagraph: false});
+         var html = qdc.convert();
+
+         assert.equal(html, '<p>hello</p><p>how areyou?</p><p><br/></p><p>bye</p>');
+      });
+
       it('should create checked/unchecked lists', function () {
          var ops4 = [
             { insert: "hello" },

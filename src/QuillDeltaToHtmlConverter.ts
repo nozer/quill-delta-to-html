@@ -24,6 +24,7 @@ interface IQuillDeltaToHtmlConverterOptions {
    multiLineBlockquote?: boolean,
    multiLineHeader?: boolean,
    multiLineCodeblock?: boolean,
+   multiLineParagraph?: boolean,
 
    linkRel?: string,
    linkTarget?: string,
@@ -52,6 +53,7 @@ class QuillDeltaToHtmlConverter {
          multiLineBlockquote: true,
          multiLineHeader: true,
          multiLineCodeblock: true,
+         multiLineParagraph: true,
          allowBackgroundClasses: false,
          linkTarget: '_blank'
       }, options, {
@@ -98,39 +100,39 @@ class QuillDeltaToHtmlConverter {
    }
 
    convert() {
-      return this.getGroupedOps()
-         .map(group => {
-            if (group instanceof ListGroup) {
+      let groups = this.getGroupedOps();
+      return groups.map((group) => {
+         if (group instanceof ListGroup) {
 
-               return this._renderWithCallbacks(
-                  GroupType.List, group, () => this._renderList(<ListGroup>group));
+            return this._renderWithCallbacks(
+               GroupType.List, group, () => this._renderList(<ListGroup>group));
 
-            } else if (group instanceof BlockGroup) {
+         } else if (group instanceof BlockGroup) {
 
-               var g = <BlockGroup>group;
+            var g = <BlockGroup>group;
 
-               return this._renderWithCallbacks(
-                  GroupType.Block, group, () => this._renderBlock(g.op, g.ops));
-            
-            } else if (group instanceof BlotBlock) {
+            return this._renderWithCallbacks(
+               GroupType.Block, group, () => this._renderBlock(g.op, g.ops));
+         
+         } else if (group instanceof BlotBlock) {
 
-               return this._renderCustom(group.op, null);
+            return this._renderCustom(group.op, null);
 
-            } else if (group instanceof VideoItem) {
+         } else if (group instanceof VideoItem) {
 
-               return this._renderWithCallbacks(GroupType.Video, group, () => {
-                  var g = <VideoItem>group;
-                  var converter = new OpToHtmlConverter(g.op, this.converterOptions);
-                  return converter.getHtml();
-               });
+            return this._renderWithCallbacks(GroupType.Video, group, () => {
+               var g = <VideoItem>group;
+               var converter = new OpToHtmlConverter(g.op, this.converterOptions);
+               return converter.getHtml();
+            });
 
-            } else { // InlineGroup
-               return this._renderWithCallbacks(GroupType.InlineGroup, group, () => {
-                  return this._renderInlines((<InlineGroup>group).ops);
-               });
-            }
-         })
-         .join("");
+         } else { // InlineGroup
+            return this._renderWithCallbacks(GroupType.InlineGroup, group, () => {
+               return this._renderInlines((<InlineGroup>group).ops, true);
+            });
+         }
+      })
+      .join("");
    }
 
    _renderWithCallbacks(groupType: GroupType, group: TDataGroup, myRenderFn: () => string) {
@@ -187,7 +189,7 @@ class QuillDeltaToHtmlConverter {
       return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
    }
 
-   _renderInlines(ops: DeltaInsertOp[], wrapInParagraphTag = true) {
+   _renderInlines(ops: DeltaInsertOp[], isInlineGroup = true) {
       var opsLen = ops.length - 1;
       var html = ops.map((op: DeltaInsertOp, i: number) => {
          if (i > 0 && i === opsLen && op.isJustNewline()) {
@@ -195,11 +197,18 @@ class QuillDeltaToHtmlConverter {
          }
          return this._renderInline(op, null);
       }).join('');
-      if (!wrapInParagraphTag) {
+      if (!isInlineGroup) {
          return html;
       }
-      return makeStartTag(this.options.paragraphTag) +
-         html + makeEndTag(this.options.paragraphTag);
+
+      let startParaTag = makeStartTag(this.options.paragraphTag);
+      let endParaTag = makeEndTag(this.options.paragraphTag);
+      if (html === BrTag || this.options.multiLineParagraph) {
+         return startParaTag + html + endParaTag;
+      }
+      return startParaTag + html.split(BrTag).map((v) => {
+         return v === '' ? BrTag : v;
+      }).join(endParaTag + startParaTag) + endParaTag;
    }
 
    _renderInline(op: DeltaInsertOp, contextOp: DeltaInsertOp | null) {

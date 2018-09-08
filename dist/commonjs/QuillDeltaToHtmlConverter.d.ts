@@ -11,6 +11,7 @@ interface IQuillDeltaToHtmlConverterOptions {
     multiLineBlockquote?: boolean;
     multiLineHeader?: boolean;
     multiLineCodeblock?: boolean;
+    multiLineParagraph?: boolean;
     linkRel?: string;
     linkTarget?: string;
     allowBackgroundClasses?: boolean;
@@ -28,7 +29,7 @@ declare class QuillDeltaToHtmlConverter {
     _renderList(list: ListGroup): string;
     _renderListItem(li: ListItem): string;
     _renderBlock(bop: DeltaInsertOp, ops: DeltaInsertOp[]): string;
-    _renderInlines(ops: DeltaInsertOp[], wrapInParagraphTag?: boolean): string;
+    _renderInlines(ops: DeltaInsertOp[], isInlineGroup?: boolean): string;
     _renderInline(op: DeltaInsertOp, contextOp: DeltaInsertOp | null): any;
     _renderCustom(op: DeltaInsertOp, contextOp: DeltaInsertOp | null): any;
     beforeRender(cb: (group: GroupType, data: TDataGroup) => string): void;
