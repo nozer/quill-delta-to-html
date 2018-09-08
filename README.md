@@ -169,5 +169,8 @@ following types:
 |`BlockGroup`|op: `op object`, ops: Array<`op object`>|
 |`ListGroup`|items: Array<`ListItem`>|
 ||ListItem: {item:`BlockGroup`, innerList:`ListGroup`}|
+|`BlotBlock`|op: `op object`|
+
+`BlotBlock` represents custom blots with `renderAsBlock:true` property pair in its attributes
 
 See above for `op object` format. 
