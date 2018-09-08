@@ -7,6 +7,9 @@ Converts [Quill's](https://quilljs.com) [Delta](https://quilljs.com/docs/delta/)
 
 You can try a live demo of the conversion by opening the `demo-browser.html` file after cloning the repo.
 
+## Breaking change: `import/require` has changed as of `v0.10.0`. See Usage below ##
+
+
 
 ## Quickstart ## 
 
@@ -16,11 +19,11 @@ npm install quill-delta-to-html
 ```
 
 Usage
-```javascript
-var QuillDeltaToHtmlConverter = require('quill-delta-to-html');
+```javascript(commonJS)
+var QuillDeltaToHtmlConverter = require('quill-delta-to-html').QuillDeltaToHtmlConverter;
 
-// or, in TypeScript:
-// import QuillDeltaToHtmlConverter = require('quill-delta-to-html'); 
+// TypeScript / ES6:
+// import { QuillDeltaToHtmlConverter } from 'quill-delta-to-html'; 
 
 var deltaOps =  [
     {insert: "Hello\n"},
