@@ -8,6 +8,7 @@ exports.VideoItem = group_types_1.VideoItem;
 exports.BlockGroup = group_types_1.BlockGroup;
 exports.ListGroup = group_types_1.ListGroup;
 exports.ListItem = group_types_1.ListItem;
+exports.BlotBlock = group_types_1.BlotBlock;
 var DeltaInsertOp_1 = require("./DeltaInsertOp");
 exports.DeltaInsertOp = DeltaInsertOp_1.DeltaInsertOp;
 var InsertData_1 = require("./InsertData");
