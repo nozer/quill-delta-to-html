@@ -4,7 +4,7 @@ import { OpToHtmlConverter, IOpToHtmlConverterOptions } from './OpToHtmlConverte
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { Grouper } from './grouper/Grouper';
 import {
-   VideoItem, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup
+   VideoItem, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup, BlotBlock
 } from './grouper/group-types';
 import { ListNester } from './grouper/ListNester';
 import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
@@ -83,7 +83,7 @@ class QuillDeltaToHtmlConverter {
 
    getGroupedOps(): TDataGroup[] {
       var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
-
+      
       var pairedOps = Grouper.pairOpsWithTheirBlock(deltaOps);
 
       var groupedSameStyleBlocks = Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
@@ -111,6 +111,10 @@ class QuillDeltaToHtmlConverter {
 
                return this._renderWithCallbacks(
                   GroupType.Block, group, () => this._renderBlock(g.op, g.ops));
+            
+            } else if (group instanceof BlotBlock) {
+
+               return this._renderCustom(group.op, null);
 
             } else if (group instanceof VideoItem) {
 

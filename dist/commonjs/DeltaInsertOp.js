@@ -3,12 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
 var InsertData_1 = require("./InsertData");
 var DeltaInsertOp = (function () {
-    function DeltaInsertOp(insertVal, attributes) {
+    function DeltaInsertOp(insertVal, attrs) {
         if (typeof insertVal === 'string') {
             insertVal = new InsertData_1.InsertDataQuill(value_types_1.DataType.Text, insertVal + '');
         }
         this.insert = insertVal;
-        this.attributes = attributes || {};
+        this.attributes = attrs || {};
     }
     DeltaInsertOp.createNewLineOp = function () {
         return new DeltaInsertOp(value_types_1.NewLine);
@@ -39,7 +39,7 @@ var DeltaInsertOp = (function () {
         return (Number(this.attributes.indent) || 0) > (Number(op.attributes.indent) || 0);
     };
     DeltaInsertOp.prototype.isInline = function () {
-        return !(this.isContainerBlock() || this.isVideo());
+        return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock());
     };
     DeltaInsertOp.prototype.isCodeBlock = function () {
         return !!this.attributes['code-block'];
@@ -90,6 +90,9 @@ var DeltaInsertOp = (function () {
     };
     DeltaInsertOp.prototype.isCustom = function () {
         return this.insert instanceof InsertData_1.InsertDataCustom;
+    };
+    DeltaInsertOp.prototype.isCustomBlock = function () {
+        return this.isCustom() && !!this.attributes.renderAsBlock;
     };
     DeltaInsertOp.prototype.isMentions = function () {
         return this.isText() && !!this.attributes.mentions;

@@ -31,6 +31,9 @@ interface IOpAttributes {
    mentions?: boolean | undefined,
    mention?: IMention | undefined,
    target?: string | undefined,
+
+   // should this custom blot be rendered as block?
+   renderAsBlock?: boolean | undefined
 }
 
 class OpAttributeSanitizer {
@@ -44,7 +47,7 @@ class OpAttributeSanitizer {
       }
       let booleanAttrs = [
          'bold', 'italic', 'underline', 'strike', 'code',
-         'blockquote', 'code-block'
+         'blockquote', 'code-block','renderAsBlock'
       ];
 
       let colorAttrs = ['background', 'color'];

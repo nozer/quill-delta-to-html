@@ -68,6 +68,9 @@ var QuillDeltaToHtmlConverter = (function () {
                 var g = group;
                 return _this._renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this._renderBlock(g.op, g.ops); });
             }
+            else if (group instanceof group_types_1.BlotBlock) {
+                return _this._renderCustom(group.op, null);
+            }
             else if (group instanceof group_types_1.VideoItem) {
                 return _this._renderWithCallbacks(value_types_1.GroupType.Video, group, function () {
                     var g = group;

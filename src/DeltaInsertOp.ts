@@ -8,12 +8,12 @@ class DeltaInsertOp {
    readonly insert: InsertData;
    readonly attributes: IOpAttributes;
 
-   constructor(insertVal: InsertData | string, attributes?: IOpAttributes) {
+   constructor(insertVal: InsertData | string, attrs?: IOpAttributes) {
       if (typeof insertVal === 'string') {
          insertVal = new InsertDataQuill(DataType.Text, insertVal + '');
       }
       this.insert = insertVal;
-      this.attributes = attributes || {};
+      this.attributes = attrs || {};
    }
 
    static createNewLineOp() {
@@ -55,7 +55,7 @@ class DeltaInsertOp {
    }
 
    isInline() {
-      return !(this.isContainerBlock() || this.isVideo());
+      return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock());
    }
 
    isCodeBlock() {
@@ -125,9 +125,10 @@ class DeltaInsertOp {
 
    isCustom() {
       return this.insert instanceof InsertDataCustom;
-      // return !(this.isText() || 
-      //    this.isVideo() || this.isImage() || this.isFormula()
-      // )
+   }
+
+   isCustomBlock() {
+      return this.isCustom() && !!this.attributes.renderAsBlock
    }
 
    isMentions() {

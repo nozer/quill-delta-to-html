@@ -23,6 +23,7 @@ interface IOpAttributes {
     mentions?: boolean | undefined;
     mention?: IMention | undefined;
     target?: string | undefined;
+    renderAsBlock?: boolean | undefined;
 }
 declare class OpAttributeSanitizer {
     static sanitize(dirtyAttrs: IOpAttributes): IOpAttributes;

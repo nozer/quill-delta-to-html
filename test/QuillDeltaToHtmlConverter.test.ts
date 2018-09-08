@@ -187,6 +187,25 @@ describe('QuillDeltaToHtmlConverter', function () {
          assert.equal(html, '<p><b><i>my text</i></b>unknown</p>');
       });
 
+      it('should render custom insert types as blocks if renderAsBlock is specified', () => {
+         let ops = [
+            {insert: 'hello '},
+            { insert: { myblot: 'my friend' } },
+            { insert: '!' },
+            {insert: {myblot: 'how r u?'}, attributes: {renderAsBlock: true}}
+         ];
+         let qdc = new QuillDeltaToHtmlConverter(ops);
+         qdc.renderCustomWith((op) => {
+            if (op.insert.type === 'myblot') {
+               return op.attributes.renderAsBlock ? 
+                  '<div>'+op.insert.value+ '</div>' : op.insert.value;
+            }
+            return 'unknown';
+         });
+         let html = qdc.convert();
+         assert.equal(html, '<p>hello my friend!</p><div>how r u?</div>');
+      });
+
       it('should render custom insert types in code blocks with given renderer', () => {
          let ops = [
             { insert: { colonizer: ':' } },

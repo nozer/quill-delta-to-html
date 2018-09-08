@@ -1,4 +1,14 @@
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 var InlineGroup = (function () {
     function InlineGroup(ops) {
@@ -7,13 +17,30 @@ var InlineGroup = (function () {
     return InlineGroup;
 }());
 exports.InlineGroup = InlineGroup;
-var VideoItem = (function () {
-    function VideoItem(op) {
+var SingleItem = (function () {
+    function SingleItem(op) {
         this.op = op;
     }
-    return VideoItem;
+    return SingleItem;
 }());
+var VideoItem = (function (_super) {
+    __extends(VideoItem, _super);
+    function VideoItem() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return VideoItem;
+}(SingleItem));
 exports.VideoItem = VideoItem;
+;
+var BlotBlock = (function (_super) {
+    __extends(BlotBlock, _super);
+    function BlotBlock() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return BlotBlock;
+}(SingleItem));
+exports.BlotBlock = BlotBlock;
+;
 var BlockGroup = (function () {
     function BlockGroup(op, ops) {
         this.op = op;

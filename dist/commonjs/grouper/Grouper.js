@@ -9,7 +9,7 @@ var Grouper = (function () {
     Grouper.pairOpsWithTheirBlock = function (ops) {
         var result = [];
         var canBeInBlock = function (op) {
-            return !(op.isJustNewline() || op.isVideo() || op.isContainerBlock());
+            return !(op.isJustNewline() || op.isCustomBlock() || op.isVideo() || op.isContainerBlock());
         };
         var isInlineData = function (op) { return op.isInline(); };
         var lastInd = ops.length - 1;
@@ -18,6 +18,9 @@ var Grouper = (function () {
             var op = ops[i];
             if (op.isVideo()) {
                 result.push(new group_types_1.VideoItem(op));
+            }
+            else if (op.isCustomBlock()) {
+                result.push(new group_types_1.BlotBlock(op));
             }
             else if (op.isContainerBlock()) {
                 opsSlice = array_1.sliceFromReverseWhile(ops, i - 1, canBeInBlock);

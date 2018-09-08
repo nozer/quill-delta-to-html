@@ -4,12 +4,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
 var InsertData_1 = require("./InsertData");
 var DeltaInsertOp = (function () {
-    function DeltaInsertOp(insertVal, attributes) {
+    function DeltaInsertOp(insertVal, attrs) {
         if (typeof insertVal === 'string') {
             insertVal = new InsertData_1.InsertDataQuill(value_types_1.DataType.Text, insertVal + '');
         }
         this.insert = insertVal;
-        this.attributes = attributes || {};
+        this.attributes = attrs || {};
     }
     DeltaInsertOp.createNewLineOp = function () {
         return new DeltaInsertOp(value_types_1.NewLine);
@@ -40,7 +40,7 @@ var DeltaInsertOp = (function () {
         return (Number(this.attributes.indent) || 0) > (Number(op.attributes.indent) || 0);
     };
     DeltaInsertOp.prototype.isInline = function () {
-        return !(this.isContainerBlock() || this.isVideo());
+        return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock());
     };
     DeltaInsertOp.prototype.isCodeBlock = function () {
         return !!this.attributes['code-block'];
@@ -91,6 +91,9 @@ var DeltaInsertOp = (function () {
     };
     DeltaInsertOp.prototype.isCustom = function () {
         return this.insert instanceof InsertData_1.InsertDataCustom;
+    };
+    DeltaInsertOp.prototype.isCustomBlock = function () {
+        return this.isCustom() && !!this.attributes.renderAsBlock;
     };
     DeltaInsertOp.prototype.isMentions = function () {
         return this.isText() && !!this.attributes.mentions;
@@ -226,7 +229,7 @@ var OpAttributeSanitizer = (function () {
         }
         var booleanAttrs = [
             'bold', 'italic', 'underline', 'strike', 'code',
-            'blockquote', 'code-block'
+            'blockquote', 'code-block', 'renderAsBlock'
         ];
         var colorAttrs = ['background', 'color'];
         var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width, target = dirtyAttrs.target;
@@ -559,6 +562,9 @@ var QuillDeltaToHtmlConverter = (function () {
                 var g = group;
                 return _this._renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this._renderBlock(g.op, g.ops); });
             }
+            else if (group instanceof group_types_1.BlotBlock) {
+                return _this._renderCustom(group.op, null);
+            }
             else if (group instanceof group_types_1.VideoItem) {
                 return _this._renderWithCallbacks(value_types_1.GroupType.Video, group, function () {
                     var g = group;
@@ -755,7 +761,7 @@ var Grouper = (function () {
     Grouper.pairOpsWithTheirBlock = function (ops) {
         var result = [];
         var canBeInBlock = function (op) {
-            return !(op.isJustNewline() || op.isVideo() || op.isContainerBlock());
+            return !(op.isJustNewline() || op.isCustomBlock() || op.isVideo() || op.isContainerBlock());
         };
         var isInlineData = function (op) { return op.isInline(); };
         var lastInd = ops.length - 1;
@@ -764,6 +770,9 @@ var Grouper = (function () {
             var op = ops[i];
             if (op.isVideo()) {
                 result.push(new group_types_1.VideoItem(op));
+            }
+            else if (op.isCustomBlock()) {
+                result.push(new group_types_1.BlotBlock(op));
             }
             else if (op.isContainerBlock()) {
                 opsSlice = array_1.sliceFromReverseWhile(ops, i - 1, canBeInBlock);
@@ -925,6 +934,16 @@ exports.ListNester = ListNester;
 
 },{"./../helpers/array":12,"./group-types":11}],11:[function(require,module,exports){
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 var InlineGroup = (function () {
     function InlineGroup(ops) {
@@ -933,13 +952,30 @@ var InlineGroup = (function () {
     return InlineGroup;
 }());
 exports.InlineGroup = InlineGroup;
-var VideoItem = (function () {
-    function VideoItem(op) {
+var SingleItem = (function () {
+    function SingleItem(op) {
         this.op = op;
     }
-    return VideoItem;
+    return SingleItem;
 }());
+var VideoItem = (function (_super) {
+    __extends(VideoItem, _super);
+    function VideoItem() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return VideoItem;
+}(SingleItem));
 exports.VideoItem = VideoItem;
+;
+var BlotBlock = (function (_super) {
+    __extends(BlotBlock, _super);
+    function BlotBlock() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return BlotBlock;
+}(SingleItem));
+exports.BlotBlock = BlotBlock;
+;
 var BlockGroup = (function () {
     function BlockGroup(op, ops) {
         this.op = op;

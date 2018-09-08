@@ -3,7 +3,7 @@ import { InsertData } from './InsertData';
 declare class DeltaInsertOp {
     readonly insert: InsertData;
     readonly attributes: IOpAttributes;
-    constructor(insertVal: InsertData | string, attributes?: IOpAttributes);
+    constructor(insertVal: InsertData | string, attrs?: IOpAttributes);
     static createNewLineOp(): DeltaInsertOp;
     isContainerBlock(): boolean;
     isBlockquote(): boolean;
@@ -28,6 +28,7 @@ declare class DeltaInsertOp {
     isVideo(): boolean;
     isLink(): boolean;
     isCustom(): boolean;
+    isCustomBlock(): boolean;
     isMentions(): boolean;
 }
 export { DeltaInsertOp };

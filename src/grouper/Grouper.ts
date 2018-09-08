@@ -3,7 +3,7 @@ import { DeltaInsertOp } from './../DeltaInsertOp';
 import {IArraySlice, flatten, groupConsecutiveElementsWhile, sliceFromReverseWhile} from './../helpers/array';
 
 import {
-   VideoItem, InlineGroup, BlockGroup, TDataGroup
+   VideoItem, InlineGroup, BlockGroup, TDataGroup, BlotBlock
 } from './group-types';
 
 class Grouper {
@@ -13,7 +13,7 @@ class Grouper {
       let result: TDataGroup[] = [];
 
       const canBeInBlock = (op: DeltaInsertOp) => {
-         return !(op.isJustNewline() || op.isVideo() || op.isContainerBlock());
+         return !(op.isJustNewline() || op.isCustomBlock() || op.isVideo() || op.isContainerBlock());
       };
       const isInlineData = (op: DeltaInsertOp) => op.isInline();
 
@@ -25,7 +25,10 @@ class Grouper {
 
          if (op.isVideo()) {
             result.push(new VideoItem(op));
-         
+
+         } else if (op.isCustomBlock()) {
+            result.push(new BlotBlock(op));
+            
          } else if (op.isContainerBlock()) {
             opsSlice = sliceFromReverseWhile(ops, i - 1, canBeInBlock);
 

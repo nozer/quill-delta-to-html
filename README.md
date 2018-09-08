@@ -112,10 +112,12 @@ Following shows the parameter formats for `beforeRender` event:
 
 You need to tell system how to render your custom blot by registering a renderer callback function to `renderCustomWith` method before calling the `convert()` method. 
 
+If you would like your custom blot to be rendered as a block (not inside another block or grouped as part of inlines), then add `renderAsBlock: true` to its attributes. 
+
 Example:
 ```javascript 
 let ops = [
-    {insert: {'my-blot': {id: 2, text: 'xyz'}}}
+    {insert: {'my-blot': {id: 2, text: 'xyz'}}, attributes: {renderAsBlock: true|false}}
 ];
 
 let converter = new QuillDeltaToHtmlConverter(ops);

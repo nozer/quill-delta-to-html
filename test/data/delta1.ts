@@ -21,7 +21,8 @@ var delta1 = {
         { "insert": "list" },
         { "insert": "\n", "attributes": { "list": "checked" } },
         {"insert": "some code", "attributes":{code:true, bold:true}},
-        {"attributes":{"italic":true,"link":"#top","code":true},"insert":"Top"},{"insert":"\n"},
+        {"attributes":{"italic":true,"link":"#top","code":true},"insert":"Top"},
+        {"insert":"\n"},
     ],
     html: [
         '<p>', '<a href="http://a.com/?x=a&amp;b=&#40;&#41;" target="_blank">link</a>', 'This ', '<span class="noz-font-monospace">is</span>',
