@@ -63,7 +63,8 @@ There are `beforeRender` and `afterRender` events and they are called multiple t
 - continuous sets of inline elements
 - a video element
 - list elements
-- block elements (header, code-block, blockquote, align, indent, and direction) 
+- block elements (header, code-block, blockquote, align, indent, and direction)
+- a custom blot that has `renderAsBlock: true` in its attributes
 
 `beforeRender` event is called with raw operation objects for you to generate and return your own html. If you return a `falsy` value, system will return its own generated html. 
 
