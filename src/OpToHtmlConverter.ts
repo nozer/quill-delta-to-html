@@ -7,10 +7,37 @@ import { IMention } from "./mentions/MentionSanitizer";
 import * as arr from './helpers/array';
 import { OpAttributeSanitizer } from "./OpAttributeSanitizer";
 
+export type IInlineStyles = {
+   [x: string]: ((value: string, op: DeltaInsertOp) => string) | { [x: string]: string }
+};
+
+export const DEFAULT_INLINE_STYLES : IInlineStyles = {
+   font: {
+      'serif': 'font-family: Georgia, Times New Roman, serif',
+      'monospace': 'font-family: Monaco, Courier New, monospace'
+   },
+   size: {
+      'small': 'font-size: 0.75em',
+      'large': 'font-size: 1.5em',
+      'huge': 'font-size: 2.5em'
+   },
+   indent: (value, op) => {
+      var indentSize = parseInt(value, 10) * 3;
+      var side = op.attributes['direction'] === 'rtl' ? 'right' : 'left';
+      return 'padding-' + side + ':' + indentSize + 'em';
+   },
+   direction: (value, op) => {
+      if (value === 'rtl') {
+         return 'direction:rtl' + ( op.attributes['align'] ? '' : '; text-align: inherit' );
+      } else {
+         return '';
+      }
+   }
+};
 
 interface IOpToHtmlConverterOptions {
    classPrefix?: string,
-   inlineStyles?: boolean,
+   inlineStyles?: IInlineStyles,
    encodeHtml?: boolean,
    listItemTag?: string,
    paragraphTag?: string,
@@ -34,7 +61,7 @@ class OpToHtmlConverter {
       this.op = op;
       this.options = obj.assign({}, {
          classPrefix: 'ql',
-         inlineStyles: false,
+         inlineStyles: undefined,
          encodeHtml: true,
          listItemTag: 'li',
          paragraphTag: 'p'
@@ -122,73 +149,39 @@ class OpToHtmlConverter {
 
 
    getCssStyles(): string[] {
-      type Attr = {
-            attr: string,
-            style: string | ((value: string) => string)
-      };
-
-      const STYLE_MAP : { [x: string]: { [x: string]: string } } = {
-         font: {
-            'serif': 'font-family: Georgia, Times New Roman, serif',
-            'monospace': 'font-family: Monaco, Courier New, monospace'
-         },
-         size: {
-            'small': 'font-size: 0.75em',
-            'large': 'font-size: 1.5em',
-            'huge': 'font-size: 2.5em'
-         }
-      };
-
       var attrs: any = this.op.attributes;
 
-      var propsArr : Attr[] = [{ attr: 'color', style: 'color' }];
-      if (!this.options.allowBackgroundClasses || this.options.inlineStyles) {
-         propsArr.push({ attr: 'background', style: 'background-color' });
+      var propsArr = [['color']];
+      if (!this.options.allowBackgroundClasses) {
+         propsArr.push(['background', 'background-color']);
       }
-      if(this.options.inlineStyles) {
+      if (this.options.inlineStyles) {
          propsArr = propsArr.concat([
-            {
-               attr: 'indent',
-               style: (value) => {
-                  var indentSize = parseInt(value, 10) * 3;
-                  var side = attrs['direction'] === 'rtl' ? 'right' : 'left';
-                  return 'padding-' + side + ':' + indentSize + 'em';
-               }
-            },
-            {
-               attr: 'align',
-               style: 'text-align'
-            },
-            {
-               attr: 'direction',
-               style: (value) => {
-                  if (value === 'rtl') {
-                     return 'direction:rtl' + ( attrs['align'] ? '' : '; text-align: inherit' );
-                  } else {
-                     return '';
-                  }
-               }
-            },
-            {
-               attr: 'font',
-               style: (value) => STYLE_MAP.font[value] || ('font-family:' + value)
-            },
-            {
-               attr: 'size',
-               style: (value) => STYLE_MAP.size[value] || ''
-            }
+               ['indent'],
+               ['align', 'text-align'],
+               ['direction'],
+               ['font', 'font-family'],
+               ['size']
          ]);
       }
 
       return propsArr
-         .filter((item) => !!attrs[item.attr])
-         .map((item) => {
-            if (typeof(item.style) === 'string') {
-               return item.style + ':' + attrs[item.attr];
+         .filter((item) => !!attrs[item[0]])
+         .map((item: any[]) => {
+            let attribute = item[0];
+            let attrValue = attrs[attribute];
+
+            let attributeConverter = (this.options.inlineStyles && this.options.inlineStyles[attribute]) || DEFAULT_INLINE_STYLES[attribute];
+            if (typeof(attributeConverter) === 'object' && attributeConverter[attrValue]) {
+               return attributeConverter[attrValue];
+            } else if(typeof(attributeConverter) === 'function') {
+               var converterFn = attributeConverter as ((value: string, op: DeltaInsertOp) => string);
+               return converterFn(attrValue, this.op);
             } else {
-               return item.style(attrs[item.attr]);
+               return arr.preferSecond(item) + ':' + attrValue;
             }
-         })
+         });
+
    }
 
    getTagAttributes(): Array<ITagKeyValue> {

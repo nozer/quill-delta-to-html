@@ -57,7 +57,7 @@ describe('OpToHtmlConverter', function () {
 
         it('should return inline styles', () => {
             var op = new DeltaInsertOp("hello");
-            var c = new OpToHtmlConverter(op, { inlineStyles: true });
+            var c = new OpToHtmlConverter(op, { inlineStyles: {} });
             assert.deepEqual(c.getCssStyles(), []);
 
             var attrs = {
@@ -65,7 +65,7 @@ describe('OpToHtmlConverter', function () {
                 font: 'roman', size: 'small', background: 'red'
             }
             var o = new DeltaInsertOp('f', attrs);
-            c = new OpToHtmlConverter(o, { inlineStyles: true });
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
             var styles = [
                 'background-color:red',
                 'padding-right:3em',
@@ -77,19 +77,19 @@ describe('OpToHtmlConverter', function () {
             assert.deepEqual(c.getCssStyles(), styles);
 
             o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, ""), attrs);
-            c = new OpToHtmlConverter(o, { inlineStyles: true });
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
             assert.deepEqual(c.getCssStyles(), styles);
 
             o = new DeltaInsertOp(new InsertDataQuill(DataType.Video, ""), attrs);
-            c = new OpToHtmlConverter(o, { inlineStyles: true });
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
             assert.deepEqual(c.getCssStyles(), styles);
 
             o = new DeltaInsertOp(new InsertDataQuill(DataType.Formula, ""), attrs);
-            c = new OpToHtmlConverter(o, { inlineStyles: true });
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
             assert.deepEqual(c.getCssStyles(), styles);
 
             o = new DeltaInsertOp('f', attrs);
-            c = new OpToHtmlConverter(o, { inlineStyles: true });
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
             assert.deepEqual(c.getCssStyles(), styles);
         });
     });

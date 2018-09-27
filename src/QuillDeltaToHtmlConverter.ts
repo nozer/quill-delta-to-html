@@ -1,6 +1,6 @@
 
 import { InsertOpsConverter } from './InsertOpsConverter';
-import { OpToHtmlConverter, IOpToHtmlConverterOptions } from './OpToHtmlConverter';
+import { OpToHtmlConverter, IOpToHtmlConverterOptions, IInlineStyles } from './OpToHtmlConverter';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { Grouper } from './grouper/Grouper';
 import {
@@ -20,7 +20,7 @@ interface IQuillDeltaToHtmlConverterOptions {
 
    paragraphTag?: string,
    classPrefix?: string,
-   inlineStyles?: boolean,
+   inlineStyles?: boolean | IInlineStyles,
    encodeHtml?: boolean,
    multiLineBlockquote?: boolean,
    multiLineHeader?: boolean,
@@ -64,10 +64,19 @@ class QuillDeltaToHtmlConverter {
             listItemTag: 'li'
          });
 
+      var inlineStyles : IInlineStyles | undefined;
+      if(this.options.inlineStyles === true) {
+         inlineStyles = {};
+      } else if(!this.options.inlineStyles) {
+         inlineStyles = undefined;
+      } else {
+         inlineStyles = this.options.inlineStyles;
+      }
+
       this.converterOptions = {
          encodeHtml: this.options.encodeHtml,
          classPrefix: this.options.classPrefix,
-         inlineStyles: this.options.inlineStyles,
+         inlineStyles: inlineStyles,
          listItemTag: this.options.listItemTag,
          paragraphTag: this.options.paragraphTag,
          linkRel: this.options.linkRel,
