@@ -2,6 +2,7 @@ import { ITagKeyValue } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
 interface IOpToHtmlConverterOptions {
     classPrefix?: string;
+    inlineStyles?: boolean;
     encodeHtml?: boolean;
     listItemTag?: string;
     paragraphTag?: string;

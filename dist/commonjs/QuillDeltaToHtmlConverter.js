@@ -17,6 +17,7 @@ var QuillDeltaToHtmlConverter = (function () {
             paragraphTag: 'p',
             encodeHtml: true,
             classPrefix: 'ql',
+            inlineStyles: false,
             multiLineBlockquote: true,
             multiLineHeader: true,
             multiLineCodeblock: true,
@@ -31,6 +32,7 @@ var QuillDeltaToHtmlConverter = (function () {
         this.converterOptions = {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
+            inlineStyles: this.options.inlineStyles,
             listItemTag: this.options.listItemTag,
             paragraphTag: this.options.paragraphTag,
             linkRel: this.options.linkRel,

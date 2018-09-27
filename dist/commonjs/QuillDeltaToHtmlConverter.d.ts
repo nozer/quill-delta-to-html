@@ -7,6 +7,7 @@ interface IQuillDeltaToHtmlConverterOptions {
     listItemTag?: string;
     paragraphTag?: string;
     classPrefix?: string;
+    inlineStyles?: boolean;
     encodeHtml?: boolean;
     multiLineBlockquote?: boolean;
     multiLineHeader?: boolean;

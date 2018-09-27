@@ -332,6 +332,7 @@ var OpToHtmlConverter = (function () {
         this.op = op;
         this.options = obj.assign({}, {
             classPrefix: 'ql',
+            inlineStyles: false,
             encodeHtml: true,
             listItemTag: 'li',
             paragraphTag: 'p'
@@ -381,6 +382,9 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
+        if (this.options.inlineStyles) {
+            return [];
+        }
         var propsArr = ['indent', 'align', 'direction', 'font', 'size'];
         if (this.options.allowBackgroundClasses) {
             propsArr.push('background');
@@ -395,14 +399,67 @@ var OpToHtmlConverter = (function () {
             .map(this.prefixClass.bind(this));
     };
     OpToHtmlConverter.prototype.getCssStyles = function () {
+        var STYLE_MAP = {
+            font: {
+                'serif': 'font-family: Georgia, Times New Roman, serif',
+                'monospace': 'font-family: Monaco, Courier New, monospace'
+            },
+            size: {
+                'small': 'font-size: 0.75em',
+                'large': 'font-size: 1.5em',
+                'huge': 'font-size: 2.5em'
+            }
+        };
         var attrs = this.op.attributes;
-        var propsArr = [['color']];
-        if (!this.options.allowBackgroundClasses) {
-            propsArr.push(['background', 'background-color']);
+        var propsArr = [{ attr: 'color', style: 'color' }];
+        if (!this.options.allowBackgroundClasses || this.options.inlineStyles) {
+            propsArr.push({ attr: 'background', style: 'background-color' });
+        }
+        if (this.options.inlineStyles) {
+            propsArr = propsArr.concat([
+                {
+                    attr: 'indent',
+                    style: function (value) {
+                        var indentSize = parseInt(value, 10) * 3;
+                        var side = attrs['direction'] === 'rtl' ? 'right' : 'left';
+                        return 'padding-' + side + ':' + indentSize + 'em';
+                    }
+                },
+                {
+                    attr: 'align',
+                    style: 'text-align'
+                },
+                {
+                    attr: 'direction',
+                    style: function (value) {
+                        if (value === 'rtl') {
+                            return 'direction:rtl' + (attrs['align'] ? '' : '; text-align: inherit');
+                        }
+                        else {
+                            return '';
+                        }
+                    }
+                },
+                {
+                    attr: 'font',
+                    style: function (value) { return STYLE_MAP.font[value] || ('font-family:' + value); }
+                },
+                {
+                    attr: 'size',
+                    style: function (value) { return STYLE_MAP.size[value] || ''; }
+                }
+            ]);
         }
         return propsArr
-            .filter(function (item) { return !!attrs[item[0]]; })
-            .map(function (item) { return arr.preferSecond(item) + ':' + attrs[item[0]]; });
+            .filter(function (item) { return !!attrs[item.attr]; })
+            .map(function (item) {
+            if (typeof (item.style) === 'string') {
+                return item.style + ':' + attrs[item.attr];
+            }
+            else {
+                return item.style(attrs[item.attr]);
+            }
+        });
     };
     OpToHtmlConverter.prototype.getTagAttributes = function () {
         if (this.op.attributes.code && !this.op.isLink()) {
@@ -417,9 +474,6 @@ var OpToHtmlConverter = (function () {
         }
         if (this.op.isACheckList()) {
             return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'));
-        }
-        if (this.op.isFormula() || this.op.isContainerBlock()) {
-            return tagAttrs;
         }
         if (this.op.isVideo()) {
             return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
@@ -440,9 +494,16 @@ var OpToHtmlConverter = (function () {
             }
             return tagAttrs;
         }
+        if (this.op.isFormula()) {
+            return tagAttrs;
+        }
         var styles = this.getCssStyles();
-        var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
-        tagAttrs = tagAttrs.concat(styleAttr);
+        if (styles.length) {
+            tagAttrs.push(makeAttr('style', styles.join(';')));
+        }
+        if (this.op.isContainerBlock()) {
+            return tagAttrs;
+        }
         if (this.op.isLink()) {
             var target = this.op.attributes.target || this.options.linkTarget;
             tagAttrs = tagAttrs
@@ -511,6 +572,7 @@ var QuillDeltaToHtmlConverter = (function () {
             paragraphTag: 'p',
             encodeHtml: true,
             classPrefix: 'ql',
+            inlineStyles: false,
             multiLineBlockquote: true,
             multiLineHeader: true,
             multiLineCodeblock: true,
@@ -525,6 +587,7 @@ var QuillDeltaToHtmlConverter = (function () {
         this.converterOptions = {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
+            inlineStyles: this.options.inlineStyles,
             listItemTag: this.options.listItemTag,
             paragraphTag: this.options.paragraphTag,
             linkRel: this.options.linkRel,

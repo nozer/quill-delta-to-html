@@ -54,6 +54,44 @@ describe('OpToHtmlConverter', function () {
             assert.deepEqual(c.getCssStyles(), ['color:blue']);
 
         });
+
+        it('should return inline styles', () => {
+            var op = new DeltaInsertOp("hello");
+            var c = new OpToHtmlConverter(op, { inlineStyles: true });
+            assert.deepEqual(c.getCssStyles(), []);
+
+            var attrs = {
+                indent: 1, align: AlignType.Center, direction: DirectionType.Rtl,
+                font: 'roman', size: 'small', background: 'red'
+            }
+            var o = new DeltaInsertOp('f', attrs);
+            c = new OpToHtmlConverter(o, { inlineStyles: true });
+            var styles = [
+                'background-color:red',
+                'padding-right:3em',
+                'text-align:center',
+                'direction:rtl',
+                'font-family:roman',
+                'font-size: 0.75em'
+            ];
+            assert.deepEqual(c.getCssStyles(), styles);
+
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, ""), attrs);
+            c = new OpToHtmlConverter(o, { inlineStyles: true });
+            assert.deepEqual(c.getCssStyles(), styles);
+
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Video, ""), attrs);
+            c = new OpToHtmlConverter(o, { inlineStyles: true });
+            assert.deepEqual(c.getCssStyles(), styles);
+
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Formula, ""), attrs);
+            c = new OpToHtmlConverter(o, { inlineStyles: true });
+            assert.deepEqual(c.getCssStyles(), styles);
+
+            o = new DeltaInsertOp('f', attrs);
+            c = new OpToHtmlConverter(o, { inlineStyles: true });
+            assert.deepEqual(c.getCssStyles(), styles);
+        });
     });
 
     describe('getCssClasses()', function () {

@@ -20,6 +20,7 @@ interface IQuillDeltaToHtmlConverterOptions {
 
    paragraphTag?: string,
    classPrefix?: string,
+   inlineStyles?: boolean,
    encodeHtml?: boolean,
    multiLineBlockquote?: boolean,
    multiLineHeader?: boolean,
@@ -50,6 +51,7 @@ class QuillDeltaToHtmlConverter {
          paragraphTag: 'p',
          encodeHtml: true,
          classPrefix: 'ql',
+         inlineStyles: false,
          multiLineBlockquote: true,
          multiLineHeader: true,
          multiLineCodeblock: true,
@@ -65,6 +67,7 @@ class QuillDeltaToHtmlConverter {
       this.converterOptions = {
          encodeHtml: this.options.encodeHtml,
          classPrefix: this.options.classPrefix,
+         inlineStyles: this.options.inlineStyles,
          listItemTag: this.options.listItemTag,
          paragraphTag: this.options.paragraphTag,
          linkRel: this.options.linkRel,
@@ -85,7 +88,7 @@ class QuillDeltaToHtmlConverter {
 
    getGroupedOps(): TDataGroup[] {
       var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
-      
+
       var pairedOps = Grouper.pairOpsWithTheirBlock(deltaOps);
 
       var groupedSameStyleBlocks = Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
@@ -113,7 +116,7 @@ class QuillDeltaToHtmlConverter {
 
             return this._renderWithCallbacks(
                GroupType.Block, group, () => this._renderBlock(g.op, g.ops));
-         
+
          } else if (group instanceof BlotBlock) {
 
             return this._renderCustom(group.op, null);
