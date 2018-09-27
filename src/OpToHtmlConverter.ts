@@ -7,8 +7,14 @@ import { IMention } from "./mentions/MentionSanitizer";
 import * as arr from './helpers/array';
 import { OpAttributeSanitizer } from "./OpAttributeSanitizer";
 
-export type IInlineStyles = {
-   [x: string]: ((value: string, op: DeltaInsertOp) => string) | { [x: string]: string }
+export type InlineStyleType = ((value: string, op: DeltaInsertOp) => string) | { [x: string]: string };
+
+export interface IInlineStyles {
+   indent?: InlineStyleType,
+   align?: InlineStyleType,
+   direction?: InlineStyleType,
+   font?: InlineStyleType,
+   size?: InlineStyleType
 };
 
 export const DEFAULT_INLINE_STYLES : IInlineStyles = {
@@ -171,7 +177,9 @@ class OpToHtmlConverter {
             let attribute = item[0];
             let attrValue = attrs[attribute];
 
-            let attributeConverter = (this.options.inlineStyles && this.options.inlineStyles[attribute]) || DEFAULT_INLINE_STYLES[attribute];
+            let attributeConverter : InlineStyleType =
+                  (this.options.inlineStyles && (this.options.inlineStyles as any)[attribute]) ||
+                  (DEFAULT_INLINE_STYLES as any)[attribute];
             if (typeof(attributeConverter) === 'object' && attributeConverter[attrValue]) {
                return attributeConverter[attrValue];
             } else if(typeof(attributeConverter) === 'function') {

@@ -327,12 +327,37 @@ var url = require("./helpers/url");
 var obj = require("./helpers/object");
 var arr = require("./helpers/array");
 var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
+;
+exports.DEFAULT_INLINE_STYLES = {
+    font: {
+        'serif': 'font-family: Georgia, Times New Roman, serif',
+        'monospace': 'font-family: Monaco, Courier New, monospace'
+    },
+    size: {
+        'small': 'font-size: 0.75em',
+        'large': 'font-size: 1.5em',
+        'huge': 'font-size: 2.5em'
+    },
+    indent: function (value, op) {
+        var indentSize = parseInt(value, 10) * 3;
+        var side = op.attributes['direction'] === 'rtl' ? 'right' : 'left';
+        return 'padding-' + side + ':' + indentSize + 'em';
+    },
+    direction: function (value, op) {
+        if (value === 'rtl') {
+            return 'direction:rtl' + (op.attributes['align'] ? '' : '; text-align: inherit');
+        }
+        else {
+            return '';
+        }
+    }
+};
 var OpToHtmlConverter = (function () {
     function OpToHtmlConverter(op, options) {
         this.op = op;
         this.options = obj.assign({}, {
             classPrefix: 'ql',
-            inlineStyles: false,
+            inlineStyles: undefined,
             encodeHtml: true,
             listItemTag: 'li',
             paragraphTag: 'p'
@@ -399,65 +424,37 @@ var OpToHtmlConverter = (function () {
             .map(this.prefixClass.bind(this));
     };
     OpToHtmlConverter.prototype.getCssStyles = function () {
-        var STYLE_MAP = {
-            font: {
-                'serif': 'font-family: Georgia, Times New Roman, serif',
-                'monospace': 'font-family: Monaco, Courier New, monospace'
-            },
-            size: {
-                'small': 'font-size: 0.75em',
-                'large': 'font-size: 1.5em',
-                'huge': 'font-size: 2.5em'
-            }
-        };
+        var _this = this;
         var attrs = this.op.attributes;
-        var propsArr = [{ attr: 'color', style: 'color' }];
-        if (!this.options.allowBackgroundClasses || this.options.inlineStyles) {
-            propsArr.push({ attr: 'background', style: 'background-color' });
+        var propsArr = [['color']];
+        if (!this.options.allowBackgroundClasses) {
+            propsArr.push(['background', 'background-color']);
         }
         if (this.options.inlineStyles) {
             propsArr = propsArr.concat([
-                {
-                    attr: 'indent',
-                    style: function (value) {
-                        var indentSize = parseInt(value, 10) * 3;
-                        var side = attrs['direction'] === 'rtl' ? 'right' : 'left';
-                        return 'padding-' + side + ':' + indentSize + 'em';
-                    }
-                },
-                {
-                    attr: 'align',
-                    style: 'text-align'
-                },
-                {
-                    attr: 'direction',
-                    style: function (value) {
-                        if (value === 'rtl') {
-                            return 'direction:rtl' + (attrs['align'] ? '' : '; text-align: inherit');
-                        }
-                        else {
-                            return '';
-                        }
-                    }
-                },
-                {
-                    attr: 'font',
-                    style: function (value) { return STYLE_MAP.font[value] || ('font-family:' + value); }
-                },
-                {
-                    attr: 'size',
-                    style: function (value) { return STYLE_MAP.size[value] || ''; }
-                }
+                ['indent'],
+                ['align', 'text-align'],
+                ['direction'],
+                ['font', 'font-family'],
+                ['size']
             ]);
         }
         return propsArr
-            .filter(function (item) { return !!attrs[item.attr]; })
+            .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) {
-            if (typeof (item.style) === 'string') {
-                return item.style + ':' + attrs[item.attr];
+            var attribute = item[0];
+            var attrValue = attrs[attribute];
+            var attributeConverter = (_this.options.inlineStyles && _this.options.inlineStyles[attribute]) ||
+                exports.DEFAULT_INLINE_STYLES[attribute];
+            if (typeof (attributeConverter) === 'object' && attributeConverter[attrValue]) {
+                return attributeConverter[attrValue];
+            }
+            else if (typeof (attributeConverter) === 'function') {
+                var converterFn = attributeConverter;
+                return converterFn(attrValue, _this.op);
             }
             else {
-                return item.style(attrs[item.attr]);
+                return arr.preferSecond(item) + ':' + attrValue;
             }
         });
     };
@@ -474,6 +471,9 @@ var OpToHtmlConverter = (function () {
         }
         if (this.op.isACheckList()) {
             return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'));
+        }
+        if (this.op.isFormula()) {
+            return tagAttrs;
         }
         if (this.op.isVideo()) {
             return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
@@ -492,9 +492,6 @@ var OpToHtmlConverter = (function () {
             if (mention.target) {
                 tagAttrs = tagAttrs.concat(makeAttr('target', mention.target));
             }
-            return tagAttrs;
-        }
-        if (this.op.isFormula()) {
             return tagAttrs;
         }
         var styles = this.getCssStyles();
@@ -584,10 +581,20 @@ var QuillDeltaToHtmlConverter = (function () {
             bulletListTag: 'ul',
             listItemTag: 'li'
         });
+        var inlineStyles;
+        if (this.options.inlineStyles === true) {
+            inlineStyles = {};
+        }
+        else if (!this.options.inlineStyles) {
+            inlineStyles = undefined;
+        }
+        else {
+            inlineStyles = this.options.inlineStyles;
+        }
         this.converterOptions = {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
-            inlineStyles: this.options.inlineStyles,
+            inlineStyles: inlineStyles,
             listItemTag: this.options.listItemTag,
             paragraphTag: this.options.paragraphTag,
             linkRel: this.options.linkRel,
