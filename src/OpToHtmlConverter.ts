@@ -7,7 +7,7 @@ import { IMention } from "./mentions/MentionSanitizer";
 import * as arr from './helpers/array';
 import { OpAttributeSanitizer } from "./OpAttributeSanitizer";
 
-export type InlineStyleType = ((value: string, op: DeltaInsertOp) => string) | { [x: string]: string };
+export type InlineStyleType = ((value: string, op: DeltaInsertOp) => string | undefined) | { [x: string]: string };
 
 export interface IInlineStyles {
    indent?: InlineStyleType,
@@ -17,11 +17,13 @@ export interface IInlineStyles {
    size?: InlineStyleType
 };
 
+const DEFAULT_INLINE_FONTS : {[key: string]: string} = {
+   serif: 'font-family: Georgia, Times New Roman, serif',
+   monospace: 'font-family: Monaco, Courier New, monospace'
+};
+
 export const DEFAULT_INLINE_STYLES : IInlineStyles = {
-   font: {
-      'serif': 'font-family: Georgia, Times New Roman, serif',
-      'monospace': 'font-family: Monaco, Courier New, monospace'
-   },
+   font: (value) => DEFAULT_INLINE_FONTS[value] || ('font-family:' + value),
    size: {
       'small': 'font-size: 0.75em',
       'large': 'font-size: 1.5em',
@@ -34,9 +36,9 @@ export const DEFAULT_INLINE_STYLES : IInlineStyles = {
    },
    direction: (value, op) => {
       if (value === 'rtl') {
-         return 'direction:rtl' + ( op.attributes['align'] ? '' : '; text-align: inherit' );
+         return 'direction:rtl' + ( op.attributes['align'] ? '' : '; text-align:inherit' );
       } else {
-         return '';
+         return undefined;
       }
    }
 };
@@ -158,7 +160,7 @@ class OpToHtmlConverter {
       var attrs: any = this.op.attributes;
 
       var propsArr = [['color']];
-      if (!this.options.allowBackgroundClasses) {
+      if (!!this.options.inlineStyles || !this.options.allowBackgroundClasses) {
          propsArr.push(['background', 'background-color']);
       }
       if (this.options.inlineStyles) {
@@ -180,15 +182,19 @@ class OpToHtmlConverter {
             let attributeConverter : InlineStyleType =
                   (this.options.inlineStyles && (this.options.inlineStyles as any)[attribute]) ||
                   (DEFAULT_INLINE_STYLES as any)[attribute];
-            if (typeof(attributeConverter) === 'object' && attributeConverter[attrValue]) {
+
+            if (typeof(attributeConverter) === 'object') {
                return attributeConverter[attrValue];
+
             } else if(typeof(attributeConverter) === 'function') {
                var converterFn = attributeConverter as ((value: string, op: DeltaInsertOp) => string);
                return converterFn(attrValue, this.op);
+
             } else {
                return arr.preferSecond(item) + ':' + attrValue;
             }
-         });
+         })
+         .filter((item) => item !== undefined);
 
    }
 

@@ -1,6 +1,6 @@
 import { ITagKeyValue } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
-export declare type InlineStyleType = ((value: string, op: DeltaInsertOp) => string) | {
+export declare type InlineStyleType = ((value: string, op: DeltaInsertOp) => string | undefined) | {
     [x: string]: string;
 };
 export interface IInlineStyles {

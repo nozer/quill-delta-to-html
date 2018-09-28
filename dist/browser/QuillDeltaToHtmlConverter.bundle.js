@@ -328,11 +328,12 @@ var obj = require("./helpers/object");
 var arr = require("./helpers/array");
 var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
 ;
+var DEFAULT_INLINE_FONTS = {
+    serif: 'font-family: Georgia, Times New Roman, serif',
+    monospace: 'font-family: Monaco, Courier New, monospace'
+};
 exports.DEFAULT_INLINE_STYLES = {
-    font: {
-        'serif': 'font-family: Georgia, Times New Roman, serif',
-        'monospace': 'font-family: Monaco, Courier New, monospace'
-    },
+    font: function (value) { return DEFAULT_INLINE_FONTS[value] || ('font-family:' + value); },
     size: {
         'small': 'font-size: 0.75em',
         'large': 'font-size: 1.5em',
@@ -345,10 +346,10 @@ exports.DEFAULT_INLINE_STYLES = {
     },
     direction: function (value, op) {
         if (value === 'rtl') {
-            return 'direction:rtl' + (op.attributes['align'] ? '' : '; text-align: inherit');
+            return 'direction:rtl' + (op.attributes['align'] ? '' : '; text-align:inherit');
         }
         else {
-            return '';
+            return undefined;
         }
     }
 };
@@ -427,7 +428,7 @@ var OpToHtmlConverter = (function () {
         var _this = this;
         var attrs = this.op.attributes;
         var propsArr = [['color']];
-        if (!this.options.allowBackgroundClasses) {
+        if (!!this.options.inlineStyles || !this.options.allowBackgroundClasses) {
             propsArr.push(['background', 'background-color']);
         }
         if (this.options.inlineStyles) {
@@ -446,7 +447,7 @@ var OpToHtmlConverter = (function () {
             var attrValue = attrs[attribute];
             var attributeConverter = (_this.options.inlineStyles && _this.options.inlineStyles[attribute]) ||
                 exports.DEFAULT_INLINE_STYLES[attribute];
-            if (typeof (attributeConverter) === 'object' && attributeConverter[attrValue]) {
+            if (typeof (attributeConverter) === 'object') {
                 return attributeConverter[attrValue];
             }
             else if (typeof (attributeConverter) === 'function') {
@@ -456,7 +457,8 @@ var OpToHtmlConverter = (function () {
             else {
                 return arr.preferSecond(item) + ':' + attrValue;
             }
-        });
+        })
+            .filter(function (item) { return item !== undefined; });
     };
     OpToHtmlConverter.prototype.getTagAttributes = function () {
         if (this.op.attributes.code && !this.op.isLink()) {
