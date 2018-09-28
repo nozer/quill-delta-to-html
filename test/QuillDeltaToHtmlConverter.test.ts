@@ -33,6 +33,12 @@ describe('QuillDeltaToHtmlConverter', function () {
          assert.equal(html.includes('<span style="font-size: 2.5em">huge</span>'), true, html);
       });
 
+      it('should set default inline styles when `inlineStyles` is a truthy non-object', function () {
+         var qdc = new QuillDeltaToHtmlConverter(hugeOps, { inlineStyles: 1 } as any);
+         var html = qdc.convert();
+         assert.equal(html.includes('<span style="font-size: 2.5em">huge</span>'), true, html);
+      });
+
       it('should allow setting inline styles', function () {
          var qdc = new QuillDeltaToHtmlConverter(hugeOps, { inlineStyles: {
             size: {

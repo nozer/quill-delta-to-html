@@ -65,12 +65,12 @@ class QuillDeltaToHtmlConverter {
          });
 
       var inlineStyles : IInlineStyles | undefined;
-      if(this.options.inlineStyles === true) {
-         inlineStyles = {};
-      } else if(!this.options.inlineStyles) {
+      if(!this.options.inlineStyles) {
          inlineStyles = undefined;
-      } else {
+      } else if(typeof(this.options.inlineStyles) === 'object') {
          inlineStyles = this.options.inlineStyles;
+      } else {
+         inlineStyles = {};
       }
 
       this.converterOptions = {
