@@ -1,7 +1,19 @@
 import { ITagKeyValue } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
+export declare type InlineStyleType = ((value: string, op: DeltaInsertOp) => string | undefined) | {
+    [x: string]: string;
+};
+export interface IInlineStyles {
+    indent?: InlineStyleType;
+    align?: InlineStyleType;
+    direction?: InlineStyleType;
+    font?: InlineStyleType;
+    size?: InlineStyleType;
+}
+export declare const DEFAULT_INLINE_STYLES: IInlineStyles;
 interface IOpToHtmlConverterOptions {
     classPrefix?: string;
+    inlineStyles?: IInlineStyles;
     encodeHtml?: boolean;
     listItemTag?: string;
     paragraphTag?: string;

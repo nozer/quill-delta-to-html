@@ -54,6 +54,108 @@ describe('OpToHtmlConverter', function () {
             assert.deepEqual(c.getCssStyles(), ['color:blue']);
 
         });
+
+        it('should return inline styles', function () {
+            var op = new DeltaInsertOp("hello");
+            var c = new OpToHtmlConverter(op, { inlineStyles: {} });
+            assert.deepEqual(c.getCssStyles(), []);
+
+            var attrs = {
+                indent: 1, align: AlignType.Center, direction: DirectionType.Rtl,
+                font: 'roman', size: 'small', background: 'red'
+            }
+            var o = new DeltaInsertOp('f', attrs);
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
+            var styles = [
+                'background-color:red',
+                'padding-right:3em',
+                'text-align:center',
+                'direction:rtl',
+                'font-family:roman',
+                'font-size: 0.75em'
+            ];
+            assert.deepEqual(c.getCssStyles(), styles);
+
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, ""), attrs);
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
+            assert.deepEqual(c.getCssStyles(), styles);
+
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Video, ""), attrs);
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
+            assert.deepEqual(c.getCssStyles(), styles);
+
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Formula, ""), attrs);
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
+            assert.deepEqual(c.getCssStyles(), styles);
+
+            o = new DeltaInsertOp('f', attrs);
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
+            assert.deepEqual(c.getCssStyles(), styles);
+
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, ""), {direction: DirectionType.Rtl});
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
+            assert.deepEqual(c.getCssStyles(), [
+                'direction:rtl; text-align:inherit'
+            ]);
+
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, ""), {indent: 2});
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
+            assert.deepEqual(c.getCssStyles(), [
+                'padding-left:6em'
+            ]);
+
+            // Ignore invalid direction
+            o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, ""), ({direction: 'ltr'} as any));
+            c = new OpToHtmlConverter(o, { inlineStyles: {} });
+            assert.deepEqual(c.getCssStyles(), []);
+        });
+
+        it('should allow setting inline styles', function () {
+            var op = new DeltaInsertOp('f', { size: 'huge' });
+            var c = new OpToHtmlConverter(op, { inlineStyles: {
+               size: {
+                  'huge': 'font-size: 6em'
+               },
+            } });
+            assert.deepEqual(c.getCssStyles(), ['font-size: 6em']);
+        });
+
+        it('should fall back to defaults for inline styles that are not specified', function () {
+            // Here there's no inlineStyle specified for "size", but we still render it
+            // because we fall back to the default.
+            var op = new DeltaInsertOp('f', { size: 'huge' });
+            var c = new OpToHtmlConverter(op, { inlineStyles: {
+               font: {
+                  'serif': 'font-family: serif'
+               },
+            } });
+            assert.deepEqual(c.getCssStyles(), ['font-size: 2.5em']);
+        });
+
+        it('should render default font inline styles correctly', function () {
+            var op = new DeltaInsertOp('f', { font: 'monospace' });
+            var c = new OpToHtmlConverter(op, { inlineStyles: {} });
+            assert.deepEqual(c.getCssStyles(), ['font-family: Monaco, Courier New, monospace']);
+        });
+
+
+        it('should return nothing for an inline style with no mapped entry', function () {
+            var op = new DeltaInsertOp('f', { size: 'biggest' });
+            var c = new OpToHtmlConverter(op, { inlineStyles: {
+               size: {
+                  'small': 'font-size: 0.75em'
+               },
+            } });
+            assert.deepEqual(c.getCssStyles(), []);
+        });
+
+        it('should return nothing for an inline style where the converter returns undefined', function () {
+            var op = new DeltaInsertOp('f', { size: 'biggest' });
+            var c = new OpToHtmlConverter(op, { inlineStyles: {
+               size: () => undefined,
+            } });
+            assert.deepEqual(c.getCssStyles(), []);
+        });
     });
 
     describe('getCssClasses()', function () {
@@ -88,6 +190,16 @@ describe('OpToHtmlConverter', function () {
             c = new OpToHtmlConverter(o, {allowBackgroundClasses: true});
             assert.deepEqual(c.getCssClasses(), classes.concat('ql-background-red'));
 
+        });
+
+        it('should return no classes if `inlineStyles` is specified', function () {
+            var attrs = {
+                indent: 1, align: AlignType.Center, direction: DirectionType.Rtl,
+                font: 'roman', size: 'small', background: 'red'
+            }
+            var o = new DeltaInsertOp('f', attrs);
+            var c = new OpToHtmlConverter(o, { inlineStyles: {} });
+            assert.deepEqual(c.getCssClasses(), []);
         });
     });
 

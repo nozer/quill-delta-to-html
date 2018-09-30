@@ -327,11 +327,38 @@ var url = require("./helpers/url");
 var obj = require("./helpers/object");
 var arr = require("./helpers/array");
 var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
+;
+var DEFAULT_INLINE_FONTS = {
+    serif: 'font-family: Georgia, Times New Roman, serif',
+    monospace: 'font-family: Monaco, Courier New, monospace'
+};
+exports.DEFAULT_INLINE_STYLES = {
+    font: function (value) { return DEFAULT_INLINE_FONTS[value] || ('font-family:' + value); },
+    size: {
+        'small': 'font-size: 0.75em',
+        'large': 'font-size: 1.5em',
+        'huge': 'font-size: 2.5em'
+    },
+    indent: function (value, op) {
+        var indentSize = parseInt(value, 10) * 3;
+        var side = op.attributes['direction'] === 'rtl' ? 'right' : 'left';
+        return 'padding-' + side + ':' + indentSize + 'em';
+    },
+    direction: function (value, op) {
+        if (value === 'rtl') {
+            return 'direction:rtl' + (op.attributes['align'] ? '' : '; text-align:inherit');
+        }
+        else {
+            return undefined;
+        }
+    }
+};
 var OpToHtmlConverter = (function () {
     function OpToHtmlConverter(op, options) {
         this.op = op;
         this.options = obj.assign({}, {
             classPrefix: 'ql',
+            inlineStyles: undefined,
             encodeHtml: true,
             listItemTag: 'li',
             paragraphTag: 'p'
@@ -381,6 +408,9 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
+        if (this.options.inlineStyles) {
+            return [];
+        }
         var propsArr = ['indent', 'align', 'direction', 'font', 'size'];
         if (this.options.allowBackgroundClasses) {
             propsArr.push('background');
@@ -395,14 +425,40 @@ var OpToHtmlConverter = (function () {
             .map(this.prefixClass.bind(this));
     };
     OpToHtmlConverter.prototype.getCssStyles = function () {
+        var _this = this;
         var attrs = this.op.attributes;
         var propsArr = [['color']];
-        if (!this.options.allowBackgroundClasses) {
+        if (!!this.options.inlineStyles || !this.options.allowBackgroundClasses) {
             propsArr.push(['background', 'background-color']);
+        }
+        if (this.options.inlineStyles) {
+            propsArr = propsArr.concat([
+                ['indent'],
+                ['align', 'text-align'],
+                ['direction'],
+                ['font', 'font-family'],
+                ['size']
+            ]);
         }
         return propsArr
             .filter(function (item) { return !!attrs[item[0]]; })
-            .map(function (item) { return arr.preferSecond(item) + ':' + attrs[item[0]]; });
+            .map(function (item) {
+            var attribute = item[0];
+            var attrValue = attrs[attribute];
+            var attributeConverter = (_this.options.inlineStyles && _this.options.inlineStyles[attribute]) ||
+                exports.DEFAULT_INLINE_STYLES[attribute];
+            if (typeof (attributeConverter) === 'object') {
+                return attributeConverter[attrValue];
+            }
+            else if (typeof (attributeConverter) === 'function') {
+                var converterFn = attributeConverter;
+                return converterFn(attrValue, _this.op);
+            }
+            else {
+                return arr.preferSecond(item) + ':' + attrValue;
+            }
+        })
+            .filter(function (item) { return item !== undefined; });
     };
     OpToHtmlConverter.prototype.getTagAttributes = function () {
         if (this.op.attributes.code && !this.op.isLink()) {
@@ -418,7 +474,7 @@ var OpToHtmlConverter = (function () {
         if (this.op.isACheckList()) {
             return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'));
         }
-        if (this.op.isFormula() || this.op.isContainerBlock()) {
+        if (this.op.isFormula()) {
             return tagAttrs;
         }
         if (this.op.isVideo()) {
@@ -441,8 +497,12 @@ var OpToHtmlConverter = (function () {
             return tagAttrs;
         }
         var styles = this.getCssStyles();
-        var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
-        tagAttrs = tagAttrs.concat(styleAttr);
+        if (styles.length) {
+            tagAttrs.push(makeAttr('style', styles.join(';')));
+        }
+        if (this.op.isContainerBlock()) {
+            return tagAttrs;
+        }
         if (this.op.isLink()) {
             var target = this.op.attributes.target || this.options.linkTarget;
             tagAttrs = tagAttrs
@@ -511,6 +571,7 @@ var QuillDeltaToHtmlConverter = (function () {
             paragraphTag: 'p',
             encodeHtml: true,
             classPrefix: 'ql',
+            inlineStyles: false,
             multiLineBlockquote: true,
             multiLineHeader: true,
             multiLineCodeblock: true,
@@ -522,9 +583,20 @@ var QuillDeltaToHtmlConverter = (function () {
             bulletListTag: 'ul',
             listItemTag: 'li'
         });
+        var inlineStyles;
+        if (this.options.inlineStyles === true) {
+            inlineStyles = {};
+        }
+        else if (!this.options.inlineStyles) {
+            inlineStyles = undefined;
+        }
+        else {
+            inlineStyles = this.options.inlineStyles;
+        }
         this.converterOptions = {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
+            inlineStyles: inlineStyles,
             listItemTag: this.options.listItemTag,
             paragraphTag: this.options.paragraphTag,
             linkRel: this.options.linkRel,

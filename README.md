@@ -46,6 +46,7 @@ var html = converter.convert();
 |paragraphTag| 'p' | Custom tag to wrap inline html elements|
 |encodeHtml| true | If true, `<, >, /, ', ", &` characters in content will be encoded.|
 |classPrefix| 'ql' | A css class name to prefix class generating styles such as `size`, `font`, etc. |
+|inlineStyles| false | If true, use inline styles instead of classes |
 |multiLineBlockquote| true | Instead of rendering multiple `blockquote` elements for quotes that are consecutive and have same styles(`align`, `indent`, and `direction`), it renders them into only one|
 |multiLineHeader| true | Same deal as `multiLineBlockquote` for headers|
 |multiLineCodeblock| true | Same deal as `multiLineBlockquote` for code-blocks|
@@ -108,6 +109,40 @@ Following shows the parameter formats for `beforeRender` event:
     }
 }
 ```
+
+## Rendering Inline Styles ##
+
+If you are rendering to HTML that you intend to include in an email, using classes and a style sheet are not recommended, as [not all browsers support style sheets](https://www.campaignmonitor.com/css/style-element/style-in-head/).  quill-delta-to-html supports rendering inline styles instead.  The easiest way to enable this is to pass the option `inlineStyles: true`.
+
+You can customize styles by passing an object to `inlineStyles` instead:
+
+```js
+inlineStyles: {
+   font: {
+      'serif': 'font-family: Georgia, Times New Roman, serif',
+      'monospace': 'font-family: Monaco, Courier New, monospace'
+   },
+   size: {
+      'small': 'font-size: 0.75em',
+      'large': 'font-size: 1.5em',
+      'huge': 'font-size: 2.5em'
+   },
+   indent: (value, op) => {
+      var indentSize = parseInt(value, 10) * 3;
+      var side = op.attributes['direction'] === 'rtl' ? 'right' : 'left';
+      return 'padding-' + side + ':' + indentSize + 'em';
+   },
+   direction: (value, op) => {
+      if (value === 'rtl') {
+         return 'direction:rtl' + ( op.attributes['align'] ? '' : '; text-align: inherit' );
+      } else {
+         return '';
+      }
+   }
+};
+```
+
+Keys to this object are the names of attributes from Quill.  The values are either a simple lookup table (like in the 'font' example above) used to map values to styles, or a `fn(value, op)` which returns a style string.
 
 ## Rendering Custom Blot Formats ##
 

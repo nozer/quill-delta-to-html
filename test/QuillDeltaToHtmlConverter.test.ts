@@ -14,6 +14,11 @@ import { encodeHtml } from './../src/funcs-html';
 describe('QuillDeltaToHtmlConverter', function () {
 
    describe('constructor()', function () {
+      var hugeOps = [
+         { insert: 'huge', attributes: { size: 'huge' } },
+         { insert: "\n" }
+      ];
+
       it('should instantiate return proper html', function () {
 
          var qdc = new QuillDeltaToHtmlConverter(delta1.ops,
@@ -21,6 +26,29 @@ describe('QuillDeltaToHtmlConverter', function () {
          var html = qdc.convert();
          assert.equal(html, delta1.html);
       });
+
+      it('should set default inline styles for `inlineStyles: true`', function () {
+         var qdc = new QuillDeltaToHtmlConverter(hugeOps, { inlineStyles: true });
+         var html = qdc.convert();
+         assert.equal(html.includes('<span style="font-size: 2.5em">huge</span>'), true, html);
+      });
+
+      it('should set default inline styles when `inlineStyles` is a truthy non-object', function () {
+         var qdc = new QuillDeltaToHtmlConverter(hugeOps, { inlineStyles: 1 } as any);
+         var html = qdc.convert();
+         assert.equal(html.includes('<span style="font-size: 2.5em">huge</span>'), true, html);
+      });
+
+      it('should allow setting inline styles', function () {
+         var qdc = new QuillDeltaToHtmlConverter(hugeOps, { inlineStyles: {
+            size: {
+               huge: 'font-size: 6em'
+            }
+         } });
+         var html = qdc.convert();
+         assert.equal(html.includes('<span style="font-size: 6em">huge</span>'), true, html);
+      });
+
    });
 
    describe("convert()", function () {
@@ -114,7 +142,7 @@ describe('QuillDeltaToHtmlConverter', function () {
             '<ul>',
             '<li data-checked="true">hello</li>',
             '<li data-checked="false">there</li>',
-            '<li data-checked="true">man', 
+            '<li data-checked="true">man',
                '<ul><li data-checked="false">not done</li></ul>',
             '</li>',
             '</ul>'
@@ -207,7 +235,7 @@ describe('QuillDeltaToHtmlConverter', function () {
          let qdc = new QuillDeltaToHtmlConverter(ops);
          qdc.renderCustomWith((op) => {
             if (op.insert.type === 'myblot') {
-               return op.attributes.renderAsBlock ? 
+               return op.attributes.renderAsBlock ?
                   '<div>'+op.insert.value+ '</div>' : op.insert.value;
             }
             return 'unknown';

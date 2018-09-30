@@ -1,3 +1,4 @@
+import { IInlineStyles } from './OpToHtmlConverter';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ListGroup, ListItem, TDataGroup } from './grouper/group-types';
 import { GroupType } from './value-types';
@@ -7,6 +8,7 @@ interface IQuillDeltaToHtmlConverterOptions {
     listItemTag?: string;
     paragraphTag?: string;
     classPrefix?: string;
+    inlineStyles?: boolean | IInlineStyles;
     encodeHtml?: boolean;
     multiLineBlockquote?: boolean;
     multiLineHeader?: boolean;

@@ -7,9 +7,45 @@ import { IMention } from "./mentions/MentionSanitizer";
 import * as arr from './helpers/array';
 import { OpAttributeSanitizer } from "./OpAttributeSanitizer";
 
+export type InlineStyleType = ((value: string, op: DeltaInsertOp) => string | undefined) | { [x: string]: string };
+
+export interface IInlineStyles {
+   indent?: InlineStyleType,
+   align?: InlineStyleType,
+   direction?: InlineStyleType,
+   font?: InlineStyleType,
+   size?: InlineStyleType
+};
+
+const DEFAULT_INLINE_FONTS : {[key: string]: string} = {
+   serif: 'font-family: Georgia, Times New Roman, serif',
+   monospace: 'font-family: Monaco, Courier New, monospace'
+};
+
+export const DEFAULT_INLINE_STYLES : IInlineStyles = {
+   font: (value) => DEFAULT_INLINE_FONTS[value] || ('font-family:' + value),
+   size: {
+      'small': 'font-size: 0.75em',
+      'large': 'font-size: 1.5em',
+      'huge': 'font-size: 2.5em'
+   },
+   indent: (value, op) => {
+      var indentSize = parseInt(value, 10) * 3;
+      var side = op.attributes['direction'] === 'rtl' ? 'right' : 'left';
+      return 'padding-' + side + ':' + indentSize + 'em';
+   },
+   direction: (value, op) => {
+      if (value === 'rtl') {
+         return 'direction:rtl' + ( op.attributes['align'] ? '' : '; text-align:inherit' );
+      } else {
+         return undefined;
+      }
+   }
+};
 
 interface IOpToHtmlConverterOptions {
    classPrefix?: string,
+   inlineStyles?: IInlineStyles,
    encodeHtml?: boolean,
    listItemTag?: string,
    paragraphTag?: string,
@@ -33,6 +69,7 @@ class OpToHtmlConverter {
       this.op = op;
       this.options = obj.assign({}, {
          classPrefix: 'ql',
+         inlineStyles: undefined,
          encodeHtml: true,
          listItemTag: 'li',
          paragraphTag: 'p'
@@ -100,6 +137,10 @@ class OpToHtmlConverter {
 
       type Str2StrType = { (x: string): string };
 
+      if(this.options.inlineStyles) {
+            return [];
+      }
+
       var propsArr = ['indent', 'align', 'direction', 'font', 'size'];
       if (this.options.allowBackgroundClasses) {
          propsArr.push('background');
@@ -116,16 +157,45 @@ class OpToHtmlConverter {
 
 
    getCssStyles(): string[] {
-
       var attrs: any = this.op.attributes;
 
       var propsArr = [['color']];
-      if (!this.options.allowBackgroundClasses) {
+      if (!!this.options.inlineStyles || !this.options.allowBackgroundClasses) {
          propsArr.push(['background', 'background-color']);
       }
+      if (this.options.inlineStyles) {
+         propsArr = propsArr.concat([
+               ['indent'],
+               ['align', 'text-align'],
+               ['direction'],
+               ['font', 'font-family'],
+               ['size']
+         ]);
+      }
+
       return propsArr
          .filter((item) => !!attrs[item[0]])
-         .map((item: any[]) => arr.preferSecond(item) + ':' + attrs[item[0]]);
+         .map((item: any[]) => {
+            let attribute = item[0];
+            let attrValue = attrs[attribute];
+
+            let attributeConverter : InlineStyleType =
+                  (this.options.inlineStyles && (this.options.inlineStyles as any)[attribute]) ||
+                  (DEFAULT_INLINE_STYLES as any)[attribute];
+
+            if (typeof(attributeConverter) === 'object') {
+               return attributeConverter[attrValue];
+
+            } else if(typeof(attributeConverter) === 'function') {
+               var converterFn = attributeConverter as ((value: string, op: DeltaInsertOp) => string);
+               return converterFn(attrValue, this.op);
+
+            } else {
+               return arr.preferSecond(item) + ':' + attrValue;
+            }
+         })
+         .filter((item) => item !== undefined);
+
    }
 
    getTagAttributes(): Array<ITagKeyValue> {
@@ -147,7 +217,7 @@ class OpToHtmlConverter {
          return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'))
       }
 
-      if (this.op.isFormula() || this.op.isContainerBlock()) {
+      if (this.op.isFormula()) {
          return tagAttrs;
       }
 
@@ -178,9 +248,12 @@ class OpToHtmlConverter {
       }
 
       var styles = this.getCssStyles();
-      var styleAttr = styles.length ? [makeAttr('style', styles.join(';'))] : [];
+      if (styles.length) { tagAttrs.push(makeAttr('style', styles.join(';'))); }
 
-      tagAttrs = tagAttrs.concat(styleAttr);
+      if (this.op.isContainerBlock()) {
+         return tagAttrs;
+      }
+
       if (this.op.isLink()) {
          let target = this.op.attributes.target || this.options.linkTarget;
          tagAttrs = tagAttrs

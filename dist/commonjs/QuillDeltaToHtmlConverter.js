@@ -17,6 +17,7 @@ var QuillDeltaToHtmlConverter = (function () {
             paragraphTag: 'p',
             encodeHtml: true,
             classPrefix: 'ql',
+            inlineStyles: false,
             multiLineBlockquote: true,
             multiLineHeader: true,
             multiLineCodeblock: true,
@@ -28,9 +29,20 @@ var QuillDeltaToHtmlConverter = (function () {
             bulletListTag: 'ul',
             listItemTag: 'li'
         });
+        var inlineStyles;
+        if (this.options.inlineStyles === true) {
+            inlineStyles = {};
+        }
+        else if (!this.options.inlineStyles) {
+            inlineStyles = undefined;
+        }
+        else {
+            inlineStyles = this.options.inlineStyles;
+        }
         this.converterOptions = {
             encodeHtml: this.options.encodeHtml,
             classPrefix: this.options.classPrefix,
+            inlineStyles: inlineStyles,
             listItemTag: this.options.listItemTag,
             paragraphTag: this.options.paragraphTag,
             linkRel: this.options.linkRel,

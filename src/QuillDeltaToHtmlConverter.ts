@@ -1,6 +1,6 @@
 
 import { InsertOpsConverter } from './InsertOpsConverter';
-import { OpToHtmlConverter, IOpToHtmlConverterOptions } from './OpToHtmlConverter';
+import { OpToHtmlConverter, IOpToHtmlConverterOptions, IInlineStyles } from './OpToHtmlConverter';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { Grouper } from './grouper/Grouper';
 import {
@@ -20,6 +20,7 @@ interface IQuillDeltaToHtmlConverterOptions {
 
    paragraphTag?: string,
    classPrefix?: string,
+   inlineStyles?: boolean | IInlineStyles,
    encodeHtml?: boolean,
    multiLineBlockquote?: boolean,
    multiLineHeader?: boolean,
@@ -50,6 +51,7 @@ class QuillDeltaToHtmlConverter {
          paragraphTag: 'p',
          encodeHtml: true,
          classPrefix: 'ql',
+         inlineStyles: false,
          multiLineBlockquote: true,
          multiLineHeader: true,
          multiLineCodeblock: true,
@@ -62,9 +64,19 @@ class QuillDeltaToHtmlConverter {
             listItemTag: 'li'
          });
 
+      var inlineStyles : IInlineStyles | undefined;
+      if(!this.options.inlineStyles) {
+         inlineStyles = undefined;
+      } else if(typeof(this.options.inlineStyles) === 'object') {
+         inlineStyles = this.options.inlineStyles;
+      } else {
+         inlineStyles = {};
+      }
+
       this.converterOptions = {
          encodeHtml: this.options.encodeHtml,
          classPrefix: this.options.classPrefix,
+         inlineStyles: inlineStyles,
          listItemTag: this.options.listItemTag,
          paragraphTag: this.options.paragraphTag,
          linkRel: this.options.linkRel,
@@ -85,7 +97,7 @@ class QuillDeltaToHtmlConverter {
 
    getGroupedOps(): TDataGroup[] {
       var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
-      
+
       var pairedOps = Grouper.pairOpsWithTheirBlock(deltaOps);
 
       var groupedSameStyleBlocks = Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
@@ -113,7 +125,7 @@ class QuillDeltaToHtmlConverter {
 
             return this._renderWithCallbacks(
                GroupType.Block, group, () => this._renderBlock(g.op, g.ops));
-         
+
          } else if (group instanceof BlotBlock) {
 
             return this._renderCustom(group.op, null);
