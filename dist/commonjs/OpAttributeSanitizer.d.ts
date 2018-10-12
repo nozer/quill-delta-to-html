@@ -29,6 +29,7 @@ declare class OpAttributeSanitizer {
     static sanitize(dirtyAttrs: IOpAttributes): IOpAttributes;
     static IsValidHexColor(colorStr: string): boolean;
     static IsValidColorLiteral(colorStr: string): boolean;
+    static IsValidRGBColor(colorStr: string): boolean;
     static IsValidFontName(fontName: string): boolean;
     static IsValidSize(size: string): boolean;
     static IsValidWidth(width: string): boolean;

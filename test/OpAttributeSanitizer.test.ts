@@ -58,6 +58,19 @@ describe('OpAttributeSanitizer', function () {
         });
     });
 
+    describe('#IsValidRGBColor()', function() {
+        it('should return true if rgb color is valid', function() {
+            assert.ok(OpAttributeSanitizer.IsValidRGBColor('rgb(0,0,0)'));
+            assert.ok(OpAttributeSanitizer.IsValidRGBColor('rgb(255, 99, 1)'));
+            assert.ok(OpAttributeSanitizer.IsValidRGBColor('RGB(254, 249, 109)'));
+            assert.equal(OpAttributeSanitizer.IsValidRGBColor('yellow'), false);
+            assert.equal(OpAttributeSanitizer.IsValidRGBColor('#FFF'), false);
+            assert.equal(OpAttributeSanitizer.IsValidRGBColor('rgb(256,0,0)'), false);
+            assert.equal(OpAttributeSanitizer.IsValidRGBColor('rgb(260,0,0)'), false);
+            assert.equal(OpAttributeSanitizer.IsValidRGBColor('rgb(2000,0,0)'), false);
+        });
+    });
+
     describe('#sanitize()', function() {
 
         it('should return empty object', function() {

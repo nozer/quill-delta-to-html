@@ -70,7 +70,8 @@ class OpAttributeSanitizer {
       colorAttrs.forEach(function (prop: string) {
          var val = (<any>dirtyAttrs)[prop];
          if (val && (OpAttributeSanitizer.IsValidHexColor(val + '') ||
-            OpAttributeSanitizer.IsValidColorLiteral(val + ''))) {
+            OpAttributeSanitizer.IsValidColorLiteral(val + '') ||
+            OpAttributeSanitizer.IsValidRGBColor(val + ''))) {
             cleanAttrs[prop] = val;
          }
       });
@@ -140,6 +141,11 @@ class OpAttributeSanitizer {
 
    static IsValidColorLiteral(colorStr: string) {
       return !!colorStr.match(/^[a-z]{1,50}$/i);
+   }
+
+   static IsValidRGBColor(colorStr: string) {
+       const re = /^rgb\(((0|25[0-5]|2[0-4]\d|1\d\d|0?\d?\d),\s*){2}(0|25[0-5]|2[0-4]\d|1\d\d|0?\d?\d)\)$/i
+       return !!colorStr.match(re);
    }
 
    static IsValidFontName(fontName: string) {
