@@ -50,8 +50,6 @@ exports.encodeLink = encodeLink;
 function encodeMappings(mtype) {
     var maps = [
         ['&', '&amp;'],
-        ['<', '&lt;'],
-        ['>', '&gt;'],
         ['"', '&quot;'],
         ["'", "&#x27;"],
         ['\\/', '&#x2F;'],
