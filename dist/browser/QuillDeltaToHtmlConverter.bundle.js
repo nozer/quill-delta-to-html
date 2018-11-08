@@ -804,31 +804,89 @@ function encodeLink(str) {
 exports.encodeLink = encodeLink;
 function encodeMappings(mtype) {
     var maps = [
-        ['&', '&amp;'],
-        ['"', '&quot;'],
-        ["'", "&#x27;"],
-        ['\\/', '&#x2F;'],
-        ['\\(', '&#40;'],
-        ['\\)', '&#41;']
+        {
+            url: true,
+            html: true,
+            encodeTo: '&amp;',
+            encodeMatch: '&amp;',
+            decodeTo: '&',
+            decodeMatch: '&'
+        },
+        {
+            url: true,
+            html: true,
+            encodeTo: '&lt;$1',
+            encodeMatch: '&lt;',
+            decodeTo: '<',
+            decodeMatch: '<([^%])'
+        },
+        {
+            url: true,
+            html: true,
+            encodeTo: '$1&gt;',
+            encodeMatch: '&gt;',
+            decodeTo: '>',
+            decodeMatch: '([^%])>'
+        },
+        {
+            url: true,
+            html: true,
+            encodeTo: '&quot;',
+            encodeMatch: '&quot;',
+            decodeTo: '"',
+            decodeMatch: '"'
+        },
+        {
+            url: true,
+            html: true,
+            encodeTo: '&#x27;',
+            encodeMatch: '&#x27;',
+            decodeTo: "'",
+            decodeMatch: "'"
+        },
+        {
+            url: false,
+            html: true,
+            encodeTo: '&#x2F;',
+            encodeMatch: '&#x2F;',
+            decodeTo: '/',
+            decodeMatch: '/'
+        },
+        {
+            url: true,
+            html: false,
+            encodeTo: '&#40;',
+            encodeMatch: '&#40;',
+            decodeTo: '(',
+            decodeMatch: '\\('
+        },
+        {
+            url: true,
+            html: false,
+            encodeTo: '&#41;',
+            encodeMatch: '&#41;',
+            decodeTo: ')',
+            decodeMatch: '\\)'
+        }
     ];
     if (mtype === EncodeTarget.Html) {
         return maps.filter(function (_a) {
-            var v = _a[0], _ = _a[1];
-            return v.indexOf('(') === -1 && v.indexOf(')') === -1;
+            var html = _a.html;
+            return html;
         });
     }
     else {
         return maps.filter(function (_a) {
-            var v = _a[0], _ = _a[1];
-            return v.indexOf('/') === -1;
+            var url = _a.url;
+            return url;
         });
     }
 }
 function encodeMapping(str, mapping) {
-    return str.replace(new RegExp(mapping[0], 'g'), mapping[1]);
+    return str.replace(new RegExp(mapping.decodeMatch, 'g'), mapping.encodeTo);
 }
 function decodeMapping(str, mapping) {
-    return str.replace(new RegExp(mapping[1], 'g'), mapping[0].replace('\\', ''));
+    return str.replace(new RegExp(mapping.encodeMatch, 'g'), mapping.decodeTo);
 }
 
 },{}],9:[function(require,module,exports){

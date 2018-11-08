@@ -125,7 +125,7 @@ describe('QuillDeltaToHtmlConverter', function () {
          assert.equal(html, '<p>hello</p><p>how areyou?</p><p><br/></p><p>bye</p>');
       });
 
-      it.only('should create checked/unchecked lists', function () {
+      it('should create checked/unchecked lists', function () {
          var ops4 = [
             { insert: "something", attributes: { link: '<%= something.me %>.com' } },
          ]

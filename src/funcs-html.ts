@@ -51,30 +51,83 @@ function encodeLink(str: string) {
 
 function encodeMappings(mtype: EncodeTarget) {
     let maps = [
-        ['&', '&amp;'], 
-        // ['<', '&lt;'],
-        // ['>', '&gt;'],
-        ['"', '&quot;'],
-        ["'", "&#x27;"],
-        ['\\/', '&#x2F;'],
-        ['\\(', '&#40;'],
-        ['\\)', '&#41;']
+        {
+            url: true,
+            html: true,
+            encodeTo: '&amp;',
+            encodeMatch: '&amp;',
+            decodeTo: '&',
+            decodeMatch: '&'
+        },
+        {
+            url: true,
+            html: true,
+            encodeTo: '&lt;$1',
+            encodeMatch: '&lt;',
+            decodeTo: '<',
+            decodeMatch: '<([^%])'
+        },
+        {
+            url: true,
+            html: true,
+            encodeTo: '$1&gt;',
+            encodeMatch: '&gt;',
+            decodeTo: '>',
+            decodeMatch: '([^%])>'
+        },
+        {
+            url: true,
+            html: true,
+            encodeTo: '&quot;',
+            encodeMatch: '&quot;',
+            decodeTo: '"',
+            decodeMatch: '"'
+        },
+        {
+            url: true,
+            html: true,
+            encodeTo: '&#x27;',
+            encodeMatch: '&#x27;',
+            decodeTo: "'",
+            decodeMatch: "'"
+        },
+        {
+            url: false,
+            html: true,
+            encodeTo: '&#x2F;',
+            encodeMatch: '&#x2F;',
+            decodeTo: '/',
+            decodeMatch: '/'
+        },
+        {
+            url: true,
+            html: false,
+            encodeTo: '&#40;',
+            encodeMatch: '&#40;',
+            decodeTo: '(',
+            decodeMatch: '\\('
+        },
+        {  
+            url: true,
+            html: false,
+            encodeTo: '&#41;',
+            encodeMatch: '&#41;',
+            decodeTo: ')',
+            decodeMatch: '\\)'
+        }
     ];
+
     if (mtype === EncodeTarget.Html) {
-        return maps.filter(([v,_]) => 
-            v.indexOf('(') === -1 && v.indexOf(')') === -1
-        );
+        return maps.filter(({html}) =>  html);
     } else { // for url
-        return maps.filter(([v,_]) => v.indexOf('/') === -1);
+        return maps.filter(({url}) =>  url);
     }
 }
-function encodeMapping(str: string, mapping: string[]) {
-    return str.replace(new RegExp(mapping[0], 'g'), mapping[1]);
+function encodeMapping(str: string, mapping: { decodeMatch: string, encodeTo: string }) {
+    return str.replace(new RegExp(mapping.decodeMatch, 'g'), mapping.encodeTo);
 }
-function decodeMapping(str: string, mapping: string[]) {
-    return str.replace(
-        new RegExp(mapping[1], 'g'), mapping[0].replace('\\','')
-    );
+function decodeMapping(str: string, mapping: { encodeMatch: string, decodeTo: string }) {
+    return str.replace(new RegExp(mapping.encodeMatch, 'g'), mapping.decodeTo);
 }
 export {
     makeStartTag,
