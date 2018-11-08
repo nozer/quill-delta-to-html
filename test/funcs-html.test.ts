@@ -60,13 +60,10 @@ describe('html module', function () {
             assert.equal(act, 'hello&quot;my&lt;lovely&#x27;&#x2F;&gt;&amp;friend&amp;here()');
         });
 
-        it('should not encode < > characters', function() {
+        it('should not encode <% %> characters', function() {
 
-            var act = encodeHtml('<%= ocsadf.coamf %>', false);
-            assert.equal(act, '<%= ocsadf.coamf %>');
-
-            // var act = encodeHtml('hello"my<lovely\'/>&amp;friend&here()');
-            // assert.equal(act, 'hello&quot;my&lt;lovely&#x27;&#x2F;&gt;&amp;friend&amp;here()');
+            var act = encodeHtml('<%= my.template %>', false);
+            assert.equal(act, '<%= my.template %>');
         });
     });
 
