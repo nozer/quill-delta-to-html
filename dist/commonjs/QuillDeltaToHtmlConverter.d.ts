@@ -17,6 +17,15 @@ interface IQuillDeltaToHtmlConverterOptions {
     linkRel?: string;
     linkTarget?: string;
     allowBackgroundClasses?: boolean;
+    encodeMapExtensions?: {
+        key: string;
+        url: boolean;
+        html: boolean;
+        encodeTo: string;
+        encodeMatch: string;
+        decodeTo: string;
+        decodeMatch: string;
+    }[];
 }
 declare class QuillDeltaToHtmlConverter {
     private options;

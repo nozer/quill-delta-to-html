@@ -83,7 +83,7 @@ var OpToHtmlConverter = (function () {
             return this.op.insert.value;
         }
         var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
-        return this.options.encodeHtml && funcs_html_1.encodeHtml(content) || content;
+        return this.options.encodeHtml && funcs_html_1.encodeHtml(content, undefined, this.options.encodeMapExtensions) || content;
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
@@ -165,7 +165,7 @@ var OpToHtmlConverter = (function () {
                 tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
             }
             if (mention['end-point'] && mention.slug) {
-                tagAttrs = tagAttrs.concat(makeAttr('href', funcs_html_1.encodeLink(mention['end-point'] + '/' + mention.slug)));
+                tagAttrs = tagAttrs.concat(makeAttr('href', funcs_html_1.encodeLink(mention['end-point'] + '/' + mention.slug, this.options.encodeMapExtensions)));
             }
             else {
                 tagAttrs = tagAttrs.concat(makeAttr('href', 'about:blank'));
@@ -185,7 +185,7 @@ var OpToHtmlConverter = (function () {
         if (this.op.isLink()) {
             var target = this.op.attributes.target || this.options.linkTarget;
             tagAttrs = tagAttrs
-                .concat(makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link)))
+                .concat(makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link, this.options.encodeMapExtensions)))
                 .concat(target ? makeAttr('target', target) : []);
             if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
                 tagAttrs.push(makeAttr('rel', this.options.linkRel));

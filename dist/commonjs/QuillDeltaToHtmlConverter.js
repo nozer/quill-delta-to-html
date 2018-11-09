@@ -47,7 +47,8 @@ var QuillDeltaToHtmlConverter = (function () {
             paragraphTag: this.options.paragraphTag,
             linkRel: this.options.linkRel,
             linkTarget: this.options.linkTarget,
-            allowBackgroundClasses: this.options.allowBackgroundClasses
+            allowBackgroundClasses: this.options.allowBackgroundClasses,
+            encodeMapExtensions: this.options.encodeMapExtensions
         };
         this.rawDeltaOps = deltaOps;
     }

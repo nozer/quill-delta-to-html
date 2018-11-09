@@ -409,7 +409,7 @@ var OpToHtmlConverter = (function () {
             return this.op.insert.value;
         }
         var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
-        return this.options.encodeHtml && funcs_html_1.encodeHtml(content) || content;
+        return this.options.encodeHtml && funcs_html_1.encodeHtml(content, undefined, this.options.encodeMapExtensions) || content;
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
@@ -491,7 +491,7 @@ var OpToHtmlConverter = (function () {
                 tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
             }
             if (mention['end-point'] && mention.slug) {
-                tagAttrs = tagAttrs.concat(makeAttr('href', funcs_html_1.encodeLink(mention['end-point'] + '/' + mention.slug)));
+                tagAttrs = tagAttrs.concat(makeAttr('href', funcs_html_1.encodeLink(mention['end-point'] + '/' + mention.slug, this.options.encodeMapExtensions)));
             }
             else {
                 tagAttrs = tagAttrs.concat(makeAttr('href', 'about:blank'));
@@ -511,7 +511,7 @@ var OpToHtmlConverter = (function () {
         if (this.op.isLink()) {
             var target = this.op.attributes.target || this.options.linkTarget;
             tagAttrs = tagAttrs
-                .concat(makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link)))
+                .concat(makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link, this.options.encodeMapExtensions)))
                 .concat(target ? makeAttr('target', target) : []);
             if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
                 tagAttrs.push(makeAttr('rel', this.options.linkRel));
@@ -606,7 +606,8 @@ var QuillDeltaToHtmlConverter = (function () {
             paragraphTag: this.options.paragraphTag,
             linkRel: this.options.linkRel,
             linkTarget: this.options.linkTarget,
-            allowBackgroundClasses: this.options.allowBackgroundClasses
+            allowBackgroundClasses: this.options.allowBackgroundClasses,
+            encodeMapExtensions: this.options.encodeMapExtensions
         };
         this.rawDeltaOps = deltaOps;
     }
@@ -784,27 +785,28 @@ function makeEndTag(tag) {
     return tag && "</" + tag + ">" || '';
 }
 exports.makeEndTag = makeEndTag;
-function decodeHtml(str) {
-    return encodeMappings(EncodeTarget.Html).reduce(decodeMapping, str);
+function decodeHtml(str, encodeMapExtensions) {
+    return encodeMappings(EncodeTarget.Html, encodeMapExtensions).reduce(decodeMapping, str);
 }
 exports.decodeHtml = decodeHtml;
-function encodeHtml(str, preventDoubleEncoding) {
+function encodeHtml(str, preventDoubleEncoding, encodeMapExtensions) {
     if (preventDoubleEncoding === void 0) { preventDoubleEncoding = true; }
     if (preventDoubleEncoding) {
-        str = decodeHtml(str);
+        str = decodeHtml(str, encodeMapExtensions);
     }
-    return encodeMappings(EncodeTarget.Html).reduce(encodeMapping, str);
+    return encodeMappings(EncodeTarget.Html, encodeMapExtensions).reduce(encodeMapping, str);
 }
 exports.encodeHtml = encodeHtml;
-function encodeLink(str) {
-    var linkMaps = encodeMappings(EncodeTarget.Url);
+function encodeLink(str, encodeMapExtensions) {
+    var linkMaps = encodeMappings(EncodeTarget.Url, encodeMapExtensions);
     var decoded = linkMaps.reduce(decodeMapping, str);
     return linkMaps.reduce(encodeMapping, decoded);
 }
 exports.encodeLink = encodeLink;
-function encodeMappings(mtype) {
+function encodeMappings(mtype, encodeMapExtensions) {
     var maps = [
         {
+            key: '&',
             url: true,
             html: true,
             encodeTo: '&amp;',
@@ -813,22 +815,25 @@ function encodeMappings(mtype) {
             decodeMatch: '&'
         },
         {
+            key: '<',
             url: true,
             html: true,
-            encodeTo: '&lt;$1',
+            encodeTo: '&lt;',
             encodeMatch: '&lt;',
             decodeTo: '<',
-            decodeMatch: '<([^%])'
+            decodeMatch: '<'
         },
         {
+            key: '>',
             url: true,
             html: true,
-            encodeTo: '$1&gt;',
+            encodeTo: '&gt;',
             encodeMatch: '&gt;',
             decodeTo: '>',
-            decodeMatch: '([^%])>'
+            decodeMatch: '>'
         },
         {
+            key: '"',
             url: true,
             html: true,
             encodeTo: '&quot;',
@@ -837,6 +842,7 @@ function encodeMappings(mtype) {
             decodeMatch: '"'
         },
         {
+            key: "'",
             url: true,
             html: true,
             encodeTo: '&#x27;',
@@ -845,6 +851,7 @@ function encodeMappings(mtype) {
             decodeMatch: "'"
         },
         {
+            key: '/',
             url: false,
             html: true,
             encodeTo: '&#x2F;',
@@ -853,6 +860,7 @@ function encodeMappings(mtype) {
             decodeMatch: '/'
         },
         {
+            key: '(',
             url: true,
             html: false,
             encodeTo: '&#40;',
@@ -861,6 +869,7 @@ function encodeMappings(mtype) {
             decodeMatch: '\\('
         },
         {
+            key: ')',
             url: true,
             html: false,
             encodeTo: '&#41;',
@@ -869,6 +878,33 @@ function encodeMappings(mtype) {
             decodeMatch: '\\)'
         }
     ];
+    if (encodeMapExtensions) {
+        var replacementValues_1 = encodeMapExtensions.filter(function (_a) {
+            var key = _a.key;
+            return !!maps.find(function (_a) {
+                var mapKey = _a.key;
+                return mapKey === key;
+            });
+        });
+        var extensionValues = encodeMapExtensions.filter(function (_a) {
+            var key = _a.key;
+            return !maps.find(function (_a) {
+                var mapKey = _a.key;
+                return mapKey === key;
+            });
+        });
+        maps = maps.map(function (item) {
+            var replacementValue = replacementValues_1.find(function (_a) {
+                var replacementKey = _a.key;
+                return replacementKey === item.key;
+            });
+            if (replacementValue) {
+                return replacementValue;
+            }
+            return item;
+        });
+        maps = maps.concat(extensionValues);
+    }
     if (mtype === EncodeTarget.Html) {
         return maps.filter(function (_a) {
             var html = _a.html;
@@ -1267,7 +1303,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 function sanitize(str) {
     var val = str;
     val = val.replace(/^\s*/gm, '');
-    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|<%|#|\/|data:image\/)/;
+    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
     if (whiteList.test(val)) {
         return val;
     }

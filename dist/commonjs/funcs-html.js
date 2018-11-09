@@ -29,27 +29,28 @@ function makeEndTag(tag) {
     return tag && "</" + tag + ">" || '';
 }
 exports.makeEndTag = makeEndTag;
-function decodeHtml(str) {
-    return encodeMappings(EncodeTarget.Html).reduce(decodeMapping, str);
+function decodeHtml(str, encodeMapExtensions) {
+    return encodeMappings(EncodeTarget.Html, encodeMapExtensions).reduce(decodeMapping, str);
 }
 exports.decodeHtml = decodeHtml;
-function encodeHtml(str, preventDoubleEncoding) {
+function encodeHtml(str, preventDoubleEncoding, encodeMapExtensions) {
     if (preventDoubleEncoding === void 0) { preventDoubleEncoding = true; }
     if (preventDoubleEncoding) {
-        str = decodeHtml(str);
+        str = decodeHtml(str, encodeMapExtensions);
     }
-    return encodeMappings(EncodeTarget.Html).reduce(encodeMapping, str);
+    return encodeMappings(EncodeTarget.Html, encodeMapExtensions).reduce(encodeMapping, str);
 }
 exports.encodeHtml = encodeHtml;
-function encodeLink(str) {
-    var linkMaps = encodeMappings(EncodeTarget.Url);
+function encodeLink(str, encodeMapExtensions) {
+    var linkMaps = encodeMappings(EncodeTarget.Url, encodeMapExtensions);
     var decoded = linkMaps.reduce(decodeMapping, str);
     return linkMaps.reduce(encodeMapping, decoded);
 }
 exports.encodeLink = encodeLink;
-function encodeMappings(mtype) {
+function encodeMappings(mtype, encodeMapExtensions) {
     var maps = [
         {
+            key: '&',
             url: true,
             html: true,
             encodeTo: '&amp;',
@@ -58,22 +59,25 @@ function encodeMappings(mtype) {
             decodeMatch: '&'
         },
         {
+            key: '<',
             url: true,
             html: true,
-            encodeTo: '&lt;$1',
+            encodeTo: '&lt;',
             encodeMatch: '&lt;',
             decodeTo: '<',
-            decodeMatch: '<([^%])'
+            decodeMatch: '<'
         },
         {
+            key: '>',
             url: true,
             html: true,
-            encodeTo: '$1&gt;',
+            encodeTo: '&gt;',
             encodeMatch: '&gt;',
             decodeTo: '>',
-            decodeMatch: '([^%])>'
+            decodeMatch: '>'
         },
         {
+            key: '"',
             url: true,
             html: true,
             encodeTo: '&quot;',
@@ -82,6 +86,7 @@ function encodeMappings(mtype) {
             decodeMatch: '"'
         },
         {
+            key: "'",
             url: true,
             html: true,
             encodeTo: '&#x27;',
@@ -90,6 +95,7 @@ function encodeMappings(mtype) {
             decodeMatch: "'"
         },
         {
+            key: '/',
             url: false,
             html: true,
             encodeTo: '&#x2F;',
@@ -98,6 +104,7 @@ function encodeMappings(mtype) {
             decodeMatch: '/'
         },
         {
+            key: '(',
             url: true,
             html: false,
             encodeTo: '&#40;',
@@ -106,6 +113,7 @@ function encodeMappings(mtype) {
             decodeMatch: '\\('
         },
         {
+            key: ')',
             url: true,
             html: false,
             encodeTo: '&#41;',
@@ -114,6 +122,33 @@ function encodeMappings(mtype) {
             decodeMatch: '\\)'
         }
     ];
+    if (encodeMapExtensions) {
+        var replacementValues_1 = encodeMapExtensions.filter(function (_a) {
+            var key = _a.key;
+            return !!maps.find(function (_a) {
+                var mapKey = _a.key;
+                return mapKey === key;
+            });
+        });
+        var extensionValues = encodeMapExtensions.filter(function (_a) {
+            var key = _a.key;
+            return !maps.find(function (_a) {
+                var mapKey = _a.key;
+                return mapKey === key;
+            });
+        });
+        maps = maps.map(function (item) {
+            var replacementValue = replacementValues_1.find(function (_a) {
+                var replacementKey = _a.key;
+                return replacementKey === item.key;
+            });
+            if (replacementValue) {
+                return replacementValue;
+            }
+            return item;
+        });
+        maps = maps.concat(extensionValues);
+    }
     if (mtype === EncodeTarget.Html) {
         return maps.filter(function (_a) {
             var html = _a.html;

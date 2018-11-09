@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 function sanitize(str) {
     var val = str;
     val = val.replace(/^\s*/gm, '');
-    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|<%|#|\/|data:image\/)/;
+    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
     if (whiteList.test(val)) {
         return val;
     }
