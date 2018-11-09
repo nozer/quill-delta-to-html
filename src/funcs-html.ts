@@ -32,26 +32,27 @@ function makeEndTag(tag: any = '') {
     return tag && `</${tag}>` || '';
 }
 
-function decodeHtml(str: string) {
-    return encodeMappings(EncodeTarget.Html).reduce(decodeMapping, str);
+function decodeHtml(str: string, encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]) {
+    return encodeMappings(EncodeTarget.Html, encodeMapExtensions).reduce(decodeMapping, str);
 }
 
-function encodeHtml(str: string, preventDoubleEncoding = true) {
+function encodeHtml(str: string, preventDoubleEncoding = true, encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]) {
     if (preventDoubleEncoding) {
-        str = decodeHtml(str);
+        str = decodeHtml(str, encodeMapExtensions);
     }
-    return encodeMappings(EncodeTarget.Html).reduce(encodeMapping, str);
+    return encodeMappings(EncodeTarget.Html, encodeMapExtensions).reduce(encodeMapping, str);
 }
 
-function encodeLink(str: string) {
-    let linkMaps = encodeMappings(EncodeTarget.Url);
+function encodeLink(str: string, encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]) {
+    let linkMaps = encodeMappings(EncodeTarget.Url, encodeMapExtensions);
     let decoded = linkMaps.reduce(decodeMapping, str);
     return linkMaps.reduce(encodeMapping, decoded);
 }
 
-function encodeMappings(mtype: EncodeTarget) {
+function encodeMappings(mtype: EncodeTarget, encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]) {
     let maps = [
         {
+            key: '&',
             url: true,
             html: true,
             encodeTo: '&amp;',
@@ -60,22 +61,25 @@ function encodeMappings(mtype: EncodeTarget) {
             decodeMatch: '&'
         },
         {
+            key: '<',
             url: true,
             html: true,
-            encodeTo: '&lt;$1',
+            encodeTo: '&lt;',
             encodeMatch: '&lt;',
             decodeTo: '<',
-            decodeMatch: '<([^%])'
+            decodeMatch: '<'
         },
         {
+            key: '>',
             url: true,
             html: true,
-            encodeTo: '$1&gt;',
+            encodeTo: '&gt;',
             encodeMatch: '&gt;',
             decodeTo: '>',
-            decodeMatch: '([^%])>'
+            decodeMatch: '>'
         },
         {
+            key: '"',
             url: true,
             html: true,
             encodeTo: '&quot;',
@@ -84,6 +88,7 @@ function encodeMappings(mtype: EncodeTarget) {
             decodeMatch: '"'
         },
         {
+            key: "'",
             url: true,
             html: true,
             encodeTo: '&#x27;',
@@ -92,6 +97,7 @@ function encodeMappings(mtype: EncodeTarget) {
             decodeMatch: "'"
         },
         {
+            key: '/',
             url: false,
             html: true,
             encodeTo: '&#x2F;',
@@ -100,6 +106,7 @@ function encodeMappings(mtype: EncodeTarget) {
             decodeMatch: '/'
         },
         {
+            key: '(',
             url: true,
             html: false,
             encodeTo: '&#40;',
@@ -108,6 +115,7 @@ function encodeMappings(mtype: EncodeTarget) {
             decodeMatch: '\\('
         },
         {  
+            key: ')',
             url: true,
             html: false,
             encodeTo: '&#41;',
@@ -116,6 +124,36 @@ function encodeMappings(mtype: EncodeTarget) {
             decodeMatch: '\\)'
         }
     ];
+
+    if (encodeMapExtensions) {
+        let replacementValues = encodeMapExtensions.filter(
+            ({ key }) =>
+                !!maps.find(({ key: mapKey }) => {
+                    return mapKey === key;
+                })
+        );
+    
+        let extensionValues = encodeMapExtensions.filter(
+            ({ key }) =>
+                !maps.find(({ key: mapKey }) => {
+                    return mapKey === key;
+                })
+        );
+    
+        maps = maps.map(item => {
+            let replacementValue = replacementValues.find(({ key: replacementKey }) => {
+                return replacementKey === item.key;
+            });
+    
+            if (replacementValue) {
+                return replacementValue;
+            }
+    
+            return item;
+        });
+    
+        maps = maps.concat(extensionValues);
+    }
 
     if (mtype === EncodeTarget.Html) {
         return maps.filter(({html}) =>  html);

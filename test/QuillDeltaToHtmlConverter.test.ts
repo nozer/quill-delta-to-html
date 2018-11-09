@@ -126,14 +126,27 @@ describe('QuillDeltaToHtmlConverter', function () {
       });
 
       it('should create checked/unchecked lists', function () {
-         var ops4 = [
-            { insert: "something", attributes: { link: '<%= something.me %>.com' } },
-         ]
-         var qdc = new QuillDeltaToHtmlConverter(ops4);
-         var html = qdc.convert();
-         assert.equal(html, [
-            '<p><a href="<%= something.me %>.com" target="_blank">something</a></p>'
-         ].join(''));
+          var ops4 = [
+             { insert: "hello" },
+             { insert: "\n", attributes: { list: 'checked' } },
+             { insert: "there" },
+             { insert: "\n", attributes: { list: 'unchecked' } },
+             { insert: "man" },
+             { insert: "\n", attributes: { list: 'checked' } },
+             { insert: 'not done'},
+             { insert: "\n", attributes: {indent:1, list: 'unchecked'}}
+          ]
+          var qdc = new QuillDeltaToHtmlConverter(ops4);
+          var html = qdc.convert();
+          assert.equal(html, [
+             '<ul>',
+             '<li data-checked="true">hello</li>',
+             '<li data-checked="false">there</li>',
+             '<li data-checked="true">man',
+                '<ul><li data-checked="false">not done</li></ul>',
+             '</li>',
+             '</ul>'
+          ].join(''));
       });
 
       it('should wrap positional styles in right tag', function () {

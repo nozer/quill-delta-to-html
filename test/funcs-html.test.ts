@@ -60,9 +60,29 @@ describe('html module', function () {
             assert.equal(act, 'hello&quot;my&lt;lovely&#x27;&#x2F;&gt;&amp;friend&amp;here()');
         });
 
-        it('should not encode <% %> characters', function() {
+        it('should respect characters in encodeMapExtensions ', function() {
 
-            var act = encodeHtml('<%= my.template %>', false);
+            var act = encodeHtml('<%= my.template %>', false, [
+                {
+                    key: '<',
+                    url: true,
+                    html: true,
+                    encodeTo: '&lt;$1',
+                    encodeMatch: '&lt;',
+                    decodeTo: '<',
+                    decodeMatch: '<([^%])'
+                },
+                {
+                    key: '>',
+                    url: true,
+                    html: true,
+                    encodeTo: '$1&gt;',
+                    encodeMatch: '&gt;',
+                    decodeTo: '>',
+                    decodeMatch: '([^%])>'
+                }
+            ]);
+
             assert.equal(act, '<%= my.template %>');
         });
     });
@@ -74,6 +94,31 @@ describe('html module', function () {
             assert.equal(act, 'hello"my<lovely\'/>&friend&here');
 
         });
+
+        it('should respect characters in encodeMapExtensions ', function() {
+
+            var act = decodeHtml('hello&quot;my&lt;lovely&#x27;&#x2F;&gt;&amp;<%= my.template %>&amp;here', [
+                {
+                    key: '<',
+                    url: true,
+                    html: true,
+                    encodeTo: '&lt;$1',
+                    encodeMatch: '&lt;',
+                    decodeTo: '<',
+                    decodeMatch: '<([^%])'
+                },
+                {
+                    key: '>',
+                    url: true,
+                    html: true,
+                    encodeTo: '$1&gt;',
+                    encodeMatch: '&gt;',
+                    decodeTo: '>',
+                    decodeMatch: '([^%])>'
+                }
+            ]);
+            assert.equal(act, 'hello"my<lovely\'/>&<%= my.template %>&here');
+        });
     });
 
     describe('encodeLink()', function () {
@@ -81,6 +126,32 @@ describe('html module', function () {
 
             var act = encodeLink('http://www.yahoo.com/?a=b&c=<>()"\'');
             assert.equal(act, 'http://www.yahoo.com/?a=b&amp;c=&lt;&gt;&#40;&#41;&quot;&#x27;');
+
+        });
+
+        it('should encode link while respecting encodeMapExtensions', function() {
+
+            var act = encodeLink('http://<%= my.template %>/?a=b&c=<>()"\'', [
+                {
+                    key: '<',
+                    url: true,
+                    html: true,
+                    encodeTo: '&lt;$1',
+                    encodeMatch: '&lt;',
+                    decodeTo: '<',
+                    decodeMatch: '<([^%])'
+                },
+                {
+                    key: '>',
+                    url: true,
+                    html: true,
+                    encodeTo: '$1&gt;',
+                    encodeMatch: '&gt;',
+                    decodeTo: '>',
+                    decodeMatch: '([^%])>'
+                }
+            ]);
+            assert.equal(act, 'http://<%= my.template %>/?a=b&amp;c=&lt;&gt;&#40;&#41;&quot;&#x27;');
 
         });
     });

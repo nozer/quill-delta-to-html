@@ -51,7 +51,8 @@ interface IOpToHtmlConverterOptions {
    paragraphTag?: string,
    linkRel?: string,
    linkTarget?: string,
-   allowBackgroundClasses?: boolean
+   allowBackgroundClasses?: boolean,
+   encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]
 }
 
 interface IHtmlParts {
@@ -128,7 +129,7 @@ class OpToHtmlConverter {
 
       var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
 
-      return this.options.encodeHtml && encodeHtml(content) || content;
+      return this.options.encodeHtml && encodeHtml(content, undefined, this.options.encodeMapExtensions) || content;
    }
 
    getCssClasses(): string[] {
@@ -236,7 +237,7 @@ class OpToHtmlConverter {
          }
          if (mention['end-point'] && mention.slug) {
             tagAttrs = tagAttrs.concat(
-               makeAttr('href', encodeLink(mention['end-point'] + '/' + mention.slug))
+               makeAttr('href', encodeLink(mention['end-point'] + '/' + mention.slug, this.options.encodeMapExtensions))
             );
          } else {
             tagAttrs = tagAttrs.concat(makeAttr('href', 'about:blank'));
@@ -257,7 +258,7 @@ class OpToHtmlConverter {
       if (this.op.isLink()) {
          let target = this.op.attributes.target || this.options.linkTarget;
          tagAttrs = tagAttrs
-         .concat(makeAttr('href', encodeLink(this.op.attributes.link!)))
+         .concat(makeAttr('href', encodeLink(this.op.attributes.link!, this.options.encodeMapExtensions)))
          .concat(target ? makeAttr('target', target) : []);
          if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));
