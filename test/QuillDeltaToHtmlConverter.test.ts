@@ -198,6 +198,35 @@ describe('QuillDeltaToHtmlConverter', function () {
             `<a href="http://#" target="_top">C</a></p>`
          ].join(''));
       });
+      it('should render target attr correctly', () => {
+          let ops = [
+              { "attributes": { "target": "_self", "link": "http://<%=my.template%>.com" }, "insert": "A" }
+          ];
+          let qdc = new QuillDeltaToHtmlConverter(ops, {encodeMapExtensions: [
+            {
+                key: '<',
+                url: true,
+                html: true,
+                encodeTo: '&lt;$1',
+                encodeMatch: '&lt;',
+                decodeTo: '<',
+                decodeMatch: '<([^%])'
+            },
+            {
+                key: '>',
+                url: true,
+                html: true,
+                encodeTo: '$1&gt;',
+                encodeMatch: '&gt;',
+                decodeTo: '>',
+                decodeMatch: '([^%])>'
+            }
+        ]});
+          let html = qdc.convert();
+          assert.equal(html, [
+             `<p><a href="http://<%=my.template%>.com" target="_self">A</a></p>`
+          ].join(''));
+      });
    });
 
    describe('custom types', () => {
