@@ -29,7 +29,8 @@ interface IQuillDeltaToHtmlConverterOptions {
 
    linkRel?: string,
    linkTarget?: string,
-   allowBackgroundClasses?: boolean
+   allowBackgroundClasses?: boolean,
+   encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]
 }
 
 const BrTag = '<br/>';
@@ -81,7 +82,8 @@ class QuillDeltaToHtmlConverter {
          paragraphTag: this.options.paragraphTag,
          linkRel: this.options.linkRel,
          linkTarget: this.options.linkTarget,
-         allowBackgroundClasses: this.options.allowBackgroundClasses
+         allowBackgroundClasses: this.options.allowBackgroundClasses,
+         encodeMapExtensions: this.options.encodeMapExtensions
       };
       this.rawDeltaOps = deltaOps;
 
