@@ -30,7 +30,8 @@ interface IQuillDeltaToHtmlConverterOptions {
    linkRel?: string,
    linkTarget?: string,
    allowBackgroundClasses?: boolean,
-   encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]
+   encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[],
+   urlWhiteListExtensions?: string[]
 }
 
 const BrTag = '<br/>';
@@ -83,7 +84,8 @@ class QuillDeltaToHtmlConverter {
          linkRel: this.options.linkRel,
          linkTarget: this.options.linkTarget,
          allowBackgroundClasses: this.options.allowBackgroundClasses,
-         encodeMapExtensions: this.options.encodeMapExtensions
+         encodeMapExtensions: this.options.encodeMapExtensions,
+         urlWhiteListExtensions: this.options.urlWhiteListExtensions
       };
       this.rawDeltaOps = deltaOps;
 
@@ -98,7 +100,7 @@ class QuillDeltaToHtmlConverter {
    }
 
    getGroupedOps(): TDataGroup[] {
-      var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
+      var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps, this.options.urlWhiteListExtensions);
 
       var pairedOps = Grouper.pairOpsWithTheirBlock(deltaOps);
 

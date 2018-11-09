@@ -38,7 +38,7 @@ interface IOpAttributes {
 
 class OpAttributeSanitizer {
 
-   static sanitize(dirtyAttrs: IOpAttributes): IOpAttributes {
+   static sanitize(dirtyAttrs: IOpAttributes, urlWhiteListExtensions?: string[]): IOpAttributes {
 
       var cleanAttrs: any = {};
 
@@ -89,7 +89,7 @@ class OpAttributeSanitizer {
       }
 
       if (link) {
-         cleanAttrs.link = url.sanitize(link + '');
+         cleanAttrs.link = url.sanitize(link + '', urlWhiteListExtensions);
       }
       if (target && OpAttributeSanitizer.isValidTarget(target)) {
          cleanAttrs.target = target;
@@ -120,7 +120,7 @@ class OpAttributeSanitizer {
       }
 
       if (mentions && mention) {
-         let sanitizedMention = MentionSanitizer.sanitize(mention);
+         let sanitizedMention = MentionSanitizer.sanitize(mention, urlWhiteListExtensions);
          if (Object.keys(sanitizedMention).length > 0) {
             cleanAttrs.mentions = !!mentions;
             cleanAttrs.mention = mention;

@@ -52,7 +52,8 @@ interface IOpToHtmlConverterOptions {
    linkRel?: string,
    linkTarget?: string,
    allowBackgroundClasses?: boolean,
-   encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]
+   encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[],
+   urlWhiteListExtensions?: string[]
 }
 
 interface IHtmlParts {
@@ -211,7 +212,7 @@ class OpToHtmlConverter {
 
       if (this.op.isImage()) {
          this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-         return tagAttrs.concat(makeAttr('src', url.sanitize(this.op.insert.value + '')+''));
+         return tagAttrs.concat(makeAttr('src', url.sanitize(this.op.insert.value + '', this.options.urlWhiteListExtensions)+''));
       }
 
       if (this.op.isACheckList()) {
@@ -226,7 +227,7 @@ class OpToHtmlConverter {
          return tagAttrs.concat(
             makeAttr('frameborder', '0'),
             makeAttr('allowfullscreen', 'true'),
-            makeAttr('src', url.sanitize(this.op.insert.value + '')+'')
+            makeAttr('src', url.sanitize(this.op.insert.value + '', this.options.urlWhiteListExtensions)+'')
          );
       }
 

@@ -6,7 +6,7 @@ var url = require("./helpers/url");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
-    OpAttributeSanitizer.sanitize = function (dirtyAttrs) {
+    OpAttributeSanitizer.sanitize = function (dirtyAttrs, urlWhiteListExtensions) {
         var cleanAttrs = {};
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
@@ -43,7 +43,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.width = width;
         }
         if (link) {
-            cleanAttrs.link = url.sanitize(link + '');
+            cleanAttrs.link = url.sanitize(link + '', urlWhiteListExtensions);
         }
         if (target && OpAttributeSanitizer.isValidTarget(target)) {
             cleanAttrs.target = target;
@@ -67,7 +67,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.indent = Math.min(Number(indent), 30);
         }
         if (mentions && mention) {
-            var sanitizedMention = MentionSanitizer_1.MentionSanitizer.sanitize(mention);
+            var sanitizedMention = MentionSanitizer_1.MentionSanitizer.sanitize(mention, urlWhiteListExtensions);
             if (Object.keys(sanitizedMention).length > 0) {
                 cleanAttrs.mentions = !!mentions;
                 cleanAttrs.mention = mention;

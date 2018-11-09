@@ -8,7 +8,7 @@ var InsertOpDenormalizer_1 = require("./InsertOpDenormalizer");
 var InsertOpsConverter = (function () {
     function InsertOpsConverter() {
     }
-    InsertOpsConverter.convert = function (deltaOps) {
+    InsertOpsConverter.convert = function (deltaOps, urlWhiteListExtensions) {
         if (!Array.isArray(deltaOps)) {
             return [];
         }
@@ -24,7 +24,7 @@ var InsertOpsConverter = (function () {
             if (!insertVal) {
                 continue;
             }
-            attributes = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitize(op.attributes);
+            attributes = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitize(op.attributes, urlWhiteListExtensions);
             results.push(new DeltaInsertOp_1.DeltaInsertOp(insertVal, attributes));
         }
         return results;

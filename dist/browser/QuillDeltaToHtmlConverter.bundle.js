@@ -169,7 +169,7 @@ var InsertOpDenormalizer_1 = require("./InsertOpDenormalizer");
 var InsertOpsConverter = (function () {
     function InsertOpsConverter() {
     }
-    InsertOpsConverter.convert = function (deltaOps) {
+    InsertOpsConverter.convert = function (deltaOps, urlWhiteListExtensions) {
         if (!Array.isArray(deltaOps)) {
             return [];
         }
@@ -185,7 +185,7 @@ var InsertOpsConverter = (function () {
             if (!insertVal) {
                 continue;
             }
-            attributes = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitize(op.attributes);
+            attributes = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitize(op.attributes, urlWhiteListExtensions);
             results.push(new DeltaInsertOp_1.DeltaInsertOp(insertVal, attributes));
         }
         return results;
@@ -222,7 +222,7 @@ var url = require("./helpers/url");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
-    OpAttributeSanitizer.sanitize = function (dirtyAttrs) {
+    OpAttributeSanitizer.sanitize = function (dirtyAttrs, urlWhiteListExtensions) {
         var cleanAttrs = {};
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
@@ -259,7 +259,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.width = width;
         }
         if (link) {
-            cleanAttrs.link = url.sanitize(link + '');
+            cleanAttrs.link = url.sanitize(link + '', urlWhiteListExtensions);
         }
         if (target && OpAttributeSanitizer.isValidTarget(target)) {
             cleanAttrs.target = target;
@@ -283,7 +283,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.indent = Math.min(Number(indent), 30);
         }
         if (mentions && mention) {
-            var sanitizedMention = MentionSanitizer_1.MentionSanitizer.sanitize(mention);
+            var sanitizedMention = MentionSanitizer_1.MentionSanitizer.sanitize(mention, urlWhiteListExtensions);
             if (Object.keys(sanitizedMention).length > 0) {
                 cleanAttrs.mentions = !!mentions;
                 cleanAttrs.mention = mention;
@@ -474,7 +474,7 @@ var OpToHtmlConverter = (function () {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
             this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-            return tagAttrs.concat(makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
+            return tagAttrs.concat(makeAttr('src', url.sanitize(this.op.insert.value + '', this.options.urlWhiteListExtensions) + ''));
         }
         if (this.op.isACheckList()) {
             return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'));
@@ -483,7 +483,7 @@ var OpToHtmlConverter = (function () {
             return tagAttrs;
         }
         if (this.op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', url.sanitize(this.op.insert.value + '', this.options.urlWhiteListExtensions) + ''));
         }
         if (this.op.isMentions()) {
             var mention = this.op.attributes.mention;
@@ -607,7 +607,8 @@ var QuillDeltaToHtmlConverter = (function () {
             linkRel: this.options.linkRel,
             linkTarget: this.options.linkTarget,
             allowBackgroundClasses: this.options.allowBackgroundClasses,
-            encodeMapExtensions: this.options.encodeMapExtensions
+            encodeMapExtensions: this.options.encodeMapExtensions,
+            urlWhiteListExtensions: this.options.urlWhiteListExtensions
         };
         this.rawDeltaOps = deltaOps;
     }
@@ -619,7 +620,7 @@ var QuillDeltaToHtmlConverter = (function () {
                         : '';
     };
     QuillDeltaToHtmlConverter.prototype.getGroupedOps = function () {
-        var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
+        var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps, this.options.urlWhiteListExtensions);
         var pairedOps = Grouper_1.Grouper.pairOpsWithTheirBlock(deltaOps);
         var groupedSameStyleBlocks = Grouper_1.Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
             blockquotes: !!this.options.multiLineBlockquote,
@@ -1300,10 +1301,10 @@ exports.tokenizeWithNewLines = tokenizeWithNewLines;
 },{}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-function sanitize(str) {
+function sanitize(str, urlWhiteListExtensions) {
     var val = str;
     val = val.replace(/^\s*/gm, '');
-    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
+    var whiteList = new RegExp("^s*((|https?|s?ftp|file|blob|mailto|tel):" + (urlWhiteListExtensions ? '|' + urlWhiteListExtensions.join('|') : '') + "|#|/|data:image/)");
     if (whiteList.test(val)) {
         return val;
     }
@@ -1318,7 +1319,7 @@ var url = require("./../helpers/url");
 var MentionSanitizer = (function () {
     function MentionSanitizer() {
     }
-    MentionSanitizer.sanitize = function (dirtyObj) {
+    MentionSanitizer.sanitize = function (dirtyObj, urlWhiteListExtensions) {
         var cleanObj = {};
         if (!dirtyObj || typeof dirtyObj !== 'object') {
             return cleanObj;
@@ -1333,10 +1334,10 @@ var MentionSanitizer = (function () {
             cleanObj.target = dirtyObj.target;
         }
         if (dirtyObj.avatar) {
-            cleanObj.avatar = url.sanitize(dirtyObj.avatar + '');
+            cleanObj.avatar = url.sanitize(dirtyObj.avatar + '', urlWhiteListExtensions);
         }
         if (dirtyObj['end-point']) {
-            cleanObj['end-point'] = url.sanitize(dirtyObj['end-point'] + '');
+            cleanObj['end-point'] = url.sanitize(dirtyObj['end-point'] + '', urlWhiteListExtensions);
         }
         if (dirtyObj.slug) {
             cleanObj.slug = (dirtyObj.slug + '');

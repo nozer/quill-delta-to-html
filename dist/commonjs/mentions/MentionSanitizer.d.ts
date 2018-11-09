@@ -9,7 +9,7 @@ interface IMention {
     'end-point'?: string;
 }
 declare class MentionSanitizer {
-    static sanitize(dirtyObj: IMention): IMention;
+    static sanitize(dirtyObj: IMention, urlWhiteListExtensions?: string[]): IMention;
     static IsValidClass(classAttr: string): boolean;
     static IsValidId(idAttr: string): boolean;
     static IsValidTarget(target: string): boolean;

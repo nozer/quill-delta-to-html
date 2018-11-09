@@ -26,7 +26,7 @@ interface IOpAttributes {
     renderAsBlock?: boolean | undefined;
 }
 declare class OpAttributeSanitizer {
-    static sanitize(dirtyAttrs: IOpAttributes): IOpAttributes;
+    static sanitize(dirtyAttrs: IOpAttributes, urlWhiteListExtensions?: string[]): IOpAttributes;
     static IsValidHexColor(colorStr: string): boolean;
     static IsValidColorLiteral(colorStr: string): boolean;
     static IsValidRGBColor(colorStr: string): boolean;

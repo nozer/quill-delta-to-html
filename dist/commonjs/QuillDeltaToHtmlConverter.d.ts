@@ -26,6 +26,7 @@ interface IQuillDeltaToHtmlConverterOptions {
         decodeTo: string;
         decodeMatch: string;
     }[];
+    urlWhiteListExtensions?: string[];
 }
 declare class QuillDeltaToHtmlConverter {
     private options;

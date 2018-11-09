@@ -29,6 +29,7 @@ interface IOpToHtmlConverterOptions {
         decodeTo: string;
         decodeMatch: string;
     }[];
+    urlWhiteListExtensions?: string[];
 }
 interface IHtmlParts {
     openingTag: string;

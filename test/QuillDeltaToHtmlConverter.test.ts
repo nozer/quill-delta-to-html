@@ -202,7 +202,7 @@ describe('QuillDeltaToHtmlConverter', function () {
           let ops = [
               { "attributes": { "target": "_self", "link": "<%=my.template%>.com" }, "insert": "A" }
           ];
-          let qdc = new QuillDeltaToHtmlConverter(ops, {encodeMapExtensions: [
+          let qdc = new QuillDeltaToHtmlConverter(ops, { urlWhiteListExtensions: ['<%'], encodeMapExtensions: [
             {
                 key: '<',
                 url: true,

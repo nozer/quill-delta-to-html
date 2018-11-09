@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-function sanitize(str) {
+function sanitize(str, urlWhiteListExtensions) {
     var val = str;
     val = val.replace(/^\s*/gm, '');
-    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
+    var whiteList = new RegExp("^s*((|https?|s?ftp|file|blob|mailto|tel):" + (urlWhiteListExtensions ? '|' + urlWhiteListExtensions.join('|') : '') + "|#|/|data:image/)");
     if (whiteList.test(val)) {
         return val;
     }

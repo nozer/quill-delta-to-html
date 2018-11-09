@@ -14,7 +14,7 @@ interface IMention {
 
 class MentionSanitizer {
 
-   static sanitize(dirtyObj: IMention): IMention {
+   static sanitize(dirtyObj: IMention, urlWhiteListExtensions?: string[]): IMention {
 
       var cleanObj: any = {};
 
@@ -35,11 +35,11 @@ class MentionSanitizer {
       }
 
       if (dirtyObj.avatar) {
-         cleanObj.avatar = url.sanitize(dirtyObj.avatar + '');
+         cleanObj.avatar = url.sanitize(dirtyObj.avatar + '', urlWhiteListExtensions);
       }
 
       if (dirtyObj['end-point']) {
-         cleanObj['end-point'] = url.sanitize(dirtyObj['end-point'] + '');
+         cleanObj['end-point'] = url.sanitize(dirtyObj['end-point'] + '', urlWhiteListExtensions);
       }
 
       if (dirtyObj.slug) {

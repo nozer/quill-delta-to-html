@@ -48,7 +48,8 @@ var QuillDeltaToHtmlConverter = (function () {
             linkRel: this.options.linkRel,
             linkTarget: this.options.linkTarget,
             allowBackgroundClasses: this.options.allowBackgroundClasses,
-            encodeMapExtensions: this.options.encodeMapExtensions
+            encodeMapExtensions: this.options.encodeMapExtensions,
+            urlWhiteListExtensions: this.options.urlWhiteListExtensions
         };
         this.rawDeltaOps = deltaOps;
     }
@@ -60,7 +61,7 @@ var QuillDeltaToHtmlConverter = (function () {
                         : '';
     };
     QuillDeltaToHtmlConverter.prototype.getGroupedOps = function () {
-        var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
+        var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps, this.options.urlWhiteListExtensions);
         var pairedOps = Grouper_1.Grouper.pairOpsWithTheirBlock(deltaOps);
         var groupedSameStyleBlocks = Grouper_1.Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
             blockquotes: !!this.options.multiLineBlockquote,

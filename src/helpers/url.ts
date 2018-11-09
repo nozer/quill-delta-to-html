@@ -1,7 +1,7 @@
-function sanitize(str: string): string {
+function sanitize(str: string, urlWhiteListExtensions?: string[]): string {
    let val = str;
    val = val.replace(/^\s*/gm, '')
-   var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
+   let whiteList = new RegExp(`^\s*((|https?|s?ftp|file|blob|mailto|tel):${urlWhiteListExtensions ? '|' + urlWhiteListExtensions.join('|') : ''}|#|\/|data:image\/)`)
    if (whiteList.test(val)) {
       return val;
    }

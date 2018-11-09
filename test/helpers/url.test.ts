@@ -12,8 +12,8 @@ describe("Url Helpers Module", function(){
             var act = "http://www><.yahoo'.com";
             assert.equal(sanitize(act), "http://www><.yahoo'.com");
 
-            act = "http://www<%=yahoo%>'.com";
-            assert.equal(sanitize(act), "http://www<%=yahoo%>'.com");
+            act = "http://www.<%= yahoo %>.com";
+            assert.equal(sanitize(act), "http://www.<%= yahoo %>.com");
 
             act = "https://abc";
             assert.equal(sanitize(act), "https://abc");

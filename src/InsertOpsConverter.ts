@@ -10,7 +10,7 @@ import { InsertOpDenormalizer } from './InsertOpDenormalizer';
  */
 class InsertOpsConverter {
 
-    static convert(deltaOps: null | any[]): DeltaInsertOp[] {
+    static convert(deltaOps: null | any[], urlWhiteListExtensions?: string[]): DeltaInsertOp[] {
 
         if (!Array.isArray(deltaOps)) {
             return [];
@@ -32,7 +32,7 @@ class InsertOpsConverter {
                 continue;
             }
 
-            attributes =  OpAttributeSanitizer.sanitize(op.attributes);
+            attributes =  OpAttributeSanitizer.sanitize(op.attributes, urlWhiteListExtensions);
 
             results.push(new DeltaInsertOp(insertVal, attributes));
         }
