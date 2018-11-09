@@ -1,4 +1,4 @@
-import { makeStartTag, makeEndTag, encodeHtml, encodeLink, ITagKeyValue } from './funcs-html';
+import { makeStartTag, makeEndTag, encodeHtml, encodeLink, ITagKeyValue, IEncodeMapExtension } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ScriptType, NewLine } from './value-types';
 import * as url from './helpers/url';
@@ -52,7 +52,7 @@ interface IOpToHtmlConverterOptions {
    linkRel?: string,
    linkTarget?: string,
    allowBackgroundClasses?: boolean,
-   encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[],
+   encodeMapExtensions?: IEncodeMapExtension[],
    urlWhiteListExtensions?: string[]
 }
 

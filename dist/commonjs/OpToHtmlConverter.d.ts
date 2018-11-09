@@ -1,4 +1,4 @@
-import { ITagKeyValue } from './funcs-html';
+import { ITagKeyValue, IEncodeMapExtension } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
 export declare type InlineStyleType = ((value: string, op: DeltaInsertOp) => string | undefined) | {
     [x: string]: string;
@@ -20,15 +20,7 @@ interface IOpToHtmlConverterOptions {
     linkRel?: string;
     linkTarget?: string;
     allowBackgroundClasses?: boolean;
-    encodeMapExtensions?: {
-        key: string;
-        url: boolean;
-        html: boolean;
-        encodeTo: string;
-        encodeMatch: string;
-        decodeTo: string;
-        decodeMatch: string;
-    }[];
+    encodeMapExtensions?: IEncodeMapExtension[];
     urlWhiteListExtensions?: string[];
 }
 interface IHtmlParts {

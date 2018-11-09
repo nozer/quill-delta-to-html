@@ -1,6 +1,7 @@
 import { IInlineStyles } from './OpToHtmlConverter';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ListGroup, ListItem, TDataGroup } from './grouper/group-types';
+import { IEncodeMapExtension } from './funcs-html';
 import { GroupType } from './value-types';
 interface IQuillDeltaToHtmlConverterOptions {
     orderedListTag?: string;
@@ -17,15 +18,7 @@ interface IQuillDeltaToHtmlConverterOptions {
     linkRel?: string;
     linkTarget?: string;
     allowBackgroundClasses?: boolean;
-    encodeMapExtensions?: {
-        key: string;
-        url: boolean;
-        html: boolean;
-        encodeTo: string;
-        encodeMatch: string;
-        decodeTo: string;
-        decodeMatch: string;
-    }[];
+    encodeMapExtensions?: IEncodeMapExtension[];
     urlWhiteListExtensions?: string[];
 }
 declare class QuillDeltaToHtmlConverter {

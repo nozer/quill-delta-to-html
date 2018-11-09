@@ -7,7 +7,7 @@ import {
    VideoItem, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup, BlotBlock
 } from './grouper/group-types';
 import { ListNester } from './grouper/ListNester';
-import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
+import { makeStartTag, makeEndTag, encodeHtml, IEncodeMapExtension } from './funcs-html';
 import * as obj from './helpers/object';
 import { GroupType } from './value-types';
 
@@ -30,7 +30,7 @@ interface IQuillDeltaToHtmlConverterOptions {
    linkRel?: string,
    linkTarget?: string,
    allowBackgroundClasses?: boolean,
-   encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[],
+   encodeMapExtensions?: IEncodeMapExtension[],
    urlWhiteListExtensions?: string[]
 }
 

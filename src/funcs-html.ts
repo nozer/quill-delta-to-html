@@ -4,6 +4,16 @@ interface ITagKeyValue {
     value?: string
 }
 
+interface IEncodeMapExtension {
+    key: string, 
+    url: boolean, 
+    html: boolean, 
+    encodeTo: string, 
+    encodeMatch: string, 
+    decodeTo: string, 
+    decodeMatch: string
+}
+
 enum EncodeTarget {
     Html = 0,
     Url = 1
@@ -32,24 +42,24 @@ function makeEndTag(tag: any = '') {
     return tag && `</${tag}>` || '';
 }
 
-function decodeHtml(str: string, encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]) {
+function decodeHtml(str: string, encodeMapExtensions?: IEncodeMapExtension[]) {
     return encodeMappings(EncodeTarget.Html, encodeMapExtensions).reduce(decodeMapping, str);
 }
 
-function encodeHtml(str: string, preventDoubleEncoding = true, encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]) {
+function encodeHtml(str: string, preventDoubleEncoding = true, encodeMapExtensions?: IEncodeMapExtension[]) {
     if (preventDoubleEncoding) {
         str = decodeHtml(str, encodeMapExtensions);
     }
     return encodeMappings(EncodeTarget.Html, encodeMapExtensions).reduce(encodeMapping, str);
 }
 
-function encodeLink(str: string, encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]) {
+function encodeLink(str: string, encodeMapExtensions?: IEncodeMapExtension[]) {
     let linkMaps = encodeMappings(EncodeTarget.Url, encodeMapExtensions);
     let decoded = linkMaps.reduce(decodeMapping, str);
     return linkMaps.reduce(encodeMapping, decoded);
 }
 
-function encodeMappings(mtype: EncodeTarget, encodeMapExtensions?: { key: string, url: boolean, html: boolean, encodeTo: string, encodeMatch: string, decodeTo: string, decodeMatch: string }[]) {
+function encodeMappings(mtype: EncodeTarget, encodeMapExtensions?: IEncodeMapExtension[]) {
     let maps = [
         {
             key: '&',
@@ -161,10 +171,10 @@ function encodeMappings(mtype: EncodeTarget, encodeMapExtensions?: { key: string
         return maps.filter(({url}) =>  url);
     }
 }
-function encodeMapping(str: string, mapping: { decodeMatch: string, encodeTo: string }) {
+function encodeMapping(str: string, mapping: IEncodeMapExtension) {
     return str.replace(new RegExp(mapping.decodeMatch, 'g'), mapping.encodeTo);
 }
-function decodeMapping(str: string, mapping: { encodeMatch: string, decodeTo: string }) {
+function decodeMapping(str: string, mapping: IEncodeMapExtension) {
     return str.replace(new RegExp(mapping.encodeMatch, 'g'), mapping.decodeTo);
 }
 export {
@@ -173,5 +183,6 @@ export {
     encodeHtml,
     decodeHtml,
     encodeLink,
-    ITagKeyValue
+    ITagKeyValue,
+    IEncodeMapExtension
 };
