@@ -43,17 +43,19 @@ var html = converter.convert();
 
 |Option | Default | Description 
 |---|---|---|
-|paragraphTag| 'p' | Custom tag to wrap inline html elements|
-|encodeHtml| true | If true, `<, >, /, ', ", &` characters in content will be encoded.|
-|classPrefix| 'ql' | A css class name to prefix class generating styles such as `size`, `font`, etc. |
-|inlineStyles| false | If true, use inline styles instead of classes |
-|multiLineBlockquote| true | Instead of rendering multiple `blockquote` elements for quotes that are consecutive and have same styles(`align`, `indent`, and `direction`), it renders them into only one|
-|multiLineHeader| true | Same deal as `multiLineBlockquote` for headers|
-|multiLineCodeblock| true | Same deal as `multiLineBlockquote` for code-blocks|
-|multiLineParagraph| true | Set to false to generate a new paragraph tag after each enter press (new line)|
-|linkRel| '' | Specifies a value to put on the `rel` attr on links|
-|linkTarget| '_blank' | Specifies target for all links; use `''` (empty string) to not generate `target` attribute. This can be overridden by an individual link op by specifiying the `target` with a value in the respective op's attributes.|
-|allowBackgroundClasses| false | If true, css classes will be added for background attr|
+|`paragraphTag`| 'p' | Custom tag to wrap inline html elements|
+|`encodeHtml`| true | If true, `<, >, /, ', ", &` characters in content will be encoded.|
+|`classPrefix`| 'ql' | A css class name to prefix class generating styles such as `size`, `font`, etc. |
+|`inlineStyles`| false | If true, use inline styles instead of classes |
+|`multiLineBlockquote`| true | Instead of rendering multiple `blockquote` elements for quotes that are consecutive and have same styles(`align`, `indent`, and `direction`), it renders them into only one|
+|`multiLineHeader`| true | Same deal as `multiLineBlockquote` for headers|
+|`multiLineCodeblock`| true | Same deal as `multiLineBlockquote` for code-blocks|
+|`multiLineParagraph`| true | Set to false to generate a new paragraph tag after each enter press (new line)|
+|`linkRel`| '' | Specifies a value to put on the `rel` attr on links|
+|`linkTarget`| '_blank' | Specifies target for all links; use `''` (empty string) to not generate `target` attribute. This can be overridden by an individual link op by specifying the `target` with a value in the respective op's attributes.|
+|`allowBackgroundClasses`| false | If true, css classes will be added for background attr|
+|`urlWhiteListExtensions`| undefined | Array of strings that if matched a url beginning with that string will ne be escaped
+| `encodeMapExtensions` | undefined | Array of encode map extensions see Advanced Custom encoding docs below for more
 
 ## Rendering Quill Formats ##
 
@@ -185,6 +187,44 @@ html = converter.convert();
         // ... any attributes custom blot may have
     }
 }
+```
+
+## Advanced Custom encoding ##
+Supplying the option `encodeMapExtensions` as an array of `EncodeMapExtension` objects represented by the interface:
+```ts
+interface IEncodeMapExtension {
+    key: string, 
+    url: boolean, 
+    html: boolean, 
+    encodeTo: string, 
+    encodeMatch: string, 
+    decodeTo: string, 
+    decodeMatch: string
+}
+```
+
+| Option | Description 
+|---|---|
+| `key` | An indicator that will give this extension uniqueness any collisions will result in 'last in' being used|
+| `url` | If true will be used in url encoding|
+| `html` | If true will be used in html encoding|
+| `encodeTo` | What to encode the `decodeTo` value to when a `decodeMatch` is hit|
+| `encodeMatch` | Pattern of encoded value |
+| `decodeTo` | What to decode the `encodedTo` value to when a `encodeMatch` is hit |
+| `decodeMatch` | Pattern of decoded value |
+
+### Example
+Encodes `(` to `&#40;` for urls only
+```ts
+[{
+    key: '(',
+    url: true,
+    html: false,
+    encodeTo: '&#40;',
+    encodeMatch: '&#40;',
+    decodeTo: '(',
+    decodeMatch: '\\('
+}]
 ```
 
 ## Advanced Custom Rendering Using Grouped Ops ##
