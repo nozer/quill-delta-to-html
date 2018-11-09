@@ -198,9 +198,9 @@ describe('QuillDeltaToHtmlConverter', function () {
             `<a href="http://#" target="_top">C</a></p>`
          ].join(''));
       });
-      it('should render target attr correctly', () => {
+      it('should render template href', () => {
           let ops = [
-              { "attributes": { "target": "_self", "link": "http://<%=my.template%>.com" }, "insert": "A" }
+              { "attributes": { "target": "_self", "link": "<%=my.template%>.com" }, "insert": "A" }
           ];
           let qdc = new QuillDeltaToHtmlConverter(ops, {encodeMapExtensions: [
             {
@@ -224,7 +224,7 @@ describe('QuillDeltaToHtmlConverter', function () {
         ]});
           let html = qdc.convert();
           assert.equal(html, [
-             `<p><a href="http://<%=my.template%>.com" target="_self">A</a></p>`
+             `<p><a href="<%=my.template%>.com" target="_self">A</a></p>`
           ].join(''));
       });
    });
