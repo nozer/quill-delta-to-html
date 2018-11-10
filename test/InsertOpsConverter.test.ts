@@ -45,17 +45,17 @@ describe('InsertOpsConverter', function () {
     describe('#convert()', function () {
         
         it('should transform raw delta ops to DeltaInsertOp[]', function () {
-            var objs = InsertOpsConverter.convert(data[0].ops);
+            var objs = InsertOpsConverter.convert(data[0].ops, {});
             
             assert.equal(objs[0] instanceof DeltaInsertOp, true);
             assert.equal(objs[objs.length -1] instanceof DeltaInsertOp, true);
-            assert.deepEqual(InsertOpsConverter.convert(null), []);
-            assert.deepEqual(InsertOpsConverter.convert([{insert:''}]), []);
-            assert.deepEqual(InsertOpsConverter.convert([{insert:{cake: ''}}]), [
+            assert.deepEqual(InsertOpsConverter.convert(null, {}), []);
+            assert.deepEqual(InsertOpsConverter.convert([{insert:''}], {}), []);
+            assert.deepEqual(InsertOpsConverter.convert([{insert:{cake: ''}}], {}), [
                 {insert: {type: 'cake',value: ''}, attributes: {}}
             ]);
             assert.deepEqual(
-                InsertOpsConverter.convert([{"insert": 2}]),
+                InsertOpsConverter.convert([{"insert": 2}], {}),
                 []
             );
             //console.log(objs);
@@ -65,12 +65,12 @@ describe('InsertOpsConverter', function () {
     describe('#convertInsertVal()', function () {
         it('should convert raw .insert value to valid TInsert or null', function () {
             [null, undefined, 3, {}].forEach((v) => {
-                var act = InsertOpsConverter.convertInsertVal(v);
+                var act = InsertOpsConverter.convertInsertVal(v, {});
                 assert.equal(act, null);
             });
 
             ["fdsf", {image: 'ff'}, {video: ''}, {formula: ''}].forEach((v) => {
-                var act = InsertOpsConverter.convertInsertVal(v);
+                var act = InsertOpsConverter.convertInsertVal(v, {});
                 assert.notEqual(act, null);
                 assert.ok(act instanceof InsertDataQuill);
             });

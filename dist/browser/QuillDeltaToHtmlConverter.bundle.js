@@ -169,7 +169,7 @@ var InsertOpDenormalizer_1 = require("./InsertOpDenormalizer");
 var InsertOpsConverter = (function () {
     function InsertOpsConverter() {
     }
-    InsertOpsConverter.convert = function (deltaOps) {
+    InsertOpsConverter.convert = function (deltaOps, options) {
         if (!Array.isArray(deltaOps)) {
             return [];
         }
@@ -181,16 +181,16 @@ var InsertOpsConverter = (function () {
             if (!op.insert) {
                 continue;
             }
-            insertVal = InsertOpsConverter.convertInsertVal(op.insert);
+            insertVal = InsertOpsConverter.convertInsertVal(op.insert, options);
             if (!insertVal) {
                 continue;
             }
-            attributes = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitize(op.attributes);
+            attributes = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitize(op.attributes, options);
             results.push(new DeltaInsertOp_1.DeltaInsertOp(insertVal, attributes));
         }
         return results;
     };
-    InsertOpsConverter.convertInsertVal = function (insertPropVal) {
+    InsertOpsConverter.convertInsertVal = function (insertPropVal, sanitizeOptions) {
         if (typeof insertPropVal === 'string') {
             return new InsertData_1.InsertDataQuill(value_types_1.DataType.Text, insertPropVal);
         }
@@ -202,9 +202,9 @@ var InsertOpsConverter = (function () {
             return null;
         }
         return value_types_1.DataType.Image in insertPropVal ?
-            new InsertData_1.InsertDataQuill(value_types_1.DataType.Image, insertPropVal[value_types_1.DataType.Image])
+            new InsertData_1.InsertDataQuill(value_types_1.DataType.Image, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Image] + '', sanitizeOptions))
             : value_types_1.DataType.Video in insertPropVal ?
-                new InsertData_1.InsertDataQuill(value_types_1.DataType.Video, insertPropVal[value_types_1.DataType.Video])
+                new InsertData_1.InsertDataQuill(value_types_1.DataType.Video, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Video] + '', sanitizeOptions))
                 : value_types_1.DataType.Formula in insertPropVal ?
                     new InsertData_1.InsertDataQuill(value_types_1.DataType.Formula, insertPropVal[value_types_1.DataType.Formula])
                     : new InsertData_1.InsertDataCustom(keys[0], insertPropVal[keys[0]]);
@@ -219,10 +219,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
 var MentionSanitizer_1 = require("./mentions/MentionSanitizer");
 var url = require("./helpers/url");
+var funcs_html_1 = require("./funcs-html");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
-    OpAttributeSanitizer.sanitize = function (dirtyAttrs) {
+    OpAttributeSanitizer.sanitize = function (dirtyAttrs, sanitizeOptions) {
         var cleanAttrs = {};
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
@@ -259,7 +260,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.width = width;
         }
         if (link) {
-            cleanAttrs.link = url.sanitize(link + '');
+            cleanAttrs.link = OpAttributeSanitizer.sanitizeLinkUsingOptions(link + '', sanitizeOptions);
         }
         if (target && OpAttributeSanitizer.isValidTarget(target)) {
             cleanAttrs.target = target;
@@ -283,7 +284,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.indent = Math.min(Number(indent), 30);
         }
         if (mentions && mention) {
-            var sanitizedMention = MentionSanitizer_1.MentionSanitizer.sanitize(mention);
+            var sanitizedMention = MentionSanitizer_1.MentionSanitizer.sanitize(mention, sanitizeOptions);
             if (Object.keys(sanitizedMention).length > 0) {
                 cleanAttrs.mentions = !!mentions;
                 cleanAttrs.mention = mention;
@@ -296,6 +297,16 @@ var OpAttributeSanitizer = (function () {
             ;
             return cleaned;
         }, cleanAttrs);
+    };
+    OpAttributeSanitizer.sanitizeLinkUsingOptions = function (link, options) {
+        var sanitizerFn = function () { return undefined; };
+        if (options && typeof options.urlSanitizer === 'function') {
+            sanitizerFn = options.urlSanitizer;
+        }
+        var result = sanitizerFn(link);
+        return typeof result === 'string' ?
+            result :
+            funcs_html_1.encodeLink(url.sanitize(link));
     };
     OpAttributeSanitizer.IsValidHexColor = function (colorStr) {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
@@ -323,12 +334,11 @@ var OpAttributeSanitizer = (function () {
 }());
 exports.OpAttributeSanitizer = OpAttributeSanitizer;
 
-},{"./helpers/url":15,"./mentions/MentionSanitizer":16,"./value-types":17}],6:[function(require,module,exports){
+},{"./funcs-html":8,"./helpers/url":15,"./mentions/MentionSanitizer":16,"./value-types":17}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var funcs_html_1 = require("./funcs-html");
 var value_types_1 = require("./value-types");
-var url = require("./helpers/url");
 var obj = require("./helpers/object");
 var arr = require("./helpers/array");
 var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
@@ -474,7 +484,7 @@ var OpToHtmlConverter = (function () {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
             this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-            return tagAttrs.concat(makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
+            return tagAttrs.concat(makeAttr('src', this.op.insert.value));
         }
         if (this.op.isACheckList()) {
             return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'));
@@ -483,7 +493,7 @@ var OpToHtmlConverter = (function () {
             return tagAttrs;
         }
         if (this.op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', this.op.insert.value));
         }
         if (this.op.isMentions()) {
             var mention = this.op.attributes.mention;
@@ -491,7 +501,7 @@ var OpToHtmlConverter = (function () {
                 tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
             }
             if (mention['end-point'] && mention.slug) {
-                tagAttrs = tagAttrs.concat(makeAttr('href', funcs_html_1.encodeLink(mention['end-point'] + '/' + mention.slug)));
+                tagAttrs = tagAttrs.concat(makeAttr('href', mention['end-point'] + '/' + mention.slug));
             }
             else {
                 tagAttrs = tagAttrs.concat(makeAttr('href', 'about:blank'));
@@ -511,7 +521,7 @@ var OpToHtmlConverter = (function () {
         if (this.op.isLink()) {
             var target = this.op.attributes.target || this.options.linkTarget;
             tagAttrs = tagAttrs
-                .concat(makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link)))
+                .concat(makeAttr('href', this.op.attributes.link))
                 .concat(target ? makeAttr('target', target) : []);
             if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
                 tagAttrs.push(makeAttr('rel', this.options.linkRel));
@@ -556,7 +566,7 @@ var OpToHtmlConverter = (function () {
 }());
 exports.OpToHtmlConverter = OpToHtmlConverter;
 
-},{"./OpAttributeSanitizer":5,"./funcs-html":8,"./helpers/array":12,"./helpers/object":13,"./helpers/url":15,"./value-types":17}],7:[function(require,module,exports){
+},{"./OpAttributeSanitizer":5,"./funcs-html":8,"./helpers/array":12,"./helpers/object":13,"./value-types":17}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertOpsConverter_1 = require("./InsertOpsConverter");
@@ -618,7 +628,7 @@ var QuillDeltaToHtmlConverter = (function () {
                         : '';
     };
     QuillDeltaToHtmlConverter.prototype.getGroupedOps = function () {
-        var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps);
+        var deltaOps = InsertOpsConverter_1.InsertOpsConverter.convert(this.rawDeltaOps, this.options);
         var pairedOps = Grouper_1.Grouper.pairOpsWithTheirBlock(deltaOps);
         var groupedSameStyleBlocks = Grouper_1.Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
             blockquotes: !!this.options.multiLineBlockquote,
@@ -1211,7 +1221,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 function sanitize(str) {
     var val = str;
     val = val.replace(/^\s*/gm, '');
-    var whiteList = /^\s*((|https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
+    var whiteList = /^((https?|s?ftp|file|blob|mailto|tel):|#|\/|data:image\/)/;
     if (whiteList.test(val)) {
         return val;
     }
@@ -1222,11 +1232,11 @@ exports.sanitize = sanitize;
 },{}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var url = require("./../helpers/url");
+var OpAttributeSanitizer_1 = require("./../OpAttributeSanitizer");
 var MentionSanitizer = (function () {
     function MentionSanitizer() {
     }
-    MentionSanitizer.sanitize = function (dirtyObj) {
+    MentionSanitizer.sanitize = function (dirtyObj, sanitizeOptions) {
         var cleanObj = {};
         if (!dirtyObj || typeof dirtyObj !== 'object') {
             return cleanObj;
@@ -1241,10 +1251,10 @@ var MentionSanitizer = (function () {
             cleanObj.target = dirtyObj.target;
         }
         if (dirtyObj.avatar) {
-            cleanObj.avatar = url.sanitize(dirtyObj.avatar + '');
+            cleanObj.avatar = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(dirtyObj.avatar + '', sanitizeOptions);
         }
         if (dirtyObj['end-point']) {
-            cleanObj['end-point'] = url.sanitize(dirtyObj['end-point'] + '');
+            cleanObj['end-point'] = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(dirtyObj['end-point'] + '', sanitizeOptions);
         }
         if (dirtyObj.slug) {
             cleanObj.slug = (dirtyObj.slug + '');
@@ -1264,7 +1274,7 @@ var MentionSanitizer = (function () {
 }());
 exports.MentionSanitizer = MentionSanitizer;
 
-},{"./../helpers/url":15}],17:[function(require,module,exports){
+},{"./../OpAttributeSanitizer":5}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var NewLine = "\n";

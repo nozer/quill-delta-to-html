@@ -10,26 +10,17 @@ import { ListNester } from './grouper/ListNester';
 import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
 import * as obj from './helpers/object';
 import { GroupType } from './value-types';
+import {IOpAttributeSanitizerOptions} from "./OpAttributeSanitizer"
 
-
-interface IQuillDeltaToHtmlConverterOptions {
-   // no more allowing these to be customized; unnecessary
+interface IQuillDeltaToHtmlConverterOptions 
+      extends IOpAttributeSanitizerOptions, IOpToHtmlConverterOptions {
    orderedListTag?: string,
    bulletListTag?: string,
-   listItemTag?: string,
 
-   paragraphTag?: string,
-   classPrefix?: string,
-   inlineStyles?: boolean | IInlineStyles,
-   encodeHtml?: boolean,
    multiLineBlockquote?: boolean,
    multiLineHeader?: boolean,
    multiLineCodeblock?: boolean,
    multiLineParagraph?: boolean,
-
-   linkRel?: string,
-   linkTarget?: string,
-   allowBackgroundClasses?: boolean
 }
 
 const BrTag = '<br/>';
@@ -96,7 +87,7 @@ class QuillDeltaToHtmlConverter {
    }
 
    getGroupedOps(): TDataGroup[] {
-      var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps);
+      var deltaOps = InsertOpsConverter.convert(this.rawDeltaOps, this.options);
 
       var pairedOps = Grouper.pairOpsWithTheirBlock(deltaOps);
 

@@ -2,7 +2,7 @@
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { DataType } from './value-types';
 import { InsertData, InsertDataCustom, InsertDataQuill } from './InsertData';
-import { OpAttributeSanitizer } from './OpAttributeSanitizer';
+import { OpAttributeSanitizer, IOpAttributeSanitizerOptions } from './OpAttributeSanitizer';
 import { InsertOpDenormalizer } from './InsertOpDenormalizer';
 
 /**
@@ -10,7 +10,7 @@ import { InsertOpDenormalizer } from './InsertOpDenormalizer';
  */
 class InsertOpsConverter {
 
-    static convert(deltaOps: null | any[]): DeltaInsertOp[] {
+    static convert(deltaOps: null | any[], options: IOpAttributeSanitizerOptions): DeltaInsertOp[] {
 
         if (!Array.isArray(deltaOps)) {
             return [];
@@ -27,19 +27,19 @@ class InsertOpsConverter {
                 continue;
             }
 
-            insertVal = InsertOpsConverter.convertInsertVal(op.insert);
+            insertVal = InsertOpsConverter.convertInsertVal(op.insert, options);
             if (!insertVal) {
                 continue;
             }
 
-            attributes =  OpAttributeSanitizer.sanitize(op.attributes);
+            attributes =  OpAttributeSanitizer.sanitize(op.attributes, options);
 
             results.push(new DeltaInsertOp(insertVal, attributes));
         }
         return results;
     }
 
-    static convertInsertVal(insertPropVal: any): InsertData | null {
+    static convertInsertVal(insertPropVal: any, sanitizeOptions: IOpAttributeSanitizerOptions): InsertData | null {
         if (typeof insertPropVal === 'string') {
             return new InsertDataQuill(DataType.Text, insertPropVal);
         }
@@ -54,9 +54,11 @@ class InsertOpsConverter {
         }
 
         return DataType.Image in insertPropVal ?
-            new InsertDataQuill(DataType.Image, insertPropVal[DataType.Image])
+            new InsertDataQuill(DataType.Image, 
+               OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[DataType.Image]+'', sanitizeOptions))
             : DataType.Video in insertPropVal ?
-                new InsertDataQuill(DataType.Video, insertPropVal[DataType.Video])
+                new InsertDataQuill(DataType.Video, 
+                  OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[DataType.Video]+'', sanitizeOptions))
                 : DataType.Formula in insertPropVal ?
                     new InsertDataQuill(DataType.Formula, insertPropVal[DataType.Formula])
                     // custom 

@@ -13,7 +13,7 @@ export interface IInlineStyles {
 export declare const DEFAULT_INLINE_STYLES: IInlineStyles;
 interface IOpToHtmlConverterOptions {
     classPrefix?: string;
-    inlineStyles?: IInlineStyles;
+    inlineStyles?: boolean | IInlineStyles;
     encodeHtml?: boolean;
     listItemTag?: string;
     paragraphTag?: string;

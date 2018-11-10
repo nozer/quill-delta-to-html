@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var url = require("./../helpers/url");
+var OpAttributeSanitizer_1 = require("./../OpAttributeSanitizer");
 var MentionSanitizer = (function () {
     function MentionSanitizer() {
     }
-    MentionSanitizer.sanitize = function (dirtyObj) {
+    MentionSanitizer.sanitize = function (dirtyObj, sanitizeOptions) {
         var cleanObj = {};
         if (!dirtyObj || typeof dirtyObj !== 'object') {
             return cleanObj;
@@ -19,10 +19,10 @@ var MentionSanitizer = (function () {
             cleanObj.target = dirtyObj.target;
         }
         if (dirtyObj.avatar) {
-            cleanObj.avatar = url.sanitize(dirtyObj.avatar + '');
+            cleanObj.avatar = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(dirtyObj.avatar + '', sanitizeOptions);
         }
         if (dirtyObj['end-point']) {
-            cleanObj['end-point'] = url.sanitize(dirtyObj['end-point'] + '');
+            cleanObj['end-point'] = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(dirtyObj['end-point'] + '', sanitizeOptions);
         }
         if (dirtyObj.slug) {
             cleanObj.slug = (dirtyObj.slug + '');

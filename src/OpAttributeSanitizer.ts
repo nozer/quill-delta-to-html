@@ -2,6 +2,7 @@
 import { ListType, AlignType, DirectionType, ScriptType } from './value-types';
 import { MentionSanitizer } from "./mentions/MentionSanitizer";
 import * as url from './helpers/url';
+import {encodeLink} from "./funcs-html";
 import { IMention } from "./mentions/MentionSanitizer";
 
 interface IOpAttributes {
@@ -36,9 +37,16 @@ interface IOpAttributes {
    renderAsBlock?: boolean | undefined
 }
 
+interface IUrlSanitizerFn {
+   (url: string): string | undefined
+}
+interface IOpAttributeSanitizerOptions {
+   urlSanitizer?: IUrlSanitizerFn
+}
+
 class OpAttributeSanitizer {
 
-   static sanitize(dirtyAttrs: IOpAttributes): IOpAttributes {
+   static sanitize(dirtyAttrs: IOpAttributes, sanitizeOptions: IOpAttributeSanitizerOptions): IOpAttributes {
 
       var cleanAttrs: any = {};
 
@@ -89,7 +97,7 @@ class OpAttributeSanitizer {
       }
 
       if (link) {
-         cleanAttrs.link = url.sanitize(link + '');
+         cleanAttrs.link = OpAttributeSanitizer.sanitizeLinkUsingOptions(link + '', sanitizeOptions);
       }
       if (target && OpAttributeSanitizer.isValidTarget(target)) {
          cleanAttrs.target = target;
@@ -120,7 +128,7 @@ class OpAttributeSanitizer {
       }
 
       if (mentions && mention) {
-         let sanitizedMention = MentionSanitizer.sanitize(mention);
+         let sanitizedMention = MentionSanitizer.sanitize(mention, sanitizeOptions);
          if (Object.keys(sanitizedMention).length > 0) {
             cleanAttrs.mentions = !!mentions;
             cleanAttrs.mention = mention;
@@ -135,6 +143,16 @@ class OpAttributeSanitizer {
       }, cleanAttrs);
    }
 
+   static sanitizeLinkUsingOptions(link: string, options: IOpAttributeSanitizerOptions) {
+      let sanitizerFn: IUrlSanitizerFn = () => { return undefined; };
+      if (options && typeof options.urlSanitizer === 'function') {
+         sanitizerFn = options.urlSanitizer;
+      }
+      let result = sanitizerFn(link);
+      return typeof result === 'string' ? 
+         result : 
+         encodeLink(url.sanitize(link));
+   }
    static IsValidHexColor(colorStr: string) {
       return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
    }
@@ -165,4 +183,4 @@ class OpAttributeSanitizer {
    }
 }
 
-export { OpAttributeSanitizer, IOpAttributes }
+export { OpAttributeSanitizer, IOpAttributes, IOpAttributeSanitizerOptions }

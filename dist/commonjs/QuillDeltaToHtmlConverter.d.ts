@@ -1,22 +1,15 @@
-import { IInlineStyles } from './OpToHtmlConverter';
+import { IOpToHtmlConverterOptions } from './OpToHtmlConverter';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ListGroup, ListItem, TDataGroup } from './grouper/group-types';
 import { GroupType } from './value-types';
-interface IQuillDeltaToHtmlConverterOptions {
+import { IOpAttributeSanitizerOptions } from "./OpAttributeSanitizer";
+interface IQuillDeltaToHtmlConverterOptions extends IOpAttributeSanitizerOptions, IOpToHtmlConverterOptions {
     orderedListTag?: string;
     bulletListTag?: string;
-    listItemTag?: string;
-    paragraphTag?: string;
-    classPrefix?: string;
-    inlineStyles?: boolean | IInlineStyles;
-    encodeHtml?: boolean;
     multiLineBlockquote?: boolean;
     multiLineHeader?: boolean;
     multiLineCodeblock?: boolean;
     multiLineParagraph?: boolean;
-    linkRel?: string;
-    linkTarget?: string;
-    allowBackgroundClasses?: boolean;
 }
 declare class QuillDeltaToHtmlConverter {
     private options;

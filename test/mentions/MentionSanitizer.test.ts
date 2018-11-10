@@ -15,7 +15,7 @@ describe('MentionSanitizer', function () {
                   avatar: 'http://www.yahoo.com',
                   'end-point': 'http://abc.com',
                   slug: 'my-name'
-                }
+                },{}
             );
             //console.log(sanitized);
             assert.deepEqual(sanitized, {
@@ -28,8 +28,8 @@ describe('MentionSanitizer', function () {
              })
         });
 
-        assert.deepEqual(MentionSanitizer.sanitize(<any>'a'), {});
+        assert.deepEqual(MentionSanitizer.sanitize(<any>'a', {}), {});
 
-        assert.deepEqual(MentionSanitizer.sanitize({id: 'sb'}), {id: 'sb'});
+        assert.deepEqual(MentionSanitizer.sanitize({id: 'sb'}, {}), {id: 'sb'});
     });
 });

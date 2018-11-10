@@ -1,3 +1,4 @@
+import { IOpAttributeSanitizerOptions } from "./../OpAttributeSanitizer";
 interface IMention {
     [index: string]: string | undefined;
     'name'?: string;
@@ -9,7 +10,7 @@ interface IMention {
     'end-point'?: string;
 }
 declare class MentionSanitizer {
-    static sanitize(dirtyObj: IMention): IMention;
+    static sanitize(dirtyObj: IMention, sanitizeOptions: IOpAttributeSanitizerOptions): IMention;
     static IsValidClass(classAttr: string): boolean;
     static IsValidId(idAttr: string): boolean;
     static IsValidTarget(target: string): boolean;

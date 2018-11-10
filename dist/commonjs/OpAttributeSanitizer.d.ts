@@ -25,8 +25,15 @@ interface IOpAttributes {
     target?: string | undefined;
     renderAsBlock?: boolean | undefined;
 }
+interface IUrlSanitizerFn {
+    (url: string): string | undefined;
+}
+interface IOpAttributeSanitizerOptions {
+    urlSanitizer?: IUrlSanitizerFn;
+}
 declare class OpAttributeSanitizer {
-    static sanitize(dirtyAttrs: IOpAttributes): IOpAttributes;
+    static sanitize(dirtyAttrs: IOpAttributes, sanitizeOptions: IOpAttributeSanitizerOptions): IOpAttributes;
+    static sanitizeLinkUsingOptions(link: string, options: IOpAttributeSanitizerOptions): string;
     static IsValidHexColor(colorStr: string): boolean;
     static IsValidColorLiteral(colorStr: string): boolean;
     static IsValidRGBColor(colorStr: string): boolean;
@@ -35,4 +42,4 @@ declare class OpAttributeSanitizer {
     static IsValidWidth(width: string): boolean;
     static isValidTarget(target: string): boolean;
 }
-export { OpAttributeSanitizer, IOpAttributes };
+export { OpAttributeSanitizer, IOpAttributes, IOpAttributeSanitizerOptions };

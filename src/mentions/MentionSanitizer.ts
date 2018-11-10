@@ -1,5 +1,5 @@
 
-import * as url from './../helpers/url';
+import {IOpAttributeSanitizerOptions, OpAttributeSanitizer} from "./../OpAttributeSanitizer"
 
 interface IMention {
    [index: string]: string | undefined,
@@ -14,7 +14,7 @@ interface IMention {
 
 class MentionSanitizer {
 
-   static sanitize(dirtyObj: IMention): IMention {
+   static sanitize(dirtyObj: IMention, sanitizeOptions: IOpAttributeSanitizerOptions): IMention {
 
       var cleanObj: any = {};
 
@@ -35,11 +35,11 @@ class MentionSanitizer {
       }
 
       if (dirtyObj.avatar) {
-         cleanObj.avatar = url.sanitize(dirtyObj.avatar + '');
+         cleanObj.avatar = OpAttributeSanitizer.sanitizeLinkUsingOptions(dirtyObj.avatar + '', sanitizeOptions);
       }
 
       if (dirtyObj['end-point']) {
-         cleanObj['end-point'] = url.sanitize(dirtyObj['end-point'] + '');
+         cleanObj['end-point'] = OpAttributeSanitizer.sanitizeLinkUsingOptions(dirtyObj['end-point'] + '', sanitizeOptions);
       }
 
       if (dirtyObj.slug) {

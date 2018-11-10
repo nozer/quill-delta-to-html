@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var funcs_html_1 = require("./funcs-html");
 var value_types_1 = require("./value-types");
-var url = require("./helpers/url");
 var obj = require("./helpers/object");
 var arr = require("./helpers/array");
 var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
@@ -148,7 +147,7 @@ var OpToHtmlConverter = (function () {
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
             this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-            return tagAttrs.concat(makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
+            return tagAttrs.concat(makeAttr('src', this.op.insert.value));
         }
         if (this.op.isACheckList()) {
             return tagAttrs.concat(makeAttr('data-checked', this.op.isCheckedList() ? 'true' : 'false'));
@@ -157,7 +156,7 @@ var OpToHtmlConverter = (function () {
             return tagAttrs;
         }
         if (this.op.isVideo()) {
-            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', url.sanitize(this.op.insert.value + '') + ''));
+            return tagAttrs.concat(makeAttr('frameborder', '0'), makeAttr('allowfullscreen', 'true'), makeAttr('src', this.op.insert.value));
         }
         if (this.op.isMentions()) {
             var mention = this.op.attributes.mention;
@@ -165,7 +164,7 @@ var OpToHtmlConverter = (function () {
                 tagAttrs = tagAttrs.concat(makeAttr('class', mention.class));
             }
             if (mention['end-point'] && mention.slug) {
-                tagAttrs = tagAttrs.concat(makeAttr('href', funcs_html_1.encodeLink(mention['end-point'] + '/' + mention.slug)));
+                tagAttrs = tagAttrs.concat(makeAttr('href', mention['end-point'] + '/' + mention.slug));
             }
             else {
                 tagAttrs = tagAttrs.concat(makeAttr('href', 'about:blank'));
@@ -185,7 +184,7 @@ var OpToHtmlConverter = (function () {
         if (this.op.isLink()) {
             var target = this.op.attributes.target || this.options.linkTarget;
             tagAttrs = tagAttrs
-                .concat(makeAttr('href', funcs_html_1.encodeLink(this.op.attributes.link)))
+                .concat(makeAttr('href', this.op.attributes.link))
                 .concat(target ? makeAttr('target', target) : []);
             if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
                 tagAttrs.push(makeAttr('rel', this.options.linkRel));

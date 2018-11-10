@@ -1,7 +1,6 @@
-import { makeStartTag, makeEndTag, encodeHtml, encodeLink, ITagKeyValue } from './funcs-html';
+import { makeStartTag, makeEndTag, encodeHtml, ITagKeyValue } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ScriptType, NewLine } from './value-types';
-import * as url from './helpers/url';
 import * as obj from './helpers/object';
 import { IMention } from "./mentions/MentionSanitizer";
 import * as arr from './helpers/array';
@@ -45,7 +44,7 @@ export const DEFAULT_INLINE_STYLES : IInlineStyles = {
 
 interface IOpToHtmlConverterOptions {
    classPrefix?: string,
-   inlineStyles?: IInlineStyles,
+   inlineStyles?: boolean | IInlineStyles,
    encodeHtml?: boolean,
    listItemTag?: string,
    paragraphTag?: string,
@@ -210,7 +209,7 @@ class OpToHtmlConverter {
 
       if (this.op.isImage()) {
          this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
-         return tagAttrs.concat(makeAttr('src', url.sanitize(this.op.insert.value + '')+''));
+         return tagAttrs.concat(makeAttr('src', this.op.insert.value));
       }
 
       if (this.op.isACheckList()) {
@@ -225,7 +224,7 @@ class OpToHtmlConverter {
          return tagAttrs.concat(
             makeAttr('frameborder', '0'),
             makeAttr('allowfullscreen', 'true'),
-            makeAttr('src', url.sanitize(this.op.insert.value + '')+'')
+            makeAttr('src', this.op.insert.value)
          );
       }
 
@@ -236,7 +235,7 @@ class OpToHtmlConverter {
          }
          if (mention['end-point'] && mention.slug) {
             tagAttrs = tagAttrs.concat(
-               makeAttr('href', encodeLink(mention['end-point'] + '/' + mention.slug))
+               makeAttr('href', mention['end-point'] + '/' + mention.slug)
             );
          } else {
             tagAttrs = tagAttrs.concat(makeAttr('href', 'about:blank'));
@@ -257,7 +256,7 @@ class OpToHtmlConverter {
       if (this.op.isLink()) {
          let target = this.op.attributes.target || this.options.linkTarget;
          tagAttrs = tagAttrs
-         .concat(makeAttr('href', encodeLink(this.op.attributes.link!)))
+         .concat(makeAttr('href', this.op.attributes.link!))
          .concat(target ? makeAttr('target', target) : []);
          if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
             tagAttrs.push(makeAttr('rel', this.options.linkRel));

@@ -3,10 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
 var MentionSanitizer_1 = require("./mentions/MentionSanitizer");
 var url = require("./helpers/url");
+var funcs_html_1 = require("./funcs-html");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
-    OpAttributeSanitizer.sanitize = function (dirtyAttrs) {
+    OpAttributeSanitizer.sanitize = function (dirtyAttrs, sanitizeOptions) {
         var cleanAttrs = {};
         if (!dirtyAttrs || typeof dirtyAttrs !== 'object') {
             return cleanAttrs;
@@ -43,7 +44,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.width = width;
         }
         if (link) {
-            cleanAttrs.link = url.sanitize(link + '');
+            cleanAttrs.link = OpAttributeSanitizer.sanitizeLinkUsingOptions(link + '', sanitizeOptions);
         }
         if (target && OpAttributeSanitizer.isValidTarget(target)) {
             cleanAttrs.target = target;
@@ -67,7 +68,7 @@ var OpAttributeSanitizer = (function () {
             cleanAttrs.indent = Math.min(Number(indent), 30);
         }
         if (mentions && mention) {
-            var sanitizedMention = MentionSanitizer_1.MentionSanitizer.sanitize(mention);
+            var sanitizedMention = MentionSanitizer_1.MentionSanitizer.sanitize(mention, sanitizeOptions);
             if (Object.keys(sanitizedMention).length > 0) {
                 cleanAttrs.mentions = !!mentions;
                 cleanAttrs.mention = mention;
@@ -80,6 +81,16 @@ var OpAttributeSanitizer = (function () {
             ;
             return cleaned;
         }, cleanAttrs);
+    };
+    OpAttributeSanitizer.sanitizeLinkUsingOptions = function (link, options) {
+        var sanitizerFn = function () { return undefined; };
+        if (options && typeof options.urlSanitizer === 'function') {
+            sanitizerFn = options.urlSanitizer;
+        }
+        var result = sanitizerFn(link);
+        return typeof result === 'string' ?
+            result :
+            funcs_html_1.encodeLink(url.sanitize(link));
     };
     OpAttributeSanitizer.IsValidHexColor = function (colorStr) {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);

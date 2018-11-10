@@ -198,6 +198,24 @@ describe('QuillDeltaToHtmlConverter', function () {
             `<a href="http://#" target="_top">C</a></p>`
          ].join(''));
       });
+
+      it('should convert using custom url sanitizer', () => {
+         let ops = [
+            {attributes: {link: "http://yahoo<%=abc%>/ed"}, insert: 'test'},
+            {attributes: {link: "http://abc<"}, insert:'hi'}
+         ];
+
+         let qdc = new QuillDeltaToHtmlConverter(ops, {urlSanitizer: (link: string) => {
+            if (link.indexOf('<%') > -1) {
+               return link;
+            }
+            return undefined;
+         }});
+         assert.equal(qdc.convert(), [
+            `<p><a href="http://yahoo<%=abc%>/ed" target="_blank">test</a>`,
+            `<a href="http://abc&lt;" target="_blank">hi</a></p>`
+         ].join(''));
+      })
    });
 
    describe('custom types', () => {
