@@ -100,10 +100,17 @@ class OpToHtmlConverter {
       }
 
       let beginTags = [], endTags = [];
-
+      const imgTag = "img";
+      const isImageLink = (tag: any) => tag === imgTag && !!this.op.attributes.link
       for (var tag of tags) {
+         if (isImageLink(tag)) {
+            beginTags.push(makeStartTag('a', this.getLinkAttrs()))
+         }
          beginTags.push(makeStartTag(tag, attrs));
          endTags.push(tag === 'img' ? '' : makeEndTag(tag));
+         if (isImageLink(tag)) {
+            endTags.push(makeEndTag('a'))
+         }
          // consumed in first tag
          attrs = [];
       }
@@ -202,8 +209,7 @@ class OpToHtmlConverter {
          return [];
       }
 
-      const makeAttr = (k: string, v: string): ITagKeyValue => ({ key: k, value: v });
-
+      const makeAttr = this.makeAttr.bind(this)
       var classes = this.getCssClasses();
       var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
 
@@ -254,16 +260,26 @@ class OpToHtmlConverter {
       }
 
       if (this.op.isLink()) {
-         let target = this.op.attributes.target || this.options.linkTarget;
-         tagAttrs = tagAttrs
-         .concat(makeAttr('href', this.op.attributes.link!))
-         .concat(target ? makeAttr('target', target) : []);
-         if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
-            tagAttrs.push(makeAttr('rel', this.options.linkRel));
-         }
+         tagAttrs = tagAttrs.concat(this.getLinkAttrs())
       }
 
       return tagAttrs;
+   }
+
+   makeAttr(k: string, v: string): ITagKeyValue {
+       return { key: k, value: v };
+   }
+
+   getLinkAttrs() : Array<ITagKeyValue> {
+      let tagAttrs: ITagKeyValue[] = []
+      let target = this.op.attributes.target || this.options.linkTarget;
+      tagAttrs = tagAttrs
+      .concat(this.makeAttr('href', this.op.attributes.link!))
+      .concat(target ? this.makeAttr('target', target) : []);
+      if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
+         tagAttrs.push(this.makeAttr('rel', this.options.linkRel));
+      }
+      return tagAttrs
    }
 
    getTags(): string[] {

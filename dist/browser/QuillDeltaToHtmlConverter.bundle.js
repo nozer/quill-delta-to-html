@@ -390,6 +390,7 @@ var OpToHtmlConverter = (function () {
         return parts.openingTag + parts.content + parts.closingTag;
     };
     OpToHtmlConverter.prototype.getHtmlParts = function () {
+        var _this = this;
         if (this.op.isJustNewline() && !this.op.isContainerBlock()) {
             return { openingTag: '', closingTag: '', content: value_types_1.NewLine };
         }
@@ -398,10 +399,18 @@ var OpToHtmlConverter = (function () {
             tags.push('span');
         }
         var beginTags = [], endTags = [];
+        var imgTag = "img";
+        var isImageLink = function (tag) { return tag === imgTag && !!_this.op.attributes.link; };
         for (var _i = 0, tags_1 = tags; _i < tags_1.length; _i++) {
             var tag = tags_1[_i];
+            if (isImageLink(tag)) {
+                beginTags.push(funcs_html_1.makeStartTag('a', this.getLinkAttrs()));
+            }
             beginTags.push(funcs_html_1.makeStartTag(tag, attrs));
             endTags.push(tag === 'img' ? '' : funcs_html_1.makeEndTag(tag));
+            if (isImageLink(tag)) {
+                endTags.push(funcs_html_1.makeEndTag('a'));
+            }
             attrs = [];
         }
         endTags.reverse();
@@ -479,7 +488,7 @@ var OpToHtmlConverter = (function () {
         if (this.op.attributes.code && !this.op.isLink()) {
             return [];
         }
-        var makeAttr = function (k, v) { return ({ key: k, value: v }); };
+        var makeAttr = this.makeAttr.bind(this);
         var classes = this.getCssClasses();
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
@@ -519,13 +528,21 @@ var OpToHtmlConverter = (function () {
             return tagAttrs;
         }
         if (this.op.isLink()) {
-            var target = this.op.attributes.target || this.options.linkTarget;
-            tagAttrs = tagAttrs
-                .concat(makeAttr('href', this.op.attributes.link))
-                .concat(target ? makeAttr('target', target) : []);
-            if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
-                tagAttrs.push(makeAttr('rel', this.options.linkRel));
-            }
+            tagAttrs = tagAttrs.concat(this.getLinkAttrs());
+        }
+        return tagAttrs;
+    };
+    OpToHtmlConverter.prototype.makeAttr = function (k, v) {
+        return { key: k, value: v };
+    };
+    OpToHtmlConverter.prototype.getLinkAttrs = function () {
+        var tagAttrs = [];
+        var target = this.op.attributes.target || this.options.linkTarget;
+        tagAttrs = tagAttrs
+            .concat(this.makeAttr('href', this.op.attributes.link))
+            .concat(target ? this.makeAttr('target', target) : []);
+        if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
+            tagAttrs.push(this.makeAttr('rel', this.options.linkRel));
         }
         return tagAttrs;
     };

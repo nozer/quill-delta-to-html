@@ -99,6 +99,23 @@ describe('QuillDeltaToHtmlConverter', function () {
          ].join(""));
       });
 
+      it('should render image and image links', function() {
+         let ops = [
+            {insert: {image: "http://yahoo.com/abc.jpg"}},
+            {insert: {image: "http://yahoo.com/def.jpg"}, attributes: {link: "http://aha"}},
+         ];
+         let qdc = new QuillDeltaToHtmlConverter(ops)
+         let html = qdc.convert();
+         assert.equal(html, [
+            '<p>',
+            '<img class="ql-image" src="http://yahoo.com/abc.jpg"/>',
+            '<a href="http://aha" target="_blank">',
+               '<img class="ql-image" src="http://yahoo.com/def.jpg"/>',
+            '</a>',
+            '</p>'
+         ].join(''))
+      });
+
       it('should open and close list tags', function () {
          var ops4 = [
             { insert: "mr\n" },

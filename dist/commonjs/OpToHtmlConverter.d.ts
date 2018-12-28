@@ -37,6 +37,8 @@ declare class OpToHtmlConverter {
     getCssClasses(): string[];
     getCssStyles(): string[];
     getTagAttributes(): Array<ITagKeyValue>;
+    makeAttr(k: string, v: string): ITagKeyValue;
+    getLinkAttrs(): Array<ITagKeyValue>;
     getTags(): string[];
     static IsValidRel(relStr: string): boolean;
 }
