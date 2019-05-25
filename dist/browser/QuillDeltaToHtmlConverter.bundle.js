@@ -233,9 +233,10 @@ var OpAttributeSanitizer = (function () {
             'blockquote', 'code-block', 'renderAsBlock'
         ];
         var colorAttrs = ['background', 'color'];
-        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width, target = dirtyAttrs.target;
+        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width, target = dirtyAttrs.target, rel = dirtyAttrs.rel;
         var sanitizedAttrs = booleanAttrs.concat(colorAttrs, ['font', 'size', 'link', 'script', 'list', 'header', 'align',
-            'direction', 'indent', 'mentions', 'mention', 'width']);
+            'direction', 'indent', 'mentions', 'mention', 'width',
+            'target', 'rel']);
         booleanAttrs.forEach(function (prop) {
             var v = dirtyAttrs[prop];
             if (v) {
@@ -264,6 +265,9 @@ var OpAttributeSanitizer = (function () {
         }
         if (target && OpAttributeSanitizer.isValidTarget(target)) {
             cleanAttrs.target = target;
+        }
+        if (rel && OpAttributeSanitizer.IsValidRel(rel)) {
+            cleanAttrs.rel = rel;
         }
         if (script === value_types_1.ScriptType.Sub || value_types_1.ScriptType.Super === script) {
             cleanAttrs.script = script;
@@ -329,6 +333,9 @@ var OpAttributeSanitizer = (function () {
     };
     OpAttributeSanitizer.isValidTarget = function (target) {
         return !!target.match(/^[_a-zA-Z0-9\-]{1,50}$/);
+    };
+    OpAttributeSanitizer.IsValidRel = function (relStr) {
+        return !!relStr.match(/^[a-zA-Z\s\-]{1,250}$/i);
     };
     return OpAttributeSanitizer;
 }());
@@ -537,14 +544,16 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getLinkAttrs = function () {
         var tagAttrs = [];
-        var target = this.op.attributes.target || this.options.linkTarget;
-        tagAttrs = tagAttrs
+        var targetForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.isValidTarget(this.options.linkTarget || '') ?
+            this.options.linkTarget : undefined;
+        var relForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidRel(this.options.linkRel || '') ?
+            this.options.linkRel : undefined;
+        var target = this.op.attributes.target || targetForAll;
+        var rel = this.op.attributes.rel || relForAll;
+        return tagAttrs
             .concat(this.makeAttr('href', this.op.attributes.link))
-            .concat(target ? this.makeAttr('target', target) : []);
-        if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
-            tagAttrs.push(this.makeAttr('rel', this.options.linkRel));
-        }
-        return tagAttrs;
+            .concat(target ? this.makeAttr('target', target) : [])
+            .concat(rel ? this.makeAttr('rel', rel) : []);
     };
     OpToHtmlConverter.prototype.getTags = function () {
         var attrs = this.op.attributes;
@@ -575,9 +584,6 @@ var OpToHtmlConverter = (function () {
                 (attrs[item[0]] === value_types_1.ScriptType.Sub ? 'sub' : 'sup')
                 : arr.preferSecond(item);
         });
-    };
-    OpToHtmlConverter.IsValidRel = function (relStr) {
-        return !!relStr.match(/^[a-z\s]{1,50}$/i);
     };
     return OpToHtmlConverter;
 }());

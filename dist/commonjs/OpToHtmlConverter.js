@@ -200,14 +200,16 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getLinkAttrs = function () {
         var tagAttrs = [];
-        var target = this.op.attributes.target || this.options.linkTarget;
-        tagAttrs = tagAttrs
+        var targetForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.isValidTarget(this.options.linkTarget || '') ?
+            this.options.linkTarget : undefined;
+        var relForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidRel(this.options.linkRel || '') ?
+            this.options.linkRel : undefined;
+        var target = this.op.attributes.target || targetForAll;
+        var rel = this.op.attributes.rel || relForAll;
+        return tagAttrs
             .concat(this.makeAttr('href', this.op.attributes.link))
-            .concat(target ? this.makeAttr('target', target) : []);
-        if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
-            tagAttrs.push(this.makeAttr('rel', this.options.linkRel));
-        }
-        return tagAttrs;
+            .concat(target ? this.makeAttr('target', target) : [])
+            .concat(rel ? this.makeAttr('rel', rel) : []);
     };
     OpToHtmlConverter.prototype.getTags = function () {
         var attrs = this.op.attributes;
@@ -238,9 +240,6 @@ var OpToHtmlConverter = (function () {
                 (attrs[item[0]] === value_types_1.ScriptType.Sub ? 'sub' : 'sup')
                 : arr.preferSecond(item);
         });
-    };
-    OpToHtmlConverter.IsValidRel = function (relStr) {
-        return !!relStr.match(/^[a-z\s]{1,50}$/i);
     };
     return OpToHtmlConverter;
 }());

@@ -23,6 +23,7 @@ interface IOpAttributes {
     mentions?: boolean | undefined;
     mention?: IMention | undefined;
     target?: string | undefined;
+    rel?: string | undefined;
     renderAsBlock?: boolean | undefined;
 }
 interface IUrlSanitizerFn {
@@ -41,5 +42,6 @@ declare class OpAttributeSanitizer {
     static IsValidSize(size: string): boolean;
     static IsValidWidth(width: string): boolean;
     static isValidTarget(target: string): boolean;
+    static IsValidRel(relStr: string): boolean;
 }
 export { OpAttributeSanitizer, IOpAttributes, IOpAttributeSanitizerOptions };

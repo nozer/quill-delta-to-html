@@ -40,6 +40,5 @@ declare class OpToHtmlConverter {
     makeAttr(k: string, v: string): ITagKeyValue;
     getLinkAttrs(): Array<ITagKeyValue>;
     getTags(): string[];
-    static IsValidRel(relStr: string): boolean;
 }
 export { OpToHtmlConverter, IOpToHtmlConverterOptions, IHtmlParts };

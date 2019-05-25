@@ -272,14 +272,19 @@ class OpToHtmlConverter {
 
    getLinkAttrs() : Array<ITagKeyValue> {
       let tagAttrs: ITagKeyValue[] = []
-      let target = this.op.attributes.target || this.options.linkTarget;
-      tagAttrs = tagAttrs
-      .concat(this.makeAttr('href', this.op.attributes.link!))
-      .concat(target ? this.makeAttr('target', target) : []);
-      if (!!this.options.linkRel && OpToHtmlConverter.IsValidRel(this.options.linkRel)) {
-         tagAttrs.push(this.makeAttr('rel', this.options.linkRel));
-      }
+      
+      let targetForAll = OpAttributeSanitizer.isValidTarget(this.options.linkTarget || '') ?
+         this.options.linkTarget : undefined;
+      let relForAll = OpAttributeSanitizer.IsValidRel(this.options.linkRel || '') ?
+         this.options.linkRel: undefined;
+      
+      let target = this.op.attributes.target || targetForAll;
+      let rel = this.op.attributes.rel || relForAll;
+
       return tagAttrs
+      .concat(this.makeAttr('href', this.op.attributes.link!))
+      .concat(target ? this.makeAttr('target', target) : [])
+      .concat(rel ? this.makeAttr('rel', rel) : []);
    }
 
    getTags(): string[] {
@@ -317,10 +322,6 @@ class OpToHtmlConverter {
                (attrs[item[0]] === ScriptType.Sub ? 'sub' : 'sup')
                : arr.preferSecond(item)!;
          });
-   }
-
-   static IsValidRel(relStr: string) {
-      return !!relStr.match(/^[a-z\s]{1,50}$/i);
    }
 
 }

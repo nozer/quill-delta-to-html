@@ -17,9 +17,10 @@ var OpAttributeSanitizer = (function () {
             'blockquote', 'code-block', 'renderAsBlock'
         ];
         var colorAttrs = ['background', 'color'];
-        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width, target = dirtyAttrs.target;
+        var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width, target = dirtyAttrs.target, rel = dirtyAttrs.rel;
         var sanitizedAttrs = booleanAttrs.concat(colorAttrs, ['font', 'size', 'link', 'script', 'list', 'header', 'align',
-            'direction', 'indent', 'mentions', 'mention', 'width']);
+            'direction', 'indent', 'mentions', 'mention', 'width',
+            'target', 'rel']);
         booleanAttrs.forEach(function (prop) {
             var v = dirtyAttrs[prop];
             if (v) {
@@ -48,6 +49,9 @@ var OpAttributeSanitizer = (function () {
         }
         if (target && OpAttributeSanitizer.isValidTarget(target)) {
             cleanAttrs.target = target;
+        }
+        if (rel && OpAttributeSanitizer.IsValidRel(rel)) {
+            cleanAttrs.rel = rel;
         }
         if (script === value_types_1.ScriptType.Sub || value_types_1.ScriptType.Super === script) {
             cleanAttrs.script = script;
@@ -113,6 +117,9 @@ var OpAttributeSanitizer = (function () {
     };
     OpAttributeSanitizer.isValidTarget = function (target) {
         return !!target.match(/^[_a-zA-Z0-9\-]{1,50}$/);
+    };
+    OpAttributeSanitizer.IsValidRel = function (relStr) {
+        return !!relStr.match(/^[a-zA-Z\s\-]{1,250}$/i);
     };
     return OpAttributeSanitizer;
 }());

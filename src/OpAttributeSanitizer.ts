@@ -32,6 +32,7 @@ interface IOpAttributes {
    mentions?: boolean | undefined,
    mention?: IMention | undefined,
    target?: string | undefined,
+   rel?: string | undefined,
 
    // should this custom blot be rendered as block?
    renderAsBlock?: boolean | undefined
@@ -61,12 +62,13 @@ class OpAttributeSanitizer {
       let colorAttrs = ['background', 'color'];
 
       let { font, size, link, script, list, header, align,
-         direction, indent, mentions, mention, width, target
+         direction, indent, mentions, mention, width, target, rel
       } = dirtyAttrs;
 
       let sanitizedAttrs = [...booleanAttrs, ...colorAttrs,
          'font', 'size', 'link', 'script', 'list', 'header', 'align',
-         'direction', 'indent', 'mentions', 'mention', 'width'
+         'direction', 'indent', 'mentions', 'mention', 'width',
+         'target', 'rel'
       ];
       booleanAttrs.forEach(function (prop: string) {
          var v = (<any>dirtyAttrs)[prop];
@@ -101,6 +103,10 @@ class OpAttributeSanitizer {
       }
       if (target && OpAttributeSanitizer.isValidTarget(target)) {
          cleanAttrs.target = target;
+      }
+
+      if (rel && OpAttributeSanitizer.IsValidRel(rel)) {
+         cleanAttrs.rel = rel;
       }
 
       if (script === ScriptType.Sub || ScriptType.Super === script) {
@@ -180,6 +186,10 @@ class OpAttributeSanitizer {
 
    static isValidTarget(target: string) {
       return !!target.match(/^[_a-zA-Z0-9\-]{1,50}$/);
+   }
+
+   static IsValidRel(relStr: string) {
+      return !!relStr.match(/^[a-zA-Z\s\-]{1,250}$/i);
    }
 }
 

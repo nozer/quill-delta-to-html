@@ -379,15 +379,4 @@ describe('OpToHtmlConverter', function () {
 
     });
 
-    describe('#IsValidColorLiteral()', function() {
-        it('should return true if color literal is valid', function() {
-            assert.ok(OpToHtmlConverter.IsValidRel('nofollow'));
-            assert.ok(OpToHtmlConverter.IsValidRel('tag'));
-            assert.ok(OpToHtmlConverter.IsValidRel('tag nofollow'));
-            assert.equal(OpToHtmlConverter.IsValidRel('no-follow'), false);
-            assert.equal(OpToHtmlConverter.IsValidRel('tag1'), false);
-            assert.equal(OpToHtmlConverter.IsValidRel(''), false);
-        });
-    });
-
 });

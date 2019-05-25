@@ -98,7 +98,32 @@ describe('QuillDeltaToHtmlConverter', function () {
             ' href="about:blank">mention</a></p>'
          ].join(""));
       });
+      it('should render links with rels', function() {
+         var ops = [{
+            'attributes': {
+                'link': '#',
+                'rel': 'nofollow noopener'
+              },
+              'insert': 'external link'
+            },
+            {
+              'attributes': {
+                'link': '#'
+              },
+              'insert': 'internal link'
+            }
+         ];
+         var qdc = new QuillDeltaToHtmlConverter(ops, {
+            linkRel: 'license'
+         });
+         var html = qdc.convert();
+         assert.equal(html, '<p><a href="#" target="_blank" rel="nofollow noopener">external link</a><a href="#" target="_blank" rel="license">internal link</a></p>')
 
+         qdc = new QuillDeltaToHtmlConverter(ops);
+         html = qdc.convert();
+         assert.equal(html, '<p><a href="#" target="_blank" rel="nofollow noopener">external link</a><a href="#" target="_blank">internal link</a></p>')
+
+      });
       it('should render image and image links', function() {
          let ops = [
             {insert: {image: "http://yahoo.com/abc.jpg"}},

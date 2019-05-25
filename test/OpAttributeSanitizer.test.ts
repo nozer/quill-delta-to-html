@@ -70,6 +70,16 @@ describe('OpAttributeSanitizer', function () {
             assert.equal(OpAttributeSanitizer.IsValidRGBColor('rgb(2000,0,0)'), false);
         });
     });
+    describe('#IsValidRel()', function() {
+        it('should return true if rel is valid', function() {
+            assert.ok(OpAttributeSanitizer.IsValidRel('nofollow'));
+            assert.ok(OpAttributeSanitizer.IsValidRel('tag'));
+            assert.ok(OpAttributeSanitizer.IsValidRel('tag nofollow'));
+            assert.equal(OpAttributeSanitizer.IsValidRel('no"follow'), false);
+            assert.equal(OpAttributeSanitizer.IsValidRel('tag1'), false);
+            assert.equal(OpAttributeSanitizer.IsValidRel(''), false);
+        });
+    });
 
     describe('#sanitize()', function() {
 
