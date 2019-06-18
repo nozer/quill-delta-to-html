@@ -143,16 +143,12 @@ class OpToHtmlConverter {
 
       type Str2StrType = { (x: string): string };
 
-      if(this.options.inlineStyles) {
-            return [];
-      }
-
       var propsArr = ['indent', 'align', 'direction', 'font', 'size'];
       if (this.options.allowBackgroundClasses) {
          propsArr.push('background');
       }
       return propsArr
-         .filter((prop) => !!attrs[prop])
+         .filter((prop) => !!attrs[prop] && !(this.options.inlineStyles && this.options.inlineStyles.hasOwnProperty(prop)))
          .filter((prop) => prop === 'background' ? OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true)
          .map((prop) => prop + '-' + attrs[prop])
          .concat(this.op.isFormula() ? 'formula' : [])
