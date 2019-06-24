@@ -1,25 +1,25 @@
 {
   "name": "quill-delta-to-html",
-  "version": "0.10.9",
+  "version": "0.10.10",
   "description": "Converts Quill's delta ops to HTML",
   "main": "./dist/commonjs/main.js",
   "types": "./dist/commonjs/main.d.ts",
   "dependencies": {},
   "devDependencies": {
-    "@types/mocha": "^2.2.40",
-    "@types/node": "^7.0.12",
-    "browserify": "^16.2.3",
-    "coveralls": "^3.0.2",
-    "mocha": "^5.2.0",
-    "nyc": "^14.1.1",
-    "ts-node": "^3.0.2",
-    "typescript": "^2.9.2"
+    "@types/mocha": "^2",
+    "@types/node": "^7.0",
+    "browserify": "^16.2",
+    "coveralls": "^3.0",
+    "mocha": "^6",
+    "nyc": "^14.1",
+    "ts-node": "^8",
+    "typescript": "^2"
   },
   "scripts": {
     "browserbundle": "./node_modules/browserify/bin/cmd.js ./dist/commonjs/QuillDeltaToHtmlConverter.js -o ./dist/browser/QuillDeltaToHtmlConverter.bundle.js -s QuillDeltaToHtmlConverter ",
     "browser": "npm run browserbundle && echo '; window.QuillDeltaToHtmlConverter = window.QuillDeltaToHtmlConverter ? window.QuillDeltaToHtmlConverter.QuillDeltaToHtmlConverter : window.QuillDeltaToHtmlConverter; ' >>  ./dist/browser/QuillDeltaToHtmlConverter.bundle.js ",
     "build": "./node_modules/typescript/bin/tsc &&  npm run browser ",
-    "test": "./node_modules/nyc/bin/nyc.js ./node_modules/mocha/bin/mocha --compilers ts:ts-node/register -b \"./test/**/*.ts\"  ",
+    "test": "./node_modules/nyc/bin/nyc.js ./node_modules/mocha/bin/mocha --require ts-node/register -b \"./test/**/*.ts\"  ",
     "coverage": "./node_modules/nyc/bin/nyc.js report --reporter=text-lcov | coveralls ",
     "coveragehtml": "./node_modules/nyc/bin/nyc.js report --reporter=html "
   },
