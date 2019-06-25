@@ -27,6 +27,10 @@ class DeltaInsertOp {
          attrs.header || attrs.align || attrs.direction || attrs.indent);
    }
 
+   isTable() {
+      return !!this.attributes.table;
+   }
+
    isBlockquote(): boolean {
       return !!this.attributes.blockquote;
    }
@@ -55,7 +59,7 @@ class DeltaInsertOp {
    }
 
    isInline() {
-      return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock());
+      return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock() || this.isTable());
    }
 
    isCodeBlock() {

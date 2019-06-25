@@ -89,7 +89,7 @@ class OpToHtmlConverter {
 
    getHtmlParts(): IHtmlParts {
 
-      if (this.op.isJustNewline() && !this.op.isContainerBlock()) {
+      if (this.op.isJustNewline() && !this.op.isContainerBlock() && !this.op.isTable()) {
          return { openingTag: '', closingTag: '', content: NewLine };
       }
 

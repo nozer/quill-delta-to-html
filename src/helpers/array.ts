@@ -1,7 +1,7 @@
 
-interface IArraySlice {
+interface IArraySlice<T> {
     sliceStartsAt: number,
-    elements: any[]
+    elements: T[]
 }
 
 function preferSecond(arr: any[]): any {
@@ -51,8 +51,8 @@ function groupConsecutiveElementsWhile (arr: any[],
  * Returns consecutive list of elements satisfying the predicate starting from startIndex 
  * and traversing the array in reverse order. 
  */
-function sliceFromReverseWhile (arr: any[], startIndex: number,
-    predicate: (currElm: any) => boolean): IArraySlice {
+function sliceFromReverseWhile<T> (arr: any[], startIndex: number,
+    predicate: (currElm: any) => boolean): IArraySlice<T> {
 
     var result = {
         elements: [] as any[],
@@ -78,4 +78,13 @@ function intersperse (arr: any[], item: any): any[] {
     }, []);
 }
 
-export {IArraySlice, preferSecond, flatten, groupConsecutiveElementsWhile, sliceFromReverseWhile, intersperse}
+function partitionAtIndexes<T>(arr: T[], indexes: number[]): T[][] {
+    if (!arr.length) {
+        return [];
+    }
+    return indexes.map( (idx, i, all) => {
+        return arr.slice( i === 0 ? 0 : all[i - 1] + 1, idx + 1);
+    });
+}
+
+export {IArraySlice, preferSecond, flatten, groupConsecutiveElementsWhile, sliceFromReverseWhile, intersperse, partitionAtIndexes}

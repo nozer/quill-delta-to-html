@@ -42,6 +42,14 @@ class ListItem {
     }
 }
 
-type TDataGroup = VideoItem | InlineGroup | BlockGroup | ListItem | ListGroup;
+class TableCell extends BlockGroup {};
+class TableGroup {
+    rows: TableCell[][];
+    constructor(rows: TableCell[][]) {
+        this.rows = rows;
+    }
+}
 
-export { VideoItem, BlotBlock, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup }; 
+type TDataGroup = VideoItem | InlineGroup | BlockGroup | ListItem | ListGroup | TableGroup;
+
+export { VideoItem, BlotBlock, InlineGroup, BlockGroup, ListGroup, ListItem, TableCell, TableGroup, TDataGroup }; 

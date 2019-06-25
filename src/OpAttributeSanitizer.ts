@@ -34,6 +34,8 @@ interface IOpAttributes {
    target?: string | undefined,
    rel?: string | undefined,
 
+   table?: string | undefined,
+
    // should this custom blot be rendered as block?
    renderAsBlock?: boolean | undefined
 }

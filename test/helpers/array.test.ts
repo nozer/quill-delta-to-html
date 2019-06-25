@@ -2,7 +2,7 @@
 import 'mocha';
 import * as assert from 'assert';
 
-import {preferSecond, flatten, groupConsecutiveElementsWhile, intersperse} from './../../src/helpers/array';
+import {preferSecond, flatten, groupConsecutiveElementsWhile, intersperse, partitionAtIndexes} from './../../src/helpers/array';
 
 describe("Array Helpers Module", function(){
 
@@ -41,6 +41,19 @@ describe("Array Helpers Module", function(){
                 1,0,3,0, 4
             ]);
             assert.deepEqual(intersperse([1],2), [1]);
+        });
+    });
+
+    describe('partitionAtIndexes()', () => {
+        it('should partition the given array at specified indexes', () => {
+            let arr = ['a', 'b', 1, 2, 3, null, undefined];
+            let actual = partitionAtIndexes<any>(arr, [1, 4, 6]);
+            assert.deepEqual(actual, [
+                ['a', 'b'], [1, 2, 3], [null, undefined]
+            ]);
+
+            assert.deepEqual(partitionAtIndexes<any>([], [1, 4, 6]), []);
+            assert.deepEqual(partitionAtIndexes<any>(['a', 'b'], [1, 5, 8]), [['a', 'b'], [], []]);
         });
     });
 
