@@ -121,7 +121,7 @@ class OpAttributeSanitizer {
          cleanAttrs.header = Math.min(Number(header), 6);
       }
 
-      if (align === AlignType.Center || align === AlignType.Right || align === AlignType.Justify) {
+      if ([AlignType.Center, AlignType.Right, AlignType.Justify, AlignType.Left].find(a => a === align)) {
          cleanAttrs.align = align;
       }
 
