@@ -278,7 +278,7 @@ var OpAttributeSanitizer = (function () {
         if (Number(header)) {
             cleanAttrs.header = Math.min(Number(header), 6);
         }
-        if (align === value_types_1.AlignType.Center || align === value_types_1.AlignType.Right || align === value_types_1.AlignType.Justify) {
+        if ([value_types_1.AlignType.Center, value_types_1.AlignType.Right, value_types_1.AlignType.Justify, value_types_1.AlignType.Left].find(function (a) { return a === align; })) {
             cleanAttrs.align = align;
         }
         if (direction === value_types_1.DirectionType.Rtl) {
@@ -1323,6 +1323,7 @@ var DirectionType;
 exports.DirectionType = DirectionType;
 var AlignType;
 (function (AlignType) {
+    AlignType["Left"] = "left";
     AlignType["Center"] = "center";
     AlignType["Right"] = "right";
     AlignType["Justify"] = "justify";

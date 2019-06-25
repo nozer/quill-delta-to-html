@@ -14,6 +14,7 @@ declare enum DirectionType {
     Rtl = "rtl"
 }
 declare enum AlignType {
+    Left = "left",
     Center = "center",
     Right = "right",
     Justify = "justify"

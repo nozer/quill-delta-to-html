@@ -23,6 +23,7 @@ var DirectionType;
 exports.DirectionType = DirectionType;
 var AlignType;
 (function (AlignType) {
+    AlignType["Left"] = "left";
     AlignType["Center"] = "center";
     AlignType["Right"] = "right";
     AlignType["Justify"] = "justify";
