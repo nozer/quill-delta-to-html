@@ -18,6 +18,18 @@ function flatten (arr: any[]): any[] {
     }, []);
 };
 
+function find(arr: any[], predicate: (currElm: any) => boolean) {
+    if (Array.prototype.find) {
+        return Array.prototype.find.call(arr, predicate);
+    }
+
+    for (var i = 0; i < arr.length; i++) {
+        if (predicate(arr[i]))
+            return arr[i];
+    }
+
+    return undefined;
+}
 
 /**
  * Returns a new array by putting consecutive elements satisfying predicate into a new 
@@ -78,4 +90,4 @@ function intersperse (arr: any[], item: any): any[] {
     }, []);
 }
 
-export {IArraySlice, preferSecond, flatten, groupConsecutiveElementsWhile, sliceFromReverseWhile, intersperse}
+export {IArraySlice, preferSecond, flatten, groupConsecutiveElementsWhile, sliceFromReverseWhile, intersperse, find}

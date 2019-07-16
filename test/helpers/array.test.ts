@@ -2,7 +2,7 @@
 import 'mocha';
 import * as assert from 'assert';
 
-import {preferSecond, flatten, groupConsecutiveElementsWhile, intersperse} from './../../src/helpers/array';
+import {preferSecond, flatten, groupConsecutiveElementsWhile, intersperse, find} from './../../src/helpers/array';
 
 describe("Array Helpers Module", function(){
 
@@ -44,4 +44,17 @@ describe("Array Helpers Module", function(){
         });
     });
 
+    describe("find()", function () {
+        it('should native find sepecific element', function () {
+            assert.equal(find([1, 3], elem => elem === 3), 3);
+            assert.equal(find([], elem => elem === 3), null);
+        });
+
+        it('should polyfill find sepecific element', function () {
+            Object.assign(Array.prototype, { find: undefined });
+
+            assert.equal(find([1, 3], elem => elem === 3), 3);
+            assert.equal(find([], elem => elem === 3), null);
+        });
+    });    
 });

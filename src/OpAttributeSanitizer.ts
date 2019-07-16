@@ -4,6 +4,7 @@ import { MentionSanitizer } from "./mentions/MentionSanitizer";
 import * as url from './helpers/url';
 import {encodeLink} from "./funcs-html";
 import { IMention } from "./mentions/MentionSanitizer";
+import {find} from './helpers/array';
 
 interface IOpAttributes {
    background?: string | undefined,
@@ -121,7 +122,7 @@ class OpAttributeSanitizer {
          cleanAttrs.header = Math.min(Number(header), 6);
       }
 
-      if ([AlignType.Center, AlignType.Right, AlignType.Justify, AlignType.Left].find(a => a === align)) {
+      if (find([AlignType.Center, AlignType.Right, AlignType.Justify, AlignType.Left],a => a === align)) {
          cleanAttrs.align = align;
       }
 
