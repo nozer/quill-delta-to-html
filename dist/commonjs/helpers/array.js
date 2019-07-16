@@ -15,6 +15,17 @@ function flatten(arr) {
 }
 exports.flatten = flatten;
 ;
+function find(arr, predicate) {
+    if (Array.prototype.find) {
+        return Array.prototype.find.call(arr, predicate);
+    }
+    for (var i = 0; i < arr.length; i++) {
+        if (predicate(arr[i]))
+            return arr[i];
+    }
+    return undefined;
+}
+exports.find = find;
 function groupConsecutiveElementsWhile(arr, predicate) {
     var groups = [];
     var currElm, currGroup;

@@ -4,6 +4,7 @@ var value_types_1 = require("./value-types");
 var MentionSanitizer_1 = require("./mentions/MentionSanitizer");
 var url = require("./helpers/url");
 var funcs_html_1 = require("./funcs-html");
+var array_1 = require("./helpers/array");
 var OpAttributeSanitizer = (function () {
     function OpAttributeSanitizer() {
     }
@@ -62,7 +63,7 @@ var OpAttributeSanitizer = (function () {
         if (Number(header)) {
             cleanAttrs.header = Math.min(Number(header), 6);
         }
-        if ([value_types_1.AlignType.Center, value_types_1.AlignType.Right, value_types_1.AlignType.Justify, value_types_1.AlignType.Left].find(function (a) { return a === align; })) {
+        if (array_1.find([value_types_1.AlignType.Center, value_types_1.AlignType.Right, value_types_1.AlignType.Justify, value_types_1.AlignType.Left], function (a) { return a === align; })) {
             cleanAttrs.align = align;
         }
         if (direction === value_types_1.DirectionType.Rtl) {
