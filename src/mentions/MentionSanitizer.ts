@@ -1,66 +1,74 @@
-
-import {IOpAttributeSanitizerOptions, OpAttributeSanitizer} from "./../OpAttributeSanitizer"
+import {
+  IOpAttributeSanitizerOptions,
+  OpAttributeSanitizer
+} from './../OpAttributeSanitizer';
 
 interface IMention {
-   [index: string]: string | undefined,
-   'name'?: string,
-   'target'?: string,
-   'slug'?: string,
-   'class'?: string,
-   'avatar'?: string,
-   'id'?: string,
-   'end-point'?: string
+  [index: string]: string | undefined;
+  name?: string;
+  target?: string;
+  slug?: string;
+  class?: string;
+  avatar?: string;
+  id?: string;
+  'end-point'?: string;
 }
 
 class MentionSanitizer {
+  static sanitize(
+    dirtyObj: IMention,
+    sanitizeOptions: IOpAttributeSanitizerOptions
+  ): IMention {
+    var cleanObj: any = {};
 
-   static sanitize(dirtyObj: IMention, sanitizeOptions: IOpAttributeSanitizerOptions): IMention {
-
-      var cleanObj: any = {};
-
-      if (!dirtyObj || typeof dirtyObj !== 'object') {
-         return cleanObj;
-      }
-
-      if (dirtyObj.class && MentionSanitizer.IsValidClass(dirtyObj.class)) {
-         cleanObj.class = dirtyObj.class;
-      }
-
-      if (dirtyObj.id && MentionSanitizer.IsValidId(dirtyObj.id)) {
-         cleanObj.id = dirtyObj.id;
-      }
-
-      if (MentionSanitizer.IsValidTarget(dirtyObj.target+'')) {
-         cleanObj.target = dirtyObj.target;
-      }
-
-      if (dirtyObj.avatar) {
-         cleanObj.avatar = OpAttributeSanitizer.sanitizeLinkUsingOptions(dirtyObj.avatar + '', sanitizeOptions);
-      }
-
-      if (dirtyObj['end-point']) {
-         cleanObj['end-point'] = OpAttributeSanitizer.sanitizeLinkUsingOptions(dirtyObj['end-point'] + '', sanitizeOptions);
-      }
-
-      if (dirtyObj.slug) {
-         cleanObj.slug = (dirtyObj.slug + '');
-      }
-
+    if (!dirtyObj || typeof dirtyObj !== 'object') {
       return cleanObj;
-   }
-   
-   static IsValidClass(classAttr: string) {
-      return !!classAttr.match(/^[a-zA-Z0-9_\-]{1,500}$/i);
-   }
+    }
 
-   static IsValidId(idAttr: string) {
-      return !!idAttr.match(/^[a-zA-Z0-9_\-\:\.]{1,500}$/i);
-   }
+    if (dirtyObj.class && MentionSanitizer.IsValidClass(dirtyObj.class)) {
+      cleanObj.class = dirtyObj.class;
+    }
 
-   static IsValidTarget(target: string) {
-      return ['_self', '_blank', '_parent', '_top'].indexOf(target) > -1;
-   }
+    if (dirtyObj.id && MentionSanitizer.IsValidId(dirtyObj.id)) {
+      cleanObj.id = dirtyObj.id;
+    }
 
+    if (MentionSanitizer.IsValidTarget(dirtyObj.target + '')) {
+      cleanObj.target = dirtyObj.target;
+    }
+
+    if (dirtyObj.avatar) {
+      cleanObj.avatar = OpAttributeSanitizer.sanitizeLinkUsingOptions(
+        dirtyObj.avatar + '',
+        sanitizeOptions
+      );
+    }
+
+    if (dirtyObj['end-point']) {
+      cleanObj['end-point'] = OpAttributeSanitizer.sanitizeLinkUsingOptions(
+        dirtyObj['end-point'] + '',
+        sanitizeOptions
+      );
+    }
+
+    if (dirtyObj.slug) {
+      cleanObj.slug = dirtyObj.slug + '';
+    }
+
+    return cleanObj;
+  }
+
+  static IsValidClass(classAttr: string) {
+    return !!classAttr.match(/^[a-zA-Z0-9_\-]{1,500}$/i);
+  }
+
+  static IsValidId(idAttr: string) {
+    return !!idAttr.match(/^[a-zA-Z0-9_\-\:\.]{1,500}$/i);
+  }
+
+  static IsValidTarget(target: string) {
+    return ['_self', '_blank', '_parent', '_top'].indexOf(target) > -1;
+  }
 }
 
-export { MentionSanitizer, IMention }
+export { MentionSanitizer, IMention };
