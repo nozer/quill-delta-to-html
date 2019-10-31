@@ -58,3 +58,12 @@ function intersperse(arr, item) {
     }, []);
 }
 exports.intersperse = intersperse;
+function partitionAtIndexes(arr, indexes) {
+    if (!arr.length) {
+        return [];
+    }
+    return indexes.map(function (idx, i, all) {
+        return arr.slice(i === 0 ? 0 : all[i - 1] + 1, idx + 1);
+    });
+}
+exports.partitionAtIndexes = partitionAtIndexes;

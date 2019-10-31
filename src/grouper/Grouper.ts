@@ -67,7 +67,7 @@ class Grouper {
    }
 
    static makeTableCellsForRow(ops: DeltaInsertOp[]) {
-      let initial: number[] = []
+      let initial: number[] = [];
       let lastCellIndexesOnEachCol = ops.reduce((pv, op, i) => {
          if (op.attributes.table){
             pv.push(i);
@@ -77,7 +77,7 @@ class Grouper {
       let indexes = lastCellIndexesOnEachCol;
       let rawCols = partitionAtIndexes<DeltaInsertOp>(ops, indexes);
       return rawCols.map(cells => {
-         let cellOp = cells.find(cell => cell.attributes.table)!
+         let cellOp = cells.find(cell => !!cell.attributes.table)!
          return new TableCell(cellOp, cells.filter(cell => !cell.attributes.table))
       });
    }

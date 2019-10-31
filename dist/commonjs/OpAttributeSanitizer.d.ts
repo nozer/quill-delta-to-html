@@ -24,6 +24,7 @@ interface IOpAttributes {
     mention?: IMention | undefined;
     target?: string | undefined;
     rel?: string | undefined;
+    table?: string | undefined;
     renderAsBlock?: boolean | undefined;
 }
 interface IUrlSanitizerFn {

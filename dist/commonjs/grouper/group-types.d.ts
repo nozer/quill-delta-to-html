@@ -25,5 +25,11 @@ declare class ListItem {
     innerList: ListGroup | null;
     constructor(item: BlockGroup, innerList?: ListGroup | null);
 }
-declare type TDataGroup = VideoItem | InlineGroup | BlockGroup | ListItem | ListGroup;
-export { VideoItem, BlotBlock, InlineGroup, BlockGroup, ListGroup, ListItem, TDataGroup };
+declare class TableCell extends BlockGroup {
+}
+declare class TableGroup {
+    rows: TableCell[][];
+    constructor(rows: TableCell[][]);
+}
+declare type TDataGroup = VideoItem | InlineGroup | BlockGroup | ListItem | ListGroup | TableGroup;
+export { VideoItem, BlotBlock, InlineGroup, BlockGroup, ListGroup, ListItem, TableCell, TableGroup, TDataGroup };

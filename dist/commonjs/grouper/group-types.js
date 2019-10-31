@@ -65,3 +65,19 @@ var ListItem = (function () {
     return ListItem;
 }());
 exports.ListItem = ListItem;
+var TableCell = (function (_super) {
+    __extends(TableCell, _super);
+    function TableCell() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return TableCell;
+}(BlockGroup));
+exports.TableCell = TableCell;
+;
+var TableGroup = (function () {
+    function TableGroup(rows) {
+        this.rows = rows;
+    }
+    return TableGroup;
+}());
+exports.TableGroup = TableGroup;

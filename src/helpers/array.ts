@@ -51,11 +51,11 @@ function groupConsecutiveElementsWhile (arr: any[],
  * Returns consecutive list of elements satisfying the predicate starting from startIndex 
  * and traversing the array in reverse order. 
  */
-function sliceFromReverseWhile<T> (arr: any[], startIndex: number,
-    predicate: (currElm: any) => boolean): IArraySlice<T> {
+function sliceFromReverseWhile<T> (arr: T[], startIndex: number,
+    predicate: (currElm: T) => boolean): IArraySlice<T> {
 
     var result = {
-        elements: [] as any[],
+        elements: [] as T[],
         sliceStartsAt: -1
     };
     for (var i = startIndex; i >= 0; i--) {

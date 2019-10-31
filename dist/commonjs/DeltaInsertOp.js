@@ -18,6 +18,9 @@ var DeltaInsertOp = (function () {
         return !!(attrs.blockquote || attrs.list || attrs['code-block'] ||
             attrs.header || attrs.align || attrs.direction || attrs.indent);
     };
+    DeltaInsertOp.prototype.isTable = function () {
+        return !!this.attributes.table;
+    };
     DeltaInsertOp.prototype.isBlockquote = function () {
         return !!this.attributes.blockquote;
     };
@@ -39,7 +42,7 @@ var DeltaInsertOp = (function () {
         return (Number(this.attributes.indent) || 0) > (Number(op.attributes.indent) || 0);
     };
     DeltaInsertOp.prototype.isInline = function () {
-        return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock());
+        return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock() || this.isTable());
     };
     DeltaInsertOp.prototype.isCodeBlock = function () {
         return !!this.attributes['code-block'];

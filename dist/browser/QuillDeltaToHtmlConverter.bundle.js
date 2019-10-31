@@ -19,6 +19,9 @@ var DeltaInsertOp = (function () {
         return !!(attrs.blockquote || attrs.list || attrs['code-block'] ||
             attrs.header || attrs.align || attrs.direction || attrs.indent);
     };
+    DeltaInsertOp.prototype.isTable = function () {
+        return !!this.attributes.table;
+    };
     DeltaInsertOp.prototype.isBlockquote = function () {
         return !!this.attributes.blockquote;
     };
@@ -40,7 +43,7 @@ var DeltaInsertOp = (function () {
         return (Number(this.attributes.indent) || 0) > (Number(op.attributes.indent) || 0);
     };
     DeltaInsertOp.prototype.isInline = function () {
-        return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock());
+        return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock() || this.isTable());
     };
     DeltaInsertOp.prototype.isCodeBlock = function () {
         return !!this.attributes['code-block'];
@@ -398,7 +401,7 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getHtmlParts = function () {
         var _this = this;
-        if (this.op.isJustNewline() && !this.op.isContainerBlock()) {
+        if (this.op.isJustNewline() && !this.op.isContainerBlock() && !this.op.isTable()) {
             return { openingTag: '', closingTag: '', content: value_types_1.NewLine };
         }
         var tags = this.getTags(), attrs = this.getTagAttributes();
@@ -888,6 +891,13 @@ var Grouper = (function () {
             if (op.isVideo()) {
                 result.push(new group_types_1.VideoItem(op));
             }
+            else if (op.isTable()) {
+                opsSlice = array_1.sliceFromReverseWhile(ops, i, function (op) {
+                    return canBeInBlock(op) || op.isTable();
+                });
+                result.push(this.makeTableGroupFromOps(opsSlice.elements));
+                i = opsSlice.sliceStartsAt > -1 ? opsSlice.sliceStartsAt : i;
+            }
             else if (op.isCustomBlock()) {
                 result.push(new group_types_1.BlotBlock(op));
             }
@@ -904,6 +914,34 @@ var Grouper = (function () {
         }
         result.reverse();
         return result;
+    };
+    Grouper.makeTableGroupFromOps = function (ops) {
+        var initial = {};
+        var lastCellIndexesOnEachRow = ops.reduce(function (pv, op, i) {
+            if (op.attributes.table) {
+                pv[op.attributes.table] = i;
+            }
+            return pv;
+        }, initial);
+        var indexes = Object.keys(lastCellIndexesOnEachRow).map(function (k) { return lastCellIndexesOnEachRow[k]; });
+        var rawRows = array_1.partitionAtIndexes(ops, indexes);
+        var rows = rawRows.map(Grouper.makeTableCellsForRow);
+        return new group_types_1.TableGroup(rows);
+    };
+    Grouper.makeTableCellsForRow = function (ops) {
+        var initial = [];
+        var lastCellIndexesOnEachCol = ops.reduce(function (pv, op, i) {
+            if (op.attributes.table) {
+                pv.push(i);
+            }
+            return pv;
+        }, initial);
+        var indexes = lastCellIndexesOnEachCol;
+        var rawCols = array_1.partitionAtIndexes(ops, indexes);
+        return rawCols.map(function (cells) {
+            var cellOp = cells.find(function (cell) { return !!cell.attributes.table; });
+            return new group_types_1.TableCell(cellOp, cells.filter(function (cell) { return !cell.attributes.table; }));
+        });
     };
     Grouper.groupConsecutiveSameStyleBlocks = function (groups, blocksOf) {
         if (blocksOf === void 0) { blocksOf = {
@@ -1117,6 +1155,22 @@ var ListItem = (function () {
     return ListItem;
 }());
 exports.ListItem = ListItem;
+var TableCell = (function (_super) {
+    __extends(TableCell, _super);
+    function TableCell() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return TableCell;
+}(BlockGroup));
+exports.TableCell = TableCell;
+;
+var TableGroup = (function () {
+    function TableGroup(rows) {
+        this.rows = rows;
+    }
+    return TableGroup;
+}());
+exports.TableGroup = TableGroup;
 
 },{}],12:[function(require,module,exports){
 "use strict";
@@ -1179,6 +1233,15 @@ function intersperse(arr, item) {
     }, []);
 }
 exports.intersperse = intersperse;
+function partitionAtIndexes(arr, indexes) {
+    if (!arr.length) {
+        return [];
+    }
+    return indexes.map(function (idx, i, all) {
+        return arr.slice(i === 0 ? 0 : all[i - 1] + 1, idx + 1);
+    });
+}
+exports.partitionAtIndexes = partitionAtIndexes;
 
 },{}],13:[function(require,module,exports){
 "use strict";

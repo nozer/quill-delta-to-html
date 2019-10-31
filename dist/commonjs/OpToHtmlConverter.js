@@ -54,7 +54,7 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getHtmlParts = function () {
         var _this = this;
-        if (this.op.isJustNewline() && !this.op.isContainerBlock()) {
+        if (this.op.isJustNewline() && !this.op.isContainerBlock() && !this.op.isTable()) {
             return { openingTag: '', closingTag: '', content: value_types_1.NewLine };
         }
         var tags = this.getTags(), attrs = this.getTagAttributes();

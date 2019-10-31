@@ -6,6 +6,7 @@ declare class DeltaInsertOp {
     constructor(insertVal: InsertData | string, attrs?: IOpAttributes);
     static createNewLineOp(): DeltaInsertOp;
     isContainerBlock(): boolean;
+    isTable(): boolean;
     isBlockquote(): boolean;
     isHeader(): boolean;
     isSameHeaderAs(op: DeltaInsertOp): boolean;

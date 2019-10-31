@@ -19,6 +19,13 @@ var Grouper = (function () {
             if (op.isVideo()) {
                 result.push(new group_types_1.VideoItem(op));
             }
+            else if (op.isTable()) {
+                opsSlice = array_1.sliceFromReverseWhile(ops, i, function (op) {
+                    return canBeInBlock(op) || op.isTable();
+                });
+                result.push(this.makeTableGroupFromOps(opsSlice.elements));
+                i = opsSlice.sliceStartsAt > -1 ? opsSlice.sliceStartsAt : i;
+            }
             else if (op.isCustomBlock()) {
                 result.push(new group_types_1.BlotBlock(op));
             }
@@ -35,6 +42,34 @@ var Grouper = (function () {
         }
         result.reverse();
         return result;
+    };
+    Grouper.makeTableGroupFromOps = function (ops) {
+        var initial = {};
+        var lastCellIndexesOnEachRow = ops.reduce(function (pv, op, i) {
+            if (op.attributes.table) {
+                pv[op.attributes.table] = i;
+            }
+            return pv;
+        }, initial);
+        var indexes = Object.keys(lastCellIndexesOnEachRow).map(function (k) { return lastCellIndexesOnEachRow[k]; });
+        var rawRows = array_1.partitionAtIndexes(ops, indexes);
+        var rows = rawRows.map(Grouper.makeTableCellsForRow);
+        return new group_types_1.TableGroup(rows);
+    };
+    Grouper.makeTableCellsForRow = function (ops) {
+        var initial = [];
+        var lastCellIndexesOnEachCol = ops.reduce(function (pv, op, i) {
+            if (op.attributes.table) {
+                pv.push(i);
+            }
+            return pv;
+        }, initial);
+        var indexes = lastCellIndexesOnEachCol;
+        var rawCols = array_1.partitionAtIndexes(ops, indexes);
+        return rawCols.map(function (cells) {
+            var cellOp = cells.find(function (cell) { return !!cell.attributes.table; });
+            return new group_types_1.TableCell(cellOp, cells.filter(function (cell) { return !cell.attributes.table; }));
+        });
     };
     Grouper.groupConsecutiveSameStyleBlocks = function (groups, blocksOf) {
         if (blocksOf === void 0) { blocksOf = {
