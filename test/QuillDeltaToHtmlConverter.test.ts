@@ -552,7 +552,7 @@ describe('QuillDeltaToHtmlConverter', function() {
           },
           {
             attributes: {
-              'code-block': true
+              'code-block': 'javascript'
             },
             insert: '\n'
           },
@@ -564,6 +564,15 @@ describe('QuillDeltaToHtmlConverter', function() {
               'code-block': true
             },
             insert: '\n'
+          },
+          {
+            insert: 'line 5'
+          },
+          {
+            attributes: {
+              'code-block': 'ja"va'
+            },
+            insert: '\n'
           }
         ];
         //console.log(encodeHtml("<p>line 4</p>"));
@@ -572,9 +581,11 @@ describe('QuillDeltaToHtmlConverter', function() {
         assert.equal(
           html,
           [
-            '<pre>line 1\nline 2\nline 3\n',
+            '<pre>line 1\nline 2</pre>',
+            '<pre data-language="javascript">line 3</pre>',
+            '<pre>',
             encodeHtml('<p>line 4</p>'),
-            '</pre>'
+            '\nline 5' + '</pre>'
           ].join('')
         );
 
@@ -583,10 +594,12 @@ describe('QuillDeltaToHtmlConverter', function() {
         });
         html = qdc.convert();
         assert.equal(
-          '<pre>line 1</pre><pre>line 2</pre><pre>line 3</pre>' +
+          '<pre>line 1</pre><pre>line 2</pre>' +
+            '<pre data-language="javascript">line 3</pre>' +
             '<pre>' +
             encodeHtml('<p>line 4</p>') +
-            '</pre>',
+            '</pre>' +
+            '<pre>line 5</pre>',
           html
         );
         qdc = new QuillDeltaToHtmlConverter([ops[0], ops[1]]);
