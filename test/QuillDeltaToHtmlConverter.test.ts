@@ -564,6 +564,15 @@ describe('QuillDeltaToHtmlConverter', function() {
               'code-block': true
             },
             insert: '\n'
+          },
+          {
+            insert: 'line 5'
+          },
+          {
+            attributes: {
+              'code-block': 'ja"va'
+            },
+            insert: '\n'
           }
         ];
         //console.log(encodeHtml("<p>line 4</p>"));
@@ -576,7 +585,7 @@ describe('QuillDeltaToHtmlConverter', function() {
             '<pre data-language="javascript">line 3</pre>',
             '<pre>',
             encodeHtml('<p>line 4</p>'),
-            '</pre>'
+            '\nline 5' + '</pre>'
           ].join('')
         );
 
@@ -589,7 +598,8 @@ describe('QuillDeltaToHtmlConverter', function() {
             '<pre data-language="javascript">line 3</pre>' +
             '<pre>' +
             encodeHtml('<p>line 4</p>') +
-            '</pre>',
+            '</pre>' +
+            '<pre>line 5</pre>',
           html
         );
         qdc = new QuillDeltaToHtmlConverter([ops[0], ops[1]]);
