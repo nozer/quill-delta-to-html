@@ -84,6 +84,16 @@ describe('OpAttributeSanitizer', function() {
       assert.equal(OpAttributeSanitizer.IsValidRel(''), false);
     });
   });
+  describe('#IsValidLang()', function() {
+    it('should return true if lang is valid', function() {
+      assert.ok(OpAttributeSanitizer.IsValidLang('javascript'));
+      assert.ok(OpAttributeSanitizer.IsValidLang(true));
+      assert.ok(OpAttributeSanitizer.IsValidLang('C++'));
+      assert.ok(OpAttributeSanitizer.IsValidLang('HTML/XML'));
+      assert.equal(OpAttributeSanitizer.IsValidLang('lang"uage'), false);
+      assert.equal(OpAttributeSanitizer.IsValidLang(''), false);
+    });
+  });
 
   describe('#sanitize()', function() {
     it('should return empty object', function() {

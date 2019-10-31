@@ -23,7 +23,7 @@ interface IOpAttributes {
 
   list?: ListType;
   blockquote?: boolean | undefined;
-  'code-block'?: boolean | undefined;
+  'code-block'?: string | boolean | undefined;
   header?: number | undefined;
   align?: AlignType;
   direction?: DirectionType;
@@ -84,6 +84,7 @@ class OpAttributeSanitizer {
       target,
       rel
     } = dirtyAttrs;
+    let codeBlock = dirtyAttrs['code-block'];
 
     let sanitizedAttrs = [
       ...booleanAttrs,
@@ -101,7 +102,8 @@ class OpAttributeSanitizer {
       'mention',
       'width',
       'target',
-      'rel'
+      'rel',
+      'code-block'
     ];
     booleanAttrs.forEach(function(prop: string) {
       var v = (<any>dirtyAttrs)[prop];
@@ -146,6 +148,14 @@ class OpAttributeSanitizer {
 
     if (rel && OpAttributeSanitizer.IsValidRel(rel)) {
       cleanAttrs.rel = rel;
+    }
+
+    if (codeBlock) {
+      if (OpAttributeSanitizer.IsValidLang(codeBlock)) {
+        cleanAttrs['code-block'] = codeBlock;
+      } else {
+        cleanAttrs['code-block'] = !!codeBlock;
+      }
     }
 
     if (script === ScriptType.Sub || ScriptType.Super === script) {
@@ -245,6 +255,13 @@ class OpAttributeSanitizer {
 
   static IsValidRel(relStr: string) {
     return !!relStr.match(/^[a-zA-Z\s\-]{1,250}$/i);
+  }
+
+  static IsValidLang(lang: string | boolean) {
+    if (typeof lang === 'boolean') {
+      return true;
+    }
+    return !!lang.match(/^[a-zA-Z\s\-\\\/\+]{1,50}$/i);
   }
 }
 

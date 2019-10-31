@@ -552,7 +552,7 @@ describe('QuillDeltaToHtmlConverter', function() {
           },
           {
             attributes: {
-              'code-block': true
+              'code-block': 'javascript'
             },
             insert: '\n'
           },
@@ -572,7 +572,9 @@ describe('QuillDeltaToHtmlConverter', function() {
         assert.equal(
           html,
           [
-            '<pre>line 1\nline 2\nline 3\n',
+            '<pre>line 1\nline 2</pre>',
+            '<pre data-language="javascript">line 3</pre>',
+            '<pre>',
             encodeHtml('<p>line 4</p>'),
             '</pre>'
           ].join('')
@@ -583,7 +585,8 @@ describe('QuillDeltaToHtmlConverter', function() {
         });
         html = qdc.convert();
         assert.equal(
-          '<pre>line 1</pre><pre>line 2</pre><pre>line 3</pre>' +
+          '<pre>line 1</pre><pre>line 2</pre>' +
+            '<pre data-language="javascript">line 3</pre>' +
             '<pre>' +
             encodeHtml('<p>line 4</p>') +
             '</pre>',

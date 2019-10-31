@@ -337,6 +337,16 @@ describe('OpToHtmlConverter', function() {
         { key: 'href', value: 'l' },
         { key: 'rel', value: 'nofollow' }
       ]);
+
+      var o = new DeltaInsertOp('', { 'code-block': 'javascript' });
+      var c = new OpToHtmlConverter(o);
+      assert.deepEqual(c.getTagAttributes(), [
+        { key: 'data-language', value: 'javascript' }
+      ]);
+
+      var o = new DeltaInsertOp('', { 'code-block': true });
+      var c = new OpToHtmlConverter(o);
+      assert.deepEqual(c.getTagAttributes(), []);
     });
   });
 
@@ -414,6 +424,10 @@ describe('OpToHtmlConverter', function() {
         var op = new DeltaInsertOp('\n', { color: '#fff' });
         c1 = new OpToHtmlConverter(op);
         assert.equal(c1.getHtml(), '\n');
+
+        var op = new DeltaInsertOp('\n', { 'code-block': 'javascript' });
+        c1 = new OpToHtmlConverter(op);
+        assert.equal(c1.getHtml(), '<pre data-language="javascript"></pre>');
 
         var op = new DeltaInsertOp(
           new InsertDataQuill(DataType.Image, 'http://')

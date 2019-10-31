@@ -69,7 +69,8 @@ class Grouper {
         }
 
         return (
-          (blocksOf.codeBlocks && Grouper.areBothCodeblocks(g, gPrev)) ||
+          (blocksOf.codeBlocks &&
+            Grouper.areBothCodeblocksWithSameLang(g, gPrev)) ||
           (blocksOf.blockquotes &&
             Grouper.areBothBlockquotesWithSameAdi(g, gPrev)) ||
           (blocksOf.header && Grouper.areBothSameHeadersWithSameAdi(g, gPrev))
@@ -104,8 +105,12 @@ class Grouper {
     });
   }
 
-  static areBothCodeblocks(g1: BlockGroup, gOther: BlockGroup) {
-    return g1.op.isCodeBlock() && gOther.op.isCodeBlock();
+  static areBothCodeblocksWithSameLang(g1: BlockGroup, gOther: BlockGroup) {
+    return (
+      g1.op.isCodeBlock() &&
+      gOther.op.isCodeBlock() &&
+      g1.op.hasSameLangAs(gOther.op)
+    );
   }
 
   static areBothSameHeadersWithSameAdi(g1: BlockGroup, gOther: BlockGroup) {
