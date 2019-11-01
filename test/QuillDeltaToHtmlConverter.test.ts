@@ -354,6 +354,30 @@ describe('QuillDeltaToHtmlConverter', function() {
       );
     });
 
+    it('should render singe cell table', () => {
+      let ops = [
+        {
+          insert: 'cell'
+        },
+        {
+          insert: '\n',
+          attributes: {
+            table: 'row-1'
+          }
+        }
+      ];
+
+      let qdc = new QuillDeltaToHtmlConverter(ops);
+      assert.equal(
+        qdc.convert(),
+        [
+          `<table><tbody>`,
+          `<tr><td data-row="row-1">cell</td></tr>`,
+          `</tbody></table>`
+        ].join('')
+      );
+    });
+
     it('should render filled table', () => {
       let ops = [
         {
