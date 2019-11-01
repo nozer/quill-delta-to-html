@@ -52,4 +52,52 @@ describe('TableGrouper', function() {
       assert.deepEqual(act, exp);
     });
   });
+
+  describe('single 1 row table', function() {
+    var ops = [
+      new DeltaInsertOp('cell1'),
+      new DeltaInsertOp('\n', { table: 'row-1' }),
+      new DeltaInsertOp('cell2'),
+      new DeltaInsertOp('\n', { table: 'row-1' })
+    ];
+
+    it('should return table with 1 row', function() {
+      var groups = Grouper.pairOpsWithTheirBlock(ops);
+      var tableGrouper = new TableGrouper();
+      var act = tableGrouper.group(groups);
+      var exp = [
+        new TableGroup([
+          new TableRow([
+            new TableCell(<BlockGroup>groups[0]),
+            new TableCell(<BlockGroup>groups[1])
+          ])
+        ])
+      ];
+
+      assert.deepEqual(act, exp);
+    });
+  });
+
+  describe('single 1 col table', function() {
+    var ops = [
+      new DeltaInsertOp('cell1'),
+      new DeltaInsertOp('\n', { table: 'row-1' }),
+      new DeltaInsertOp('cell2'),
+      new DeltaInsertOp('\n', { table: 'row-2' })
+    ];
+
+    it('should return table with 1 col', function() {
+      var groups = Grouper.pairOpsWithTheirBlock(ops);
+      var tableGrouper = new TableGrouper();
+      var act = tableGrouper.group(groups);
+      var exp = [
+        new TableGroup([
+          new TableRow([new TableCell(<BlockGroup>groups[0])]),
+          new TableRow([new TableCell(<BlockGroup>groups[1])])
+        ])
+      ];
+
+      assert.deepEqual(act, exp);
+    });
+  });
 });
