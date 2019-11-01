@@ -28,6 +28,7 @@ interface IOpAttributes {
   align?: AlignType;
   direction?: DirectionType;
   indent?: number | undefined;
+  table?: string | undefined;
 
   mentions?: boolean | undefined;
   mention?: IMention | undefined;

@@ -314,6 +314,147 @@ describe('QuillDeltaToHtmlConverter', function() {
         ].join('')
       );
     });
+
+    it('should render empty table', () => {
+      let ops = [
+        {
+          insert: '\n\n\n',
+          attributes: {
+            table: 'row-1'
+          }
+        },
+        {
+          attributes: {
+            table: 'row-2'
+          },
+          insert: '\n\n\n'
+        },
+        {
+          attributes: {
+            table: 'row-3'
+          },
+          insert: '\n\n\n'
+        },
+        {
+          insert: '\n'
+        }
+      ];
+
+      let qdc = new QuillDeltaToHtmlConverter(ops);
+      assert.equal(
+        qdc.convert(),
+        [
+          `<table><tbody>`,
+          `<tr><td data-row="row-1"><br/></td><td data-row="row-1"><br/></td><td data-row="row-1"><br/></td></tr>`,
+          `<tr><td data-row="row-2"><br/></td><td data-row="row-2"><br/></td><td data-row="row-2"><br/></td></tr>`,
+          `<tr><td data-row="row-3"><br/></td><td data-row="row-3"><br/></td><td data-row="row-3"><br/></td></tr>`,
+          `</tbody></table>`,
+          `<p><br/></p>`
+        ].join('')
+      );
+    });
+
+    it('should render filled table', () => {
+      let ops = [
+        {
+          insert: '11'
+        },
+        {
+          attributes: {
+            table: 'row-1'
+          },
+          insert: '\n'
+        },
+        {
+          insert: '12'
+        },
+        {
+          attributes: {
+            table: 'row-1'
+          },
+          insert: '\n'
+        },
+        {
+          insert: '13'
+        },
+        {
+          attributes: {
+            table: 'row-1'
+          },
+          insert: '\n'
+        },
+        {
+          insert: '21'
+        },
+        {
+          attributes: {
+            table: 'row-2'
+          },
+          insert: '\n'
+        },
+        {
+          insert: '22'
+        },
+        {
+          attributes: {
+            table: 'row-2'
+          },
+          insert: '\n'
+        },
+        {
+          insert: '23'
+        },
+        {
+          attributes: {
+            table: 'row-2'
+          },
+          insert: '\n'
+        },
+        {
+          insert: '31'
+        },
+        {
+          attributes: {
+            table: 'row-3'
+          },
+          insert: '\n'
+        },
+        {
+          insert: '32'
+        },
+        {
+          attributes: {
+            table: 'row-3'
+          },
+          insert: '\n'
+        },
+        {
+          insert: '33'
+        },
+        {
+          attributes: {
+            table: 'row-3'
+          },
+          insert: '\n'
+        },
+        {
+          insert: '\n'
+        }
+      ];
+
+      let qdc = new QuillDeltaToHtmlConverter(ops);
+      assert.equal(
+        qdc.convert(),
+        [
+          `<table><tbody>`,
+          `<tr><td data-row="row-1">11</td><td data-row="row-1">12</td><td data-row="row-1">13</td></tr>`,
+          `<tr><td data-row="row-2">21</td><td data-row="row-2">22</td><td data-row="row-2">23</td></tr>`,
+          `<tr><td data-row="row-3">31</td><td data-row="row-3">32</td><td data-row="row-3">33</td></tr>`,
+          `</tbody></table>`,
+          `<p><br/></p>`
+        ].join('')
+      );
+    });
   });
 
   describe('custom types', () => {
