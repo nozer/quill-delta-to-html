@@ -41,7 +41,36 @@ class ListItem {
   }
 }
 
-type TDataGroup = VideoItem | InlineGroup | BlockGroup | ListItem | ListGroup;
+class TableGroup {
+  rows: TableRow[];
+  constructor(rows: TableRow[]) {
+    this.rows = rows;
+  }
+}
+
+class TableRow {
+  cells: TableCell[];
+  constructor(cells: TableCell[]) {
+    this.cells = cells;
+  }
+}
+
+class TableCell {
+  readonly item: BlockGroup;
+  constructor(item: BlockGroup) {
+    this.item = item;
+  }
+}
+
+type TDataGroup =
+  | VideoItem
+  | InlineGroup
+  | BlockGroup
+  | ListItem
+  | ListGroup
+  | TableGroup
+  | TableRow
+  | TableCell;
 
 export {
   VideoItem,
@@ -50,5 +79,8 @@ export {
   BlockGroup,
   ListGroup,
   ListItem,
+  TableGroup,
+  TableRow,
+  TableCell,
   TDataGroup
 };

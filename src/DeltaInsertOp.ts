@@ -23,6 +23,7 @@ class DeltaInsertOp {
     return !!(
       attrs.blockquote ||
       attrs.list ||
+      attrs.table ||
       attrs['code-block'] ||
       attrs.header ||
       attrs.align ||
@@ -37,6 +38,10 @@ class DeltaInsertOp {
 
   isHeader(): boolean {
     return !!this.attributes.header;
+  }
+
+  isTable(): boolean {
+    return !!this.attributes.table;
   }
 
   isSameHeaderAs(op: DeltaInsertOp): boolean {
@@ -116,6 +121,14 @@ class DeltaInsertOp {
       !!op.attributes.list &&
       (this.attributes.list === op.attributes.list ||
         (op.isACheckList() && this.isACheckList()))
+    );
+  }
+
+  isSameTableRowAs(op: DeltaInsertOp): boolean {
+    return (
+      !!op.isTable() &&
+      this.isTable() &&
+      this.attributes.table === op.attributes.table
     );
   }
 

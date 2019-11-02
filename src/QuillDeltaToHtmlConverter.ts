@@ -13,13 +13,17 @@ import {
   ListGroup,
   ListItem,
   TDataGroup,
-  BlotBlock
+  BlotBlock,
+  TableGroup,
+  TableRow,
+  TableCell
 } from './grouper/group-types';
 import { ListNester } from './grouper/ListNester';
 import { makeStartTag, makeEndTag, encodeHtml } from './funcs-html';
 import * as obj from './helpers/object';
 import { GroupType } from './value-types';
 import { IOpAttributeSanitizerOptions } from './OpAttributeSanitizer';
+import { TableGrouper } from './grouper/TableGrouper';
 
 interface IQuillDeltaToHtmlConverterOptions
   extends IOpAttributeSanitizerOptions,
@@ -116,6 +120,10 @@ class QuillDeltaToHtmlConverter {
     var groupedOps = Grouper.reduceConsecutiveSameStyleBlocksToOne(
       groupedSameStyleBlocks
     );
+
+    var tableGrouper = new TableGrouper();
+    groupedOps = tableGrouper.group(groupedOps);
+
     var listNester = new ListNester();
     return listNester.nest(groupedOps);
   }
@@ -127,6 +135,10 @@ class QuillDeltaToHtmlConverter {
         if (group instanceof ListGroup) {
           return this._renderWithCallbacks(GroupType.List, group, () =>
             this._renderList(<ListGroup>group)
+          );
+        } else if (group instanceof TableGroup) {
+          return this._renderWithCallbacks(GroupType.Table, group, () =>
+            this._renderTable(<TableGroup>group)
           );
         } else if (group instanceof BlockGroup) {
           var g = <BlockGroup>group;
@@ -198,6 +210,40 @@ class QuillDeltaToHtmlConverter {
       liElementsHtml +
       (li.innerList ? this._renderList(li.innerList) : '') +
       parts.closingTag
+    );
+  }
+
+  _renderTable(table: TableGroup): string {
+    return (
+      makeStartTag('table') +
+      makeStartTag('tbody') +
+      table.rows.map((row: TableRow) => this._renderTableRow(row)).join('') +
+      makeEndTag('tbody') +
+      makeEndTag('table')
+    );
+  }
+
+  _renderTableRow(row: TableRow): string {
+    return (
+      makeStartTag('tr') +
+      row.cells.map((cell: TableCell) => this._renderTableCell(cell)).join('') +
+      makeEndTag('tr')
+    );
+  }
+
+  _renderTableCell(cell: TableCell): string {
+    var converter = new OpToHtmlConverter(cell.item.op, this.converterOptions);
+    var parts = converter.getHtmlParts();
+    var cellElementsHtml = this._renderInlines(cell.item.ops, false);
+    return (
+      makeStartTag('td', {
+        key: 'data-row',
+        value: cell.item.op.attributes.table
+      }) +
+      parts.openingTag +
+      cellElementsHtml +
+      parts.closingTag +
+      makeEndTag('td')
     );
   }
 

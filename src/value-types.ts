@@ -35,7 +35,8 @@ enum GroupType {
   Block = 'block',
   InlineGroup = 'inline-group',
   List = 'list',
-  Video = 'video'
+  Video = 'video',
+  Table = 'table'
 }
 
 export {
