@@ -40,13 +40,14 @@ var InsertOpsConverter = (function () {
         if (!keys.length) {
             return null;
         }
-        return value_types_1.DataType.Image in insertPropVal ?
-            new InsertData_1.InsertDataQuill(value_types_1.DataType.Image, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Image] + '', sanitizeOptions))
-            : value_types_1.DataType.Video in insertPropVal ?
-                new InsertData_1.InsertDataQuill(value_types_1.DataType.Video, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Video] + '', sanitizeOptions))
-                : value_types_1.DataType.Formula in insertPropVal ?
-                    new InsertData_1.InsertDataQuill(value_types_1.DataType.Formula, insertPropVal[value_types_1.DataType.Formula])
-                    : new InsertData_1.InsertDataCustom(keys[0], insertPropVal[keys[0]]);
+        return value_types_1.DataType.Image in insertPropVal
+            ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Image, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Image] + '', sanitizeOptions))
+            : value_types_1.DataType.Video in insertPropVal
+                ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Video, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Video] + '', sanitizeOptions))
+                : value_types_1.DataType.Formula in insertPropVal
+                    ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Formula, insertPropVal[value_types_1.DataType.Formula])
+                    :
+                        new InsertData_1.InsertDataCustom(keys[0], insertPropVal[keys[0]]);
     };
     return InsertOpsConverter;
 }());

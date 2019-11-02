@@ -5,17 +5,16 @@ var value_types_1 = require("./value-types");
 var obj = require("./helpers/object");
 var arr = require("./helpers/array");
 var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
-;
 var DEFAULT_INLINE_FONTS = {
     serif: 'font-family: Georgia, Times New Roman, serif',
     monospace: 'font-family: Monaco, Courier New, monospace'
 };
 exports.DEFAULT_INLINE_STYLES = {
-    font: function (value) { return DEFAULT_INLINE_FONTS[value] || ('font-family:' + value); },
+    font: function (value) { return DEFAULT_INLINE_FONTS[value] || 'font-family:' + value; },
     size: {
-        'small': 'font-size: 0.75em',
-        'large': 'font-size: 1.5em',
-        'huge': 'font-size: 2.5em'
+        small: 'font-size: 0.75em',
+        large: 'font-size: 1.5em',
+        huge: 'font-size: 2.5em'
     },
     indent: function (value, op) {
         var indentSize = parseInt(value, 10) * 3;
@@ -24,7 +23,7 @@ exports.DEFAULT_INLINE_STYLES = {
     },
     direction: function (value, op) {
         if (value === 'rtl') {
-            return 'direction:rtl' + (op.attributes['align'] ? '' : '; text-align:inherit');
+            return ('direction:rtl' + (op.attributes['align'] ? '' : '; text-align:inherit'));
         }
         else {
             return undefined;
@@ -62,8 +61,10 @@ var OpToHtmlConverter = (function () {
             tags.push('span');
         }
         var beginTags = [], endTags = [];
-        var imgTag = "img";
-        var isImageLink = function (tag) { return tag === imgTag && !!_this.op.attributes.link; };
+        var imgTag = 'img';
+        var isImageLink = function (tag) {
+            return tag === imgTag && !!_this.op.attributes.link;
+        };
         for (var _i = 0, tags_1 = tags; _i < tags_1.length; _i++) {
             var tag = tags_1[_i];
             if (isImageLink(tag)) {
@@ -91,7 +92,7 @@ var OpToHtmlConverter = (function () {
             return this.op.insert.value;
         }
         var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
-        return this.options.encodeHtml && funcs_html_1.encodeHtml(content) || content;
+        return (this.options.encodeHtml && funcs_html_1.encodeHtml(content)) || content;
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
@@ -104,7 +105,11 @@ var OpToHtmlConverter = (function () {
         }
         return propsArr
             .filter(function (prop) { return !!attrs[prop]; })
-            .filter(function (prop) { return prop === 'background' ? OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true; })
+            .filter(function (prop) {
+            return prop === 'background'
+                ? OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidColorLiteral(attrs[prop])
+                : true;
+        })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
             .concat(this.op.isFormula() ? 'formula' : [])
             .concat(this.op.isVideo() ? 'video' : [])
@@ -132,12 +137,13 @@ var OpToHtmlConverter = (function () {
             .map(function (item) {
             var attribute = item[0];
             var attrValue = attrs[attribute];
-            var attributeConverter = (_this.options.inlineStyles && _this.options.inlineStyles[attribute]) ||
+            var attributeConverter = (_this.options.inlineStyles &&
+                _this.options.inlineStyles[attribute]) ||
                 exports.DEFAULT_INLINE_STYLES[attribute];
-            if (typeof (attributeConverter) === 'object') {
+            if (typeof attributeConverter === 'object') {
                 return attributeConverter[attrValue];
             }
-            else if (typeof (attributeConverter) === 'function') {
+            else if (typeof attributeConverter === 'function') {
                 var converterFn = attributeConverter;
                 return converterFn(attrValue, _this.op);
             }
@@ -155,7 +161,8 @@ var OpToHtmlConverter = (function () {
         var classes = this.getCssClasses();
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
-            this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
+            this.op.attributes.width &&
+                (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
             return tagAttrs.concat(makeAttr('src', this.op.insert.value));
         }
         if (this.op.isACheckList()) {
@@ -187,6 +194,10 @@ var OpToHtmlConverter = (function () {
         if (styles.length) {
             tagAttrs.push(makeAttr('style', styles.join(';')));
         }
+        if (this.op.isCodeBlock() &&
+            typeof this.op.attributes['code-block'] === 'string') {
+            return tagAttrs.concat(makeAttr('data-language', this.op.attributes['code-block']));
+        }
         if (this.op.isContainerBlock()) {
             return tagAttrs;
         }
@@ -200,10 +211,12 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getLinkAttrs = function () {
         var tagAttrs = [];
-        var targetForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.isValidTarget(this.options.linkTarget || '') ?
-            this.options.linkTarget : undefined;
-        var relForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidRel(this.options.linkRel || '') ?
-            this.options.linkRel : undefined;
+        var targetForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.isValidTarget(this.options.linkTarget || '')
+            ? this.options.linkTarget
+            : undefined;
+        var relForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidRel(this.options.linkRel || '')
+            ? this.options.linkRel
+            : undefined;
         var target = this.op.attributes.target || targetForAll;
         var rel = this.op.attributes.rel || relForAll;
         return tagAttrs
@@ -214,30 +227,45 @@ var OpToHtmlConverter = (function () {
     OpToHtmlConverter.prototype.getTags = function () {
         var attrs = this.op.attributes;
         if (!this.op.isText()) {
-            return [this.op.isVideo() ? 'iframe'
-                    : this.op.isImage() ? 'img'
-                        : 'span'
+            return [
+                this.op.isVideo() ? 'iframe' : this.op.isImage() ? 'img' : 'span'
             ];
         }
         var positionTag = this.options.paragraphTag || 'p';
-        var blocks = [['blockquote'], ['code-block', 'pre'],
-            ['list', this.options.listItemTag], ['header'],
-            ['align', positionTag], ['direction', positionTag],
-            ['indent', positionTag]];
+        var blocks = [
+            ['blockquote'],
+            ['code-block', 'pre'],
+            ['list', this.options.listItemTag],
+            ['header'],
+            ['align', positionTag],
+            ['direction', positionTag],
+            ['indent', positionTag]
+        ];
         for (var _i = 0, blocks_1 = blocks; _i < blocks_1.length; _i++) {
             var item = blocks_1[_i];
             var firstItem = item[0];
             if (attrs[firstItem]) {
-                return firstItem === 'header' ? ['h' + attrs[firstItem]] : [arr.preferSecond(item)];
+                return firstItem === 'header'
+                    ? ['h' + attrs[firstItem]]
+                    : [arr.preferSecond(item)];
             }
         }
-        return [['link', 'a'], ['mentions', 'a'], ['script'],
-            ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u'],
-            ['code']]
+        return [
+            ['link', 'a'],
+            ['mentions', 'a'],
+            ['script'],
+            ['bold', 'strong'],
+            ['italic', 'em'],
+            ['strike', 's'],
+            ['underline', 'u'],
+            ['code']
+        ]
             .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) {
-            return item[0] === 'script' ?
-                (attrs[item[0]] === value_types_1.ScriptType.Sub ? 'sub' : 'sup')
+            return item[0] === 'script'
+                ? attrs[item[0]] === value_types_1.ScriptType.Sub
+                    ? 'sub'
+                    : 'sup'
                 : arr.preferSecond(item);
         });
     };

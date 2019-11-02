@@ -1,8 +1,8 @@
 import { IOpToHtmlConverterOptions } from './OpToHtmlConverter';
 import { DeltaInsertOp } from './DeltaInsertOp';
-import { ListGroup, ListItem, TDataGroup } from './grouper/group-types';
+import { ListGroup, ListItem, TDataGroup, TableGroup, TableRow, TableCell } from './grouper/group-types';
 import { GroupType } from './value-types';
-import { IOpAttributeSanitizerOptions } from "./OpAttributeSanitizer";
+import { IOpAttributeSanitizerOptions } from './OpAttributeSanitizer';
 interface IQuillDeltaToHtmlConverterOptions extends IOpAttributeSanitizerOptions, IOpToHtmlConverterOptions {
     orderedListTag?: string;
     bulletListTag?: string;
@@ -23,6 +23,9 @@ declare class QuillDeltaToHtmlConverter {
     _renderWithCallbacks(groupType: GroupType, group: TDataGroup, myRenderFn: () => string): string;
     _renderList(list: ListGroup): string;
     _renderListItem(li: ListItem): string;
+    _renderTable(table: TableGroup): string;
+    _renderTableRow(row: TableRow): string;
+    _renderTableCell(cell: TableCell): string;
     _renderBlock(bop: DeltaInsertOp, ops: DeltaInsertOp[]): string;
     _renderInlines(ops: DeltaInsertOp[], isInlineGroup?: boolean): string;
     _renderInline(op: DeltaInsertOp, contextOp: DeltaInsertOp | null): any;

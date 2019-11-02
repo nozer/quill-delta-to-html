@@ -1,12 +1,12 @@
-import { IOpAttributeSanitizerOptions } from "./../OpAttributeSanitizer";
+import { IOpAttributeSanitizerOptions } from './../OpAttributeSanitizer';
 interface IMention {
     [index: string]: string | undefined;
-    'name'?: string;
-    'target'?: string;
-    'slug'?: string;
-    'class'?: string;
-    'avatar'?: string;
-    'id'?: string;
+    name?: string;
+    target?: string;
+    slug?: string;
+    class?: string;
+    avatar?: string;
+    id?: string;
     'end-point'?: string;
 }
 declare class MentionSanitizer {

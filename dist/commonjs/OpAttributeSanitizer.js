@@ -14,14 +14,35 @@ var OpAttributeSanitizer = (function () {
             return cleanAttrs;
         }
         var booleanAttrs = [
-            'bold', 'italic', 'underline', 'strike', 'code',
-            'blockquote', 'code-block', 'renderAsBlock'
+            'bold',
+            'italic',
+            'underline',
+            'strike',
+            'code',
+            'blockquote',
+            'code-block',
+            'renderAsBlock'
         ];
         var colorAttrs = ['background', 'color'];
         var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width, target = dirtyAttrs.target, rel = dirtyAttrs.rel;
-        var sanitizedAttrs = booleanAttrs.concat(colorAttrs, ['font', 'size', 'link', 'script', 'list', 'header', 'align',
-            'direction', 'indent', 'mentions', 'mention', 'width',
-            'target', 'rel']);
+        var codeBlock = dirtyAttrs['code-block'];
+        var sanitizedAttrs = booleanAttrs.concat(colorAttrs, [
+            'font',
+            'size',
+            'link',
+            'script',
+            'list',
+            'header',
+            'align',
+            'direction',
+            'indent',
+            'mentions',
+            'mention',
+            'width',
+            'target',
+            'rel',
+            'code-block'
+        ]);
         booleanAttrs.forEach(function (prop) {
             var v = dirtyAttrs[prop];
             if (v) {
@@ -30,9 +51,10 @@ var OpAttributeSanitizer = (function () {
         });
         colorAttrs.forEach(function (prop) {
             var val = dirtyAttrs[prop];
-            if (val && (OpAttributeSanitizer.IsValidHexColor(val + '') ||
-                OpAttributeSanitizer.IsValidColorLiteral(val + '') ||
-                OpAttributeSanitizer.IsValidRGBColor(val + ''))) {
+            if (val &&
+                (OpAttributeSanitizer.IsValidHexColor(val + '') ||
+                    OpAttributeSanitizer.IsValidColorLiteral(val + '') ||
+                    OpAttributeSanitizer.IsValidRGBColor(val + ''))) {
                 cleanAttrs[prop] = val;
             }
         });
@@ -54,10 +76,21 @@ var OpAttributeSanitizer = (function () {
         if (rel && OpAttributeSanitizer.IsValidRel(rel)) {
             cleanAttrs.rel = rel;
         }
+        if (codeBlock) {
+            if (OpAttributeSanitizer.IsValidLang(codeBlock)) {
+                cleanAttrs['code-block'] = codeBlock;
+            }
+            else {
+                cleanAttrs['code-block'] = !!codeBlock;
+            }
+        }
         if (script === value_types_1.ScriptType.Sub || value_types_1.ScriptType.Super === script) {
             cleanAttrs.script = script;
         }
-        if (list === value_types_1.ListType.Bullet || list === value_types_1.ListType.Ordered || list === value_types_1.ListType.Checked || list === value_types_1.ListType.Unchecked) {
+        if (list === value_types_1.ListType.Bullet ||
+            list === value_types_1.ListType.Ordered ||
+            list === value_types_1.ListType.Checked ||
+            list === value_types_1.ListType.Unchecked) {
             cleanAttrs.list = list;
         }
         if (Number(header)) {
@@ -83,19 +116,18 @@ var OpAttributeSanitizer = (function () {
             if (sanitizedAttrs.indexOf(k) === -1) {
                 cleaned[k] = dirtyAttrs[k];
             }
-            ;
             return cleaned;
         }, cleanAttrs);
     };
     OpAttributeSanitizer.sanitizeLinkUsingOptions = function (link, options) {
-        var sanitizerFn = function () { return undefined; };
+        var sanitizerFn = function () {
+            return undefined;
+        };
         if (options && typeof options.urlSanitizer === 'function') {
             sanitizerFn = options.urlSanitizer;
         }
         var result = sanitizerFn(link);
-        return typeof result === 'string' ?
-            result :
-            funcs_html_1.encodeLink(url.sanitize(link));
+        return typeof result === 'string' ? result : funcs_html_1.encodeLink(url.sanitize(link));
     };
     OpAttributeSanitizer.IsValidHexColor = function (colorStr) {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
@@ -121,6 +153,12 @@ var OpAttributeSanitizer = (function () {
     };
     OpAttributeSanitizer.IsValidRel = function (relStr) {
         return !!relStr.match(/^[a-zA-Z\s\-]{1,250}$/i);
+    };
+    OpAttributeSanitizer.IsValidLang = function (lang) {
+        if (typeof lang === 'boolean') {
+            return true;
+        }
+        return !!lang.match(/^[a-zA-Z\s\-\\\/\+]{1,50}$/i);
     };
     return OpAttributeSanitizer;
 }());

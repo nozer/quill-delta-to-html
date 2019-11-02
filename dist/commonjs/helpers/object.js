@@ -22,4 +22,3 @@ function assign(target) {
     return to;
 }
 exports.assign = assign;
-;

@@ -31,9 +31,12 @@ var ListNester = (function () {
     };
     ListNester.prototype.convertListBlocksToListGroups = function (items) {
         var grouped = array_1.groupConsecutiveElementsWhile(items, function (g, gPrev) {
-            return g instanceof group_types_1.BlockGroup && gPrev instanceof group_types_1.BlockGroup
-                && g.op.isList() && gPrev.op.isList() && g.op.isSameListAs(gPrev.op)
-                && g.op.hasSameIndentationAs(gPrev.op);
+            return (g instanceof group_types_1.BlockGroup &&
+                gPrev instanceof group_types_1.BlockGroup &&
+                g.op.isList() &&
+                gPrev.op.isList() &&
+                g.op.isSameListAs(gPrev.op) &&
+                g.op.hasSameIndentationAs(gPrev.op));
         });
         return grouped.map(function (item) {
             if (!Array.isArray(item)) {
@@ -53,7 +56,11 @@ var ListNester = (function () {
     ListNester.prototype.nestListSection = function (sectionItems) {
         var _this = this;
         var indentGroups = this.groupByIndent(sectionItems);
-        Object.keys(indentGroups).map(Number).sort().reverse().forEach(function (indent) {
+        Object.keys(indentGroups)
+            .map(Number)
+            .sort()
+            .reverse()
+            .forEach(function (indent) {
             indentGroups[indent].forEach(function (lg) {
                 var idx = sectionItems.indexOf(lg);
                 if (_this.placeUnderParent(lg, sectionItems.slice(0, idx))) {

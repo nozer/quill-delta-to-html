@@ -9,7 +9,10 @@ var Grouper = (function () {
     Grouper.pairOpsWithTheirBlock = function (ops) {
         var result = [];
         var canBeInBlock = function (op) {
-            return !(op.isJustNewline() || op.isCustomBlock() || op.isVideo() || op.isContainerBlock());
+            return !(op.isJustNewline() ||
+                op.isCustomBlock() ||
+                op.isVideo() ||
+                op.isContainerBlock());
         };
         var isInlineData = function (op) { return op.isInline(); };
         var lastInd = ops.length - 1;
@@ -46,9 +49,11 @@ var Grouper = (function () {
             if (!(g instanceof group_types_1.BlockGroup) || !(gPrev instanceof group_types_1.BlockGroup)) {
                 return false;
             }
-            return blocksOf.codeBlocks && Grouper.areBothCodeblocks(g, gPrev)
-                || blocksOf.blockquotes && Grouper.areBothBlockquotesWithSameAdi(g, gPrev)
-                || blocksOf.header && Grouper.areBothSameHeadersWithSameAdi(g, gPrev);
+            return ((blocksOf.codeBlocks &&
+                Grouper.areBothCodeblocksWithSameLang(g, gPrev)) ||
+                (blocksOf.blockquotes &&
+                    Grouper.areBothBlockquotesWithSameAdi(g, gPrev)) ||
+                (blocksOf.header && Grouper.areBothSameHeadersWithSameAdi(g, gPrev)));
         });
     };
     Grouper.reduceConsecutiveSameStyleBlocksToOne = function (groups) {
@@ -70,15 +75,18 @@ var Grouper = (function () {
             return elm[0];
         });
     };
-    Grouper.areBothCodeblocks = function (g1, gOther) {
-        return g1.op.isCodeBlock() && gOther.op.isCodeBlock();
+    Grouper.areBothCodeblocksWithSameLang = function (g1, gOther) {
+        return (g1.op.isCodeBlock() &&
+            gOther.op.isCodeBlock() &&
+            g1.op.hasSameLangAs(gOther.op));
     };
     Grouper.areBothSameHeadersWithSameAdi = function (g1, gOther) {
         return g1.op.isSameHeaderAs(gOther.op) && g1.op.hasSameAdiAs(gOther.op);
     };
     Grouper.areBothBlockquotesWithSameAdi = function (g, gOther) {
-        return g.op.isBlockquote() && gOther.op.isBlockquote()
-            && g.op.hasSameAdiAs(gOther.op);
+        return (g.op.isBlockquote() &&
+            gOther.op.isBlockquote() &&
+            g.op.hasSameAdiAs(gOther.op));
     };
     return Grouper;
 }());

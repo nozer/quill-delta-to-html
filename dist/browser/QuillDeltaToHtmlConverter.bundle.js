@@ -16,8 +16,14 @@ var DeltaInsertOp = (function () {
     };
     DeltaInsertOp.prototype.isContainerBlock = function () {
         var attrs = this.attributes;
-        return !!(attrs.blockquote || attrs.list || attrs['code-block'] ||
-            attrs.header || attrs.align || attrs.direction || attrs.indent);
+        return !!(attrs.blockquote ||
+            attrs.list ||
+            attrs.table ||
+            attrs['code-block'] ||
+            attrs.header ||
+            attrs.align ||
+            attrs.direction ||
+            attrs.indent);
     };
     DeltaInsertOp.prototype.isBlockquote = function () {
         return !!this.attributes.blockquote;
@@ -25,25 +31,32 @@ var DeltaInsertOp = (function () {
     DeltaInsertOp.prototype.isHeader = function () {
         return !!this.attributes.header;
     };
+    DeltaInsertOp.prototype.isTable = function () {
+        return !!this.attributes.table;
+    };
     DeltaInsertOp.prototype.isSameHeaderAs = function (op) {
         return op.attributes.header === this.attributes.header && this.isHeader();
     };
     DeltaInsertOp.prototype.hasSameAdiAs = function (op) {
-        return this.attributes.align === op.attributes.align
-            && this.attributes.direction === op.attributes.direction
-            && this.attributes.indent === op.attributes.indent;
+        return (this.attributes.align === op.attributes.align &&
+            this.attributes.direction === op.attributes.direction &&
+            this.attributes.indent === op.attributes.indent);
     };
     DeltaInsertOp.prototype.hasSameIndentationAs = function (op) {
         return this.attributes.indent === op.attributes.indent;
     };
     DeltaInsertOp.prototype.hasHigherIndentThan = function (op) {
-        return (Number(this.attributes.indent) || 0) > (Number(op.attributes.indent) || 0);
+        return ((Number(this.attributes.indent) || 0) >
+            (Number(op.attributes.indent) || 0));
     };
     DeltaInsertOp.prototype.isInline = function () {
         return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock());
     };
     DeltaInsertOp.prototype.isCodeBlock = function () {
         return !!this.attributes['code-block'];
+    };
+    DeltaInsertOp.prototype.hasSameLangAs = function (op) {
+        return this.attributes['code-block'] === op.attributes['code-block'];
     };
     DeltaInsertOp.prototype.isJustNewline = function () {
         return this.insert.value === value_types_1.NewLine;
@@ -67,12 +80,18 @@ var DeltaInsertOp = (function () {
         return this.attributes.list === value_types_1.ListType.Unchecked;
     };
     DeltaInsertOp.prototype.isACheckList = function () {
-        return this.attributes.list == value_types_1.ListType.Unchecked ||
-            this.attributes.list === value_types_1.ListType.Checked;
+        return (this.attributes.list == value_types_1.ListType.Unchecked ||
+            this.attributes.list === value_types_1.ListType.Checked);
     };
     DeltaInsertOp.prototype.isSameListAs = function (op) {
-        return !!op.attributes.list && (this.attributes.list === op.attributes.list ||
-            op.isACheckList() && this.isACheckList());
+        return (!!op.attributes.list &&
+            (this.attributes.list === op.attributes.list ||
+                (op.isACheckList() && this.isACheckList())));
+    };
+    DeltaInsertOp.prototype.isSameTableRowAs = function (op) {
+        return (!!op.isTable() &&
+            this.isTable() &&
+            this.attributes.table === op.attributes.table);
     };
     DeltaInsertOp.prototype.isText = function () {
         return this.insert.type === value_types_1.DataType.Text;
@@ -102,7 +121,7 @@ var DeltaInsertOp = (function () {
 }());
 exports.DeltaInsertOp = DeltaInsertOp;
 
-},{"./InsertData":2,"./value-types":17}],2:[function(require,module,exports){
+},{"./InsertData":2,"./value-types":18}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertDataQuill = (function () {
@@ -113,7 +132,6 @@ var InsertDataQuill = (function () {
     return InsertDataQuill;
 }());
 exports.InsertDataQuill = InsertDataQuill;
-;
 var InsertDataCustom = (function () {
     function InsertDataCustom(type, value) {
         this.type = type;
@@ -122,7 +140,6 @@ var InsertDataCustom = (function () {
     return InsertDataCustom;
 }());
 exports.InsertDataCustom = InsertDataCustom;
-;
 
 },{}],3:[function(require,module,exports){
 "use strict";
@@ -158,7 +175,7 @@ var InsertOpDenormalizer = (function () {
 }());
 exports.InsertOpDenormalizer = InsertOpDenormalizer;
 
-},{"./helpers/object":13,"./helpers/string":14,"./value-types":17}],4:[function(require,module,exports){
+},{"./helpers/object":14,"./helpers/string":15,"./value-types":18}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var DeltaInsertOp_1 = require("./DeltaInsertOp");
@@ -201,19 +218,20 @@ var InsertOpsConverter = (function () {
         if (!keys.length) {
             return null;
         }
-        return value_types_1.DataType.Image in insertPropVal ?
-            new InsertData_1.InsertDataQuill(value_types_1.DataType.Image, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Image] + '', sanitizeOptions))
-            : value_types_1.DataType.Video in insertPropVal ?
-                new InsertData_1.InsertDataQuill(value_types_1.DataType.Video, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Video] + '', sanitizeOptions))
-                : value_types_1.DataType.Formula in insertPropVal ?
-                    new InsertData_1.InsertDataQuill(value_types_1.DataType.Formula, insertPropVal[value_types_1.DataType.Formula])
-                    : new InsertData_1.InsertDataCustom(keys[0], insertPropVal[keys[0]]);
+        return value_types_1.DataType.Image in insertPropVal
+            ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Image, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Image] + '', sanitizeOptions))
+            : value_types_1.DataType.Video in insertPropVal
+                ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Video, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Video] + '', sanitizeOptions))
+                : value_types_1.DataType.Formula in insertPropVal
+                    ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Formula, insertPropVal[value_types_1.DataType.Formula])
+                    :
+                        new InsertData_1.InsertDataCustom(keys[0], insertPropVal[keys[0]]);
     };
     return InsertOpsConverter;
 }());
 exports.InsertOpsConverter = InsertOpsConverter;
 
-},{"./DeltaInsertOp":1,"./InsertData":2,"./InsertOpDenormalizer":3,"./OpAttributeSanitizer":5,"./value-types":17}],5:[function(require,module,exports){
+},{"./DeltaInsertOp":1,"./InsertData":2,"./InsertOpDenormalizer":3,"./OpAttributeSanitizer":5,"./value-types":18}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
@@ -230,14 +248,35 @@ var OpAttributeSanitizer = (function () {
             return cleanAttrs;
         }
         var booleanAttrs = [
-            'bold', 'italic', 'underline', 'strike', 'code',
-            'blockquote', 'code-block', 'renderAsBlock'
+            'bold',
+            'italic',
+            'underline',
+            'strike',
+            'code',
+            'blockquote',
+            'code-block',
+            'renderAsBlock'
         ];
         var colorAttrs = ['background', 'color'];
         var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width, target = dirtyAttrs.target, rel = dirtyAttrs.rel;
-        var sanitizedAttrs = booleanAttrs.concat(colorAttrs, ['font', 'size', 'link', 'script', 'list', 'header', 'align',
-            'direction', 'indent', 'mentions', 'mention', 'width',
-            'target', 'rel']);
+        var codeBlock = dirtyAttrs['code-block'];
+        var sanitizedAttrs = booleanAttrs.concat(colorAttrs, [
+            'font',
+            'size',
+            'link',
+            'script',
+            'list',
+            'header',
+            'align',
+            'direction',
+            'indent',
+            'mentions',
+            'mention',
+            'width',
+            'target',
+            'rel',
+            'code-block'
+        ]);
         booleanAttrs.forEach(function (prop) {
             var v = dirtyAttrs[prop];
             if (v) {
@@ -246,9 +285,10 @@ var OpAttributeSanitizer = (function () {
         });
         colorAttrs.forEach(function (prop) {
             var val = dirtyAttrs[prop];
-            if (val && (OpAttributeSanitizer.IsValidHexColor(val + '') ||
-                OpAttributeSanitizer.IsValidColorLiteral(val + '') ||
-                OpAttributeSanitizer.IsValidRGBColor(val + ''))) {
+            if (val &&
+                (OpAttributeSanitizer.IsValidHexColor(val + '') ||
+                    OpAttributeSanitizer.IsValidColorLiteral(val + '') ||
+                    OpAttributeSanitizer.IsValidRGBColor(val + ''))) {
                 cleanAttrs[prop] = val;
             }
         });
@@ -270,10 +310,21 @@ var OpAttributeSanitizer = (function () {
         if (rel && OpAttributeSanitizer.IsValidRel(rel)) {
             cleanAttrs.rel = rel;
         }
+        if (codeBlock) {
+            if (OpAttributeSanitizer.IsValidLang(codeBlock)) {
+                cleanAttrs['code-block'] = codeBlock;
+            }
+            else {
+                cleanAttrs['code-block'] = !!codeBlock;
+            }
+        }
         if (script === value_types_1.ScriptType.Sub || value_types_1.ScriptType.Super === script) {
             cleanAttrs.script = script;
         }
-        if (list === value_types_1.ListType.Bullet || list === value_types_1.ListType.Ordered || list === value_types_1.ListType.Checked || list === value_types_1.ListType.Unchecked) {
+        if (list === value_types_1.ListType.Bullet ||
+            list === value_types_1.ListType.Ordered ||
+            list === value_types_1.ListType.Checked ||
+            list === value_types_1.ListType.Unchecked) {
             cleanAttrs.list = list;
         }
         if (Number(header)) {
@@ -299,19 +350,18 @@ var OpAttributeSanitizer = (function () {
             if (sanitizedAttrs.indexOf(k) === -1) {
                 cleaned[k] = dirtyAttrs[k];
             }
-            ;
             return cleaned;
         }, cleanAttrs);
     };
     OpAttributeSanitizer.sanitizeLinkUsingOptions = function (link, options) {
-        var sanitizerFn = function () { return undefined; };
+        var sanitizerFn = function () {
+            return undefined;
+        };
         if (options && typeof options.urlSanitizer === 'function') {
             sanitizerFn = options.urlSanitizer;
         }
         var result = sanitizerFn(link);
-        return typeof result === 'string' ?
-            result :
-            funcs_html_1.encodeLink(url.sanitize(link));
+        return typeof result === 'string' ? result : funcs_html_1.encodeLink(url.sanitize(link));
     };
     OpAttributeSanitizer.IsValidHexColor = function (colorStr) {
         return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
@@ -338,11 +388,17 @@ var OpAttributeSanitizer = (function () {
     OpAttributeSanitizer.IsValidRel = function (relStr) {
         return !!relStr.match(/^[a-zA-Z\s\-]{1,250}$/i);
     };
+    OpAttributeSanitizer.IsValidLang = function (lang) {
+        if (typeof lang === 'boolean') {
+            return true;
+        }
+        return !!lang.match(/^[a-zA-Z\s\-\\\/\+]{1,50}$/i);
+    };
     return OpAttributeSanitizer;
 }());
 exports.OpAttributeSanitizer = OpAttributeSanitizer;
 
-},{"./funcs-html":8,"./helpers/array":12,"./helpers/url":15,"./mentions/MentionSanitizer":16,"./value-types":17}],6:[function(require,module,exports){
+},{"./funcs-html":8,"./helpers/array":13,"./helpers/url":16,"./mentions/MentionSanitizer":17,"./value-types":18}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var funcs_html_1 = require("./funcs-html");
@@ -350,17 +406,16 @@ var value_types_1 = require("./value-types");
 var obj = require("./helpers/object");
 var arr = require("./helpers/array");
 var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
-;
 var DEFAULT_INLINE_FONTS = {
     serif: 'font-family: Georgia, Times New Roman, serif',
     monospace: 'font-family: Monaco, Courier New, monospace'
 };
 exports.DEFAULT_INLINE_STYLES = {
-    font: function (value) { return DEFAULT_INLINE_FONTS[value] || ('font-family:' + value); },
+    font: function (value) { return DEFAULT_INLINE_FONTS[value] || 'font-family:' + value; },
     size: {
-        'small': 'font-size: 0.75em',
-        'large': 'font-size: 1.5em',
-        'huge': 'font-size: 2.5em'
+        small: 'font-size: 0.75em',
+        large: 'font-size: 1.5em',
+        huge: 'font-size: 2.5em'
     },
     indent: function (value, op) {
         var indentSize = parseInt(value, 10) * 3;
@@ -369,7 +424,7 @@ exports.DEFAULT_INLINE_STYLES = {
     },
     direction: function (value, op) {
         if (value === 'rtl') {
-            return 'direction:rtl' + (op.attributes['align'] ? '' : '; text-align:inherit');
+            return ('direction:rtl' + (op.attributes['align'] ? '' : '; text-align:inherit'));
         }
         else {
             return undefined;
@@ -407,8 +462,10 @@ var OpToHtmlConverter = (function () {
             tags.push('span');
         }
         var beginTags = [], endTags = [];
-        var imgTag = "img";
-        var isImageLink = function (tag) { return tag === imgTag && !!_this.op.attributes.link; };
+        var imgTag = 'img';
+        var isImageLink = function (tag) {
+            return tag === imgTag && !!_this.op.attributes.link;
+        };
         for (var _i = 0, tags_1 = tags; _i < tags_1.length; _i++) {
             var tag = tags_1[_i];
             if (isImageLink(tag)) {
@@ -436,7 +493,7 @@ var OpToHtmlConverter = (function () {
             return this.op.insert.value;
         }
         var content = this.op.isFormula() || this.op.isText() ? this.op.insert.value : '';
-        return this.options.encodeHtml && funcs_html_1.encodeHtml(content) || content;
+        return (this.options.encodeHtml && funcs_html_1.encodeHtml(content)) || content;
     };
     OpToHtmlConverter.prototype.getCssClasses = function () {
         var attrs = this.op.attributes;
@@ -449,7 +506,11 @@ var OpToHtmlConverter = (function () {
         }
         return propsArr
             .filter(function (prop) { return !!attrs[prop]; })
-            .filter(function (prop) { return prop === 'background' ? OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidColorLiteral(attrs[prop]) : true; })
+            .filter(function (prop) {
+            return prop === 'background'
+                ? OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidColorLiteral(attrs[prop])
+                : true;
+        })
             .map(function (prop) { return prop + '-' + attrs[prop]; })
             .concat(this.op.isFormula() ? 'formula' : [])
             .concat(this.op.isVideo() ? 'video' : [])
@@ -477,12 +538,13 @@ var OpToHtmlConverter = (function () {
             .map(function (item) {
             var attribute = item[0];
             var attrValue = attrs[attribute];
-            var attributeConverter = (_this.options.inlineStyles && _this.options.inlineStyles[attribute]) ||
+            var attributeConverter = (_this.options.inlineStyles &&
+                _this.options.inlineStyles[attribute]) ||
                 exports.DEFAULT_INLINE_STYLES[attribute];
-            if (typeof (attributeConverter) === 'object') {
+            if (typeof attributeConverter === 'object') {
                 return attributeConverter[attrValue];
             }
-            else if (typeof (attributeConverter) === 'function') {
+            else if (typeof attributeConverter === 'function') {
                 var converterFn = attributeConverter;
                 return converterFn(attrValue, _this.op);
             }
@@ -500,7 +562,8 @@ var OpToHtmlConverter = (function () {
         var classes = this.getCssClasses();
         var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
         if (this.op.isImage()) {
-            this.op.attributes.width && (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
+            this.op.attributes.width &&
+                (tagAttrs = tagAttrs.concat(makeAttr('width', this.op.attributes.width)));
             return tagAttrs.concat(makeAttr('src', this.op.insert.value));
         }
         if (this.op.isACheckList()) {
@@ -532,6 +595,10 @@ var OpToHtmlConverter = (function () {
         if (styles.length) {
             tagAttrs.push(makeAttr('style', styles.join(';')));
         }
+        if (this.op.isCodeBlock() &&
+            typeof this.op.attributes['code-block'] === 'string') {
+            return tagAttrs.concat(makeAttr('data-language', this.op.attributes['code-block']));
+        }
         if (this.op.isContainerBlock()) {
             return tagAttrs;
         }
@@ -545,10 +612,12 @@ var OpToHtmlConverter = (function () {
     };
     OpToHtmlConverter.prototype.getLinkAttrs = function () {
         var tagAttrs = [];
-        var targetForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.isValidTarget(this.options.linkTarget || '') ?
-            this.options.linkTarget : undefined;
-        var relForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidRel(this.options.linkRel || '') ?
-            this.options.linkRel : undefined;
+        var targetForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.isValidTarget(this.options.linkTarget || '')
+            ? this.options.linkTarget
+            : undefined;
+        var relForAll = OpAttributeSanitizer_1.OpAttributeSanitizer.IsValidRel(this.options.linkRel || '')
+            ? this.options.linkRel
+            : undefined;
         var target = this.op.attributes.target || targetForAll;
         var rel = this.op.attributes.rel || relForAll;
         return tagAttrs
@@ -559,30 +628,45 @@ var OpToHtmlConverter = (function () {
     OpToHtmlConverter.prototype.getTags = function () {
         var attrs = this.op.attributes;
         if (!this.op.isText()) {
-            return [this.op.isVideo() ? 'iframe'
-                    : this.op.isImage() ? 'img'
-                        : 'span'
+            return [
+                this.op.isVideo() ? 'iframe' : this.op.isImage() ? 'img' : 'span'
             ];
         }
         var positionTag = this.options.paragraphTag || 'p';
-        var blocks = [['blockquote'], ['code-block', 'pre'],
-            ['list', this.options.listItemTag], ['header'],
-            ['align', positionTag], ['direction', positionTag],
-            ['indent', positionTag]];
+        var blocks = [
+            ['blockquote'],
+            ['code-block', 'pre'],
+            ['list', this.options.listItemTag],
+            ['header'],
+            ['align', positionTag],
+            ['direction', positionTag],
+            ['indent', positionTag]
+        ];
         for (var _i = 0, blocks_1 = blocks; _i < blocks_1.length; _i++) {
             var item = blocks_1[_i];
             var firstItem = item[0];
             if (attrs[firstItem]) {
-                return firstItem === 'header' ? ['h' + attrs[firstItem]] : [arr.preferSecond(item)];
+                return firstItem === 'header'
+                    ? ['h' + attrs[firstItem]]
+                    : [arr.preferSecond(item)];
             }
         }
-        return [['link', 'a'], ['mentions', 'a'], ['script'],
-            ['bold', 'strong'], ['italic', 'em'], ['strike', 's'], ['underline', 'u'],
-            ['code']]
+        return [
+            ['link', 'a'],
+            ['mentions', 'a'],
+            ['script'],
+            ['bold', 'strong'],
+            ['italic', 'em'],
+            ['strike', 's'],
+            ['underline', 'u'],
+            ['code']
+        ]
             .filter(function (item) { return !!attrs[item[0]]; })
             .map(function (item) {
-            return item[0] === 'script' ?
-                (attrs[item[0]] === value_types_1.ScriptType.Sub ? 'sub' : 'sup')
+            return item[0] === 'script'
+                ? attrs[item[0]] === value_types_1.ScriptType.Sub
+                    ? 'sub'
+                    : 'sup'
                 : arr.preferSecond(item);
         });
     };
@@ -590,7 +674,7 @@ var OpToHtmlConverter = (function () {
 }());
 exports.OpToHtmlConverter = OpToHtmlConverter;
 
-},{"./OpAttributeSanitizer":5,"./funcs-html":8,"./helpers/array":12,"./helpers/object":13,"./value-types":17}],7:[function(require,module,exports){
+},{"./OpAttributeSanitizer":5,"./funcs-html":8,"./helpers/array":13,"./helpers/object":14,"./value-types":18}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertOpsConverter_1 = require("./InsertOpsConverter");
@@ -601,6 +685,7 @@ var ListNester_1 = require("./grouper/ListNester");
 var funcs_html_1 = require("./funcs-html");
 var obj = require("./helpers/object");
 var value_types_1 = require("./value-types");
+var TableGrouper_1 = require("./grouper/TableGrouper");
 var BrTag = '<br/>';
 var QuillDeltaToHtmlConverter = (function () {
     function QuillDeltaToHtmlConverter(deltaOps, options) {
@@ -626,7 +711,7 @@ var QuillDeltaToHtmlConverter = (function () {
         if (!this.options.inlineStyles) {
             inlineStyles = undefined;
         }
-        else if (typeof (this.options.inlineStyles) === 'object') {
+        else if (typeof this.options.inlineStyles === 'object') {
             inlineStyles = this.options.inlineStyles;
         }
         else {
@@ -645,10 +730,14 @@ var QuillDeltaToHtmlConverter = (function () {
         this.rawDeltaOps = deltaOps;
     }
     QuillDeltaToHtmlConverter.prototype._getListTag = function (op) {
-        return op.isOrderedList() ? this.options.orderedListTag + ''
-            : op.isBulletList() ? this.options.bulletListTag + ''
-                : op.isCheckedList() ? this.options.bulletListTag + ''
-                    : op.isUncheckedList() ? this.options.bulletListTag + ''
+        return op.isOrderedList()
+            ? this.options.orderedListTag + ''
+            : op.isBulletList()
+                ? this.options.bulletListTag + ''
+                : op.isCheckedList()
+                    ? this.options.bulletListTag + ''
+                    : op.isUncheckedList()
+                        ? this.options.bulletListTag + ''
                         : '';
     };
     QuillDeltaToHtmlConverter.prototype.getGroupedOps = function () {
@@ -660,19 +749,31 @@ var QuillDeltaToHtmlConverter = (function () {
             codeBlocks: !!this.options.multiLineCodeblock
         });
         var groupedOps = Grouper_1.Grouper.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
+        var tableGrouper = new TableGrouper_1.TableGrouper();
+        groupedOps = tableGrouper.group(groupedOps);
         var listNester = new ListNester_1.ListNester();
         return listNester.nest(groupedOps);
     };
     QuillDeltaToHtmlConverter.prototype.convert = function () {
         var _this = this;
         var groups = this.getGroupedOps();
-        return groups.map(function (group) {
+        return groups
+            .map(function (group) {
             if (group instanceof group_types_1.ListGroup) {
-                return _this._renderWithCallbacks(value_types_1.GroupType.List, group, function () { return _this._renderList(group); });
+                return _this._renderWithCallbacks(value_types_1.GroupType.List, group, function () {
+                    return _this._renderList(group);
+                });
+            }
+            else if (group instanceof group_types_1.TableGroup) {
+                return _this._renderWithCallbacks(value_types_1.GroupType.Table, group, function () {
+                    return _this._renderTable(group);
+                });
             }
             else if (group instanceof group_types_1.BlockGroup) {
                 var g = group;
-                return _this._renderWithCallbacks(value_types_1.GroupType.Block, group, function () { return _this._renderBlock(g.op, g.ops); });
+                return _this._renderWithCallbacks(value_types_1.GroupType.Block, group, function () {
+                    return _this._renderBlock(g.op, g.ops);
+                });
             }
             else if (group instanceof group_types_1.BlotBlock) {
                 return _this._renderCustom(group.op, null);
@@ -690,45 +791,81 @@ var QuillDeltaToHtmlConverter = (function () {
                 });
             }
         })
-            .join("");
+            .join('');
     };
     QuillDeltaToHtmlConverter.prototype._renderWithCallbacks = function (groupType, group, myRenderFn) {
         var html = '';
         var beforeCb = this.callbacks['beforeRender_cb'];
-        html = typeof beforeCb === 'function' ? beforeCb.apply(null, [groupType, group]) : '';
+        html =
+            typeof beforeCb === 'function'
+                ? beforeCb.apply(null, [groupType, group])
+                : '';
         if (!html) {
             html = myRenderFn();
         }
         var afterCb = this.callbacks['afterRender_cb'];
-        html = typeof afterCb === 'function' ? afterCb.apply(null, [groupType, html]) : html;
+        html =
+            typeof afterCb === 'function'
+                ? afterCb.apply(null, [groupType, html])
+                : html;
         return html;
     };
     QuillDeltaToHtmlConverter.prototype._renderList = function (list) {
         var _this = this;
         var firstItem = list.items[0];
-        return funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op))
-            + list.items.map(function (li) { return _this._renderListItem(li); }).join('')
-            + funcs_html_1.makeEndTag(this._getListTag(firstItem.item.op));
+        return (funcs_html_1.makeStartTag(this._getListTag(firstItem.item.op)) +
+            list.items.map(function (li) { return _this._renderListItem(li); }).join('') +
+            funcs_html_1.makeEndTag(this._getListTag(firstItem.item.op)));
     };
     QuillDeltaToHtmlConverter.prototype._renderListItem = function (li) {
         li.item.op.attributes.indent = 0;
         var converter = new OpToHtmlConverter_1.OpToHtmlConverter(li.item.op, this.converterOptions);
         var parts = converter.getHtmlParts();
         var liElementsHtml = this._renderInlines(li.item.ops, false);
-        return parts.openingTag + (liElementsHtml) +
-            (li.innerList ? this._renderList(li.innerList) : '')
-            + parts.closingTag;
+        return (parts.openingTag +
+            liElementsHtml +
+            (li.innerList ? this._renderList(li.innerList) : '') +
+            parts.closingTag);
+    };
+    QuillDeltaToHtmlConverter.prototype._renderTable = function (table) {
+        var _this = this;
+        return (funcs_html_1.makeStartTag('table') +
+            funcs_html_1.makeStartTag('tbody') +
+            table.rows.map(function (row) { return _this._renderTableRow(row); }).join('') +
+            funcs_html_1.makeEndTag('tbody') +
+            funcs_html_1.makeEndTag('table'));
+    };
+    QuillDeltaToHtmlConverter.prototype._renderTableRow = function (row) {
+        var _this = this;
+        return (funcs_html_1.makeStartTag('tr') +
+            row.cells.map(function (cell) { return _this._renderTableCell(cell); }).join('') +
+            funcs_html_1.makeEndTag('tr'));
+    };
+    QuillDeltaToHtmlConverter.prototype._renderTableCell = function (cell) {
+        var converter = new OpToHtmlConverter_1.OpToHtmlConverter(cell.item.op, this.converterOptions);
+        var parts = converter.getHtmlParts();
+        var cellElementsHtml = this._renderInlines(cell.item.ops, false);
+        return (funcs_html_1.makeStartTag('td', {
+            key: 'data-row',
+            value: cell.item.op.attributes.table
+        }) +
+            parts.openingTag +
+            cellElementsHtml +
+            parts.closingTag +
+            funcs_html_1.makeEndTag('td'));
     };
     QuillDeltaToHtmlConverter.prototype._renderBlock = function (bop, ops) {
         var _this = this;
         var converter = new OpToHtmlConverter_1.OpToHtmlConverter(bop, this.converterOptions);
         var htmlParts = converter.getHtmlParts();
         if (bop.isCodeBlock()) {
-            return htmlParts.openingTag +
-                funcs_html_1.encodeHtml(ops.map(function (iop) {
+            return (htmlParts.openingTag +
+                funcs_html_1.encodeHtml(ops
+                    .map(function (iop) {
                     return iop.isCustom() ? _this._renderCustom(iop, bop) : iop.insert.value;
-                }).join(""))
-                + htmlParts.closingTag;
+                })
+                    .join('')) +
+                htmlParts.closingTag);
         }
         var inlines = ops.map(function (op) { return _this._renderInline(op, bop); }).join('');
         return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
@@ -737,12 +874,14 @@ var QuillDeltaToHtmlConverter = (function () {
         var _this = this;
         if (isInlineGroup === void 0) { isInlineGroup = true; }
         var opsLen = ops.length - 1;
-        var html = ops.map(function (op, i) {
+        var html = ops
+            .map(function (op, i) {
             if (i > 0 && i === opsLen && op.isJustNewline()) {
                 return '';
             }
             return _this._renderInline(op, null);
-        }).join('');
+        })
+            .join('');
         if (!isInlineGroup) {
             return html;
         }
@@ -751,9 +890,14 @@ var QuillDeltaToHtmlConverter = (function () {
         if (html === BrTag || this.options.multiLineParagraph) {
             return startParaTag + html + endParaTag;
         }
-        return startParaTag + html.split(BrTag).map(function (v) {
-            return v === '' ? BrTag : v;
-        }).join(endParaTag + startParaTag) + endParaTag;
+        return (startParaTag +
+            html
+                .split(BrTag)
+                .map(function (v) {
+                return v === '' ? BrTag : v;
+            })
+                .join(endParaTag + startParaTag) +
+            endParaTag);
     };
     QuillDeltaToHtmlConverter.prototype._renderInline = function (op, contextOp) {
         if (op.isCustom()) {
@@ -767,7 +911,7 @@ var QuillDeltaToHtmlConverter = (function () {
         if (typeof renderCb === 'function') {
             return renderCb.apply(null, [op, contextOp]);
         }
-        return "";
+        return '';
     };
     QuillDeltaToHtmlConverter.prototype.beforeRender = function (cb) {
         if (typeof cb === 'function') {
@@ -786,7 +930,7 @@ var QuillDeltaToHtmlConverter = (function () {
 }());
 exports.QuillDeltaToHtmlConverter = QuillDeltaToHtmlConverter;
 
-},{"./InsertOpsConverter":4,"./OpToHtmlConverter":6,"./funcs-html":8,"./grouper/Grouper":9,"./grouper/ListNester":10,"./grouper/group-types":11,"./helpers/object":13,"./value-types":17}],8:[function(require,module,exports){
+},{"./InsertOpsConverter":4,"./OpToHtmlConverter":6,"./funcs-html":8,"./grouper/Grouper":9,"./grouper/ListNester":10,"./grouper/TableGrouper":11,"./grouper/group-types":12,"./helpers/object":14,"./value-types":18}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var EncodeTarget;
@@ -802,9 +946,11 @@ function makeStartTag(tag, attrs) {
     var attrsStr = '';
     if (attrs) {
         var arrAttrs = [].concat(attrs);
-        attrsStr = arrAttrs.map(function (attr) {
+        attrsStr = arrAttrs
+            .map(function (attr) {
             return attr.key + (attr.value ? '="' + attr.value + '"' : '');
-        }).join(' ');
+        })
+            .join(' ');
     }
     var closing = '>';
     if (tag === 'img' || tag === 'br') {
@@ -815,7 +961,7 @@ function makeStartTag(tag, attrs) {
 exports.makeStartTag = makeStartTag;
 function makeEndTag(tag) {
     if (tag === void 0) { tag = ''; }
-    return tag && "</" + tag + ">" || '';
+    return (tag && "</" + tag + ">") || '';
 }
 exports.makeEndTag = makeEndTag;
 function decodeHtml(str) {
@@ -842,7 +988,7 @@ function encodeMappings(mtype) {
         ['<', '&lt;'],
         ['>', '&gt;'],
         ['"', '&quot;'],
-        ["'", "&#x27;"],
+        ["'", '&#x27;'],
         ['\\/', '&#x2F;'],
         ['\\(', '&#40;'],
         ['\\)', '&#41;']
@@ -879,7 +1025,10 @@ var Grouper = (function () {
     Grouper.pairOpsWithTheirBlock = function (ops) {
         var result = [];
         var canBeInBlock = function (op) {
-            return !(op.isJustNewline() || op.isCustomBlock() || op.isVideo() || op.isContainerBlock());
+            return !(op.isJustNewline() ||
+                op.isCustomBlock() ||
+                op.isVideo() ||
+                op.isContainerBlock());
         };
         var isInlineData = function (op) { return op.isInline(); };
         var lastInd = ops.length - 1;
@@ -916,9 +1065,11 @@ var Grouper = (function () {
             if (!(g instanceof group_types_1.BlockGroup) || !(gPrev instanceof group_types_1.BlockGroup)) {
                 return false;
             }
-            return blocksOf.codeBlocks && Grouper.areBothCodeblocks(g, gPrev)
-                || blocksOf.blockquotes && Grouper.areBothBlockquotesWithSameAdi(g, gPrev)
-                || blocksOf.header && Grouper.areBothSameHeadersWithSameAdi(g, gPrev);
+            return ((blocksOf.codeBlocks &&
+                Grouper.areBothCodeblocksWithSameLang(g, gPrev)) ||
+                (blocksOf.blockquotes &&
+                    Grouper.areBothBlockquotesWithSameAdi(g, gPrev)) ||
+                (blocksOf.header && Grouper.areBothSameHeadersWithSameAdi(g, gPrev)));
         });
     };
     Grouper.reduceConsecutiveSameStyleBlocksToOne = function (groups) {
@@ -940,21 +1091,24 @@ var Grouper = (function () {
             return elm[0];
         });
     };
-    Grouper.areBothCodeblocks = function (g1, gOther) {
-        return g1.op.isCodeBlock() && gOther.op.isCodeBlock();
+    Grouper.areBothCodeblocksWithSameLang = function (g1, gOther) {
+        return (g1.op.isCodeBlock() &&
+            gOther.op.isCodeBlock() &&
+            g1.op.hasSameLangAs(gOther.op));
     };
     Grouper.areBothSameHeadersWithSameAdi = function (g1, gOther) {
         return g1.op.isSameHeaderAs(gOther.op) && g1.op.hasSameAdiAs(gOther.op);
     };
     Grouper.areBothBlockquotesWithSameAdi = function (g, gOther) {
-        return g.op.isBlockquote() && gOther.op.isBlockquote()
-            && g.op.hasSameAdiAs(gOther.op);
+        return (g.op.isBlockquote() &&
+            gOther.op.isBlockquote() &&
+            g.op.hasSameAdiAs(gOther.op));
     };
     return Grouper;
 }());
 exports.Grouper = Grouper;
 
-},{"./../DeltaInsertOp":1,"./../helpers/array":12,"./group-types":11}],10:[function(require,module,exports){
+},{"./../DeltaInsertOp":1,"./../helpers/array":13,"./group-types":12}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var group_types_1 = require("./group-types");
@@ -988,9 +1142,12 @@ var ListNester = (function () {
     };
     ListNester.prototype.convertListBlocksToListGroups = function (items) {
         var grouped = array_1.groupConsecutiveElementsWhile(items, function (g, gPrev) {
-            return g instanceof group_types_1.BlockGroup && gPrev instanceof group_types_1.BlockGroup
-                && g.op.isList() && gPrev.op.isList() && g.op.isSameListAs(gPrev.op)
-                && g.op.hasSameIndentationAs(gPrev.op);
+            return (g instanceof group_types_1.BlockGroup &&
+                gPrev instanceof group_types_1.BlockGroup &&
+                g.op.isList() &&
+                gPrev.op.isList() &&
+                g.op.isSameListAs(gPrev.op) &&
+                g.op.hasSameIndentationAs(gPrev.op));
         });
         return grouped.map(function (item) {
             if (!Array.isArray(item)) {
@@ -1010,7 +1167,11 @@ var ListNester = (function () {
     ListNester.prototype.nestListSection = function (sectionItems) {
         var _this = this;
         var indentGroups = this.groupByIndent(sectionItems);
-        Object.keys(indentGroups).map(Number).sort().reverse().forEach(function (indent) {
+        Object.keys(indentGroups)
+            .map(Number)
+            .sort()
+            .reverse()
+            .forEach(function (indent) {
             indentGroups[indent].forEach(function (lg) {
                 var idx = sectionItems.indexOf(lg);
                 if (_this.placeUnderParent(lg, sectionItems.slice(0, idx))) {
@@ -1050,7 +1211,55 @@ var ListNester = (function () {
 }());
 exports.ListNester = ListNester;
 
-},{"./../helpers/array":12,"./group-types":11}],11:[function(require,module,exports){
+},{"./../helpers/array":13,"./group-types":12}],11:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var group_types_1 = require("./group-types");
+var array_1 = require("../helpers/array");
+var TableGrouper = (function () {
+    function TableGrouper() {
+    }
+    TableGrouper.prototype.group = function (groups) {
+        var tableBlocked = this.convertTableBlocksToTableGroups(groups);
+        return tableBlocked;
+    };
+    TableGrouper.prototype.convertTableBlocksToTableGroups = function (items) {
+        var _this = this;
+        var grouped = array_1.groupConsecutiveElementsWhile(items, function (g, gPrev) {
+            return (g instanceof group_types_1.BlockGroup &&
+                gPrev instanceof group_types_1.BlockGroup &&
+                g.op.isTable() &&
+                gPrev.op.isTable());
+        });
+        return grouped.map(function (item) {
+            if (!Array.isArray(item)) {
+                if (item instanceof group_types_1.BlockGroup && item.op.isTable()) {
+                    return new group_types_1.TableGroup([new group_types_1.TableRow([new group_types_1.TableCell(item)])]);
+                }
+                return item;
+            }
+            return new group_types_1.TableGroup(_this.convertTableBlocksToTableRows(item));
+        });
+    };
+    TableGrouper.prototype.convertTableBlocksToTableRows = function (items) {
+        var grouped = array_1.groupConsecutiveElementsWhile(items, function (g, gPrev) {
+            return (g instanceof group_types_1.BlockGroup &&
+                gPrev instanceof group_types_1.BlockGroup &&
+                g.op.isTable() &&
+                gPrev.op.isTable() &&
+                g.op.isSameTableRowAs(gPrev.op));
+        });
+        return grouped.map(function (item) {
+            return new group_types_1.TableRow(Array.isArray(item)
+                ? item.map(function (it) { return new group_types_1.TableCell(it); })
+                : [new group_types_1.TableCell(item)]);
+        });
+    };
+    return TableGrouper;
+}());
+exports.TableGrouper = TableGrouper;
+
+},{"../helpers/array":13,"./group-types":12}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -1084,7 +1293,6 @@ var VideoItem = (function (_super) {
     return VideoItem;
 }(SingleItem));
 exports.VideoItem = VideoItem;
-;
 var BlotBlock = (function (_super) {
     __extends(BlotBlock, _super);
     function BlotBlock() {
@@ -1093,7 +1301,6 @@ var BlotBlock = (function (_super) {
     return BlotBlock;
 }(SingleItem));
 exports.BlotBlock = BlotBlock;
-;
 var BlockGroup = (function () {
     function BlockGroup(op, ops) {
         this.op = op;
@@ -1118,8 +1325,29 @@ var ListItem = (function () {
     return ListItem;
 }());
 exports.ListItem = ListItem;
+var TableGroup = (function () {
+    function TableGroup(rows) {
+        this.rows = rows;
+    }
+    return TableGroup;
+}());
+exports.TableGroup = TableGroup;
+var TableRow = (function () {
+    function TableRow(cells) {
+        this.cells = cells;
+    }
+    return TableRow;
+}());
+exports.TableRow = TableRow;
+var TableCell = (function () {
+    function TableCell(item) {
+        this.item = item;
+    }
+    return TableCell;
+}());
+exports.TableCell = TableCell;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function preferSecond(arr) {
@@ -1129,14 +1357,12 @@ function preferSecond(arr) {
     return arr.length >= 2 ? arr[1] : arr[0];
 }
 exports.preferSecond = preferSecond;
-;
 function flatten(arr) {
     return arr.reduce(function (pv, v) {
         return pv.concat(Array.isArray(v) ? flatten(v) : v);
     }, []);
 }
 exports.flatten = flatten;
-;
 function find(arr, predicate) {
     if (Array.prototype.find) {
         return Array.prototype.find.call(arr, predicate);
@@ -1161,10 +1387,9 @@ function groupConsecutiveElementsWhile(arr, predicate) {
             groups.push([currElm]);
         }
     }
-    return groups.map(function (g) { return g.length === 1 ? g[0] : g; });
+    return groups.map(function (g) { return (g.length === 1 ? g[0] : g); });
 }
 exports.groupConsecutiveElementsWhile = groupConsecutiveElementsWhile;
-;
 function sliceFromReverseWhile(arr, startIndex, predicate) {
     var result = {
         elements: [],
@@ -1180,11 +1405,10 @@ function sliceFromReverseWhile(arr, startIndex, predicate) {
     return result;
 }
 exports.sliceFromReverseWhile = sliceFromReverseWhile;
-;
 function intersperse(arr, item) {
     return arr.reduce(function (pv, v, index) {
         pv.push(v);
-        if (index < (arr.length - 1)) {
+        if (index < arr.length - 1) {
             pv.push(item);
         }
         return pv;
@@ -1192,7 +1416,7 @@ function intersperse(arr, item) {
 }
 exports.intersperse = intersperse;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function assign(target) {
@@ -1217,13 +1441,12 @@ function assign(target) {
     return to;
 }
 exports.assign = assign;
-;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function tokenizeWithNewLines(str) {
-    var NewLine = "\n";
+    var NewLine = '\n';
     if (str === NewLine) {
         return [str];
     }
@@ -1234,23 +1457,22 @@ function tokenizeWithNewLines(str) {
     var lastIndex = lines.length - 1;
     return lines.reduce(function (pv, line, ind) {
         if (ind !== lastIndex) {
-            if (line !== "") {
+            if (line !== '') {
                 pv = pv.concat(line, NewLine);
             }
             else {
                 pv.push(NewLine);
             }
         }
-        else if (line !== "") {
+        else if (line !== '') {
             pv.push(line);
         }
         return pv;
     }, []);
 }
 exports.tokenizeWithNewLines = tokenizeWithNewLines;
-;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function sanitize(str) {
@@ -1264,7 +1486,7 @@ function sanitize(str) {
 }
 exports.sanitize = sanitize;
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var OpAttributeSanitizer_1 = require("./../OpAttributeSanitizer");
@@ -1292,7 +1514,7 @@ var MentionSanitizer = (function () {
             cleanObj['end-point'] = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(dirtyObj['end-point'] + '', sanitizeOptions);
         }
         if (dirtyObj.slug) {
-            cleanObj.slug = (dirtyObj.slug + '');
+            cleanObj.slug = dirtyObj.slug + '';
         }
         return cleanObj;
     };
@@ -1309,10 +1531,10 @@ var MentionSanitizer = (function () {
 }());
 exports.MentionSanitizer = MentionSanitizer;
 
-},{"./../OpAttributeSanitizer":5}],17:[function(require,module,exports){
+},{"./../OpAttributeSanitizer":5}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var NewLine = "\n";
+var NewLine = '\n';
 exports.NewLine = NewLine;
 var ListType;
 (function (ListType) {
@@ -1349,16 +1571,15 @@ var DataType;
     DataType["Text"] = "text";
 })(DataType || (DataType = {}));
 exports.DataType = DataType;
-;
 var GroupType;
 (function (GroupType) {
     GroupType["Block"] = "block";
     GroupType["InlineGroup"] = "inline-group";
     GroupType["List"] = "list";
     GroupType["Video"] = "video";
+    GroupType["Table"] = "table";
 })(GroupType || (GroupType = {}));
 exports.GroupType = GroupType;
-;
 
 },{}]},{},[7])(7)
 });

@@ -8,7 +8,7 @@ declare class Grouper {
         blockquotes: boolean;
     }): Array<TDataGroup | BlockGroup[]>;
     static reduceConsecutiveSameStyleBlocksToOne(groups: Array<TDataGroup | BlockGroup[]>): TDataGroup[];
-    static areBothCodeblocks(g1: BlockGroup, gOther: BlockGroup): boolean;
+    static areBothCodeblocksWithSameLang(g1: BlockGroup, gOther: BlockGroup): boolean;
     static areBothSameHeadersWithSameAdi(g1: BlockGroup, gOther: BlockGroup): boolean;
     static areBothBlockquotesWithSameAdi(g: BlockGroup, gOther: BlockGroup): boolean;
 }

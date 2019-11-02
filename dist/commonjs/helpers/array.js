@@ -7,14 +7,12 @@ function preferSecond(arr) {
     return arr.length >= 2 ? arr[1] : arr[0];
 }
 exports.preferSecond = preferSecond;
-;
 function flatten(arr) {
     return arr.reduce(function (pv, v) {
         return pv.concat(Array.isArray(v) ? flatten(v) : v);
     }, []);
 }
 exports.flatten = flatten;
-;
 function find(arr, predicate) {
     if (Array.prototype.find) {
         return Array.prototype.find.call(arr, predicate);
@@ -39,10 +37,9 @@ function groupConsecutiveElementsWhile(arr, predicate) {
             groups.push([currElm]);
         }
     }
-    return groups.map(function (g) { return g.length === 1 ? g[0] : g; });
+    return groups.map(function (g) { return (g.length === 1 ? g[0] : g); });
 }
 exports.groupConsecutiveElementsWhile = groupConsecutiveElementsWhile;
-;
 function sliceFromReverseWhile(arr, startIndex, predicate) {
     var result = {
         elements: [],
@@ -58,11 +55,10 @@ function sliceFromReverseWhile(arr, startIndex, predicate) {
     return result;
 }
 exports.sliceFromReverseWhile = sliceFromReverseWhile;
-;
 function intersperse(arr, item) {
     return arr.reduce(function (pv, v, index) {
         pv.push(v);
-        if (index < (arr.length - 1)) {
+        if (index < arr.length - 1) {
             pv.push(item);
         }
         return pv;

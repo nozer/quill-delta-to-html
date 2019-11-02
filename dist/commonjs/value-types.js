@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var NewLine = "\n";
+var NewLine = '\n';
 exports.NewLine = NewLine;
 var ListType;
 (function (ListType) {
@@ -37,13 +37,12 @@ var DataType;
     DataType["Text"] = "text";
 })(DataType || (DataType = {}));
 exports.DataType = DataType;
-;
 var GroupType;
 (function (GroupType) {
     GroupType["Block"] = "block";
     GroupType["InlineGroup"] = "inline-group";
     GroupType["List"] = "list";
     GroupType["Video"] = "video";
+    GroupType["Table"] = "table";
 })(GroupType || (GroupType = {}));
 exports.GroupType = GroupType;
-;

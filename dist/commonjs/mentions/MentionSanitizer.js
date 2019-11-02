@@ -25,7 +25,7 @@ var MentionSanitizer = (function () {
             cleanObj['end-point'] = OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(dirtyObj['end-point'] + '', sanitizeOptions);
         }
         if (dirtyObj.slug) {
-            cleanObj.slug = (dirtyObj.slug + '');
+            cleanObj.slug = dirtyObj.slug + '';
         }
         return cleanObj;
     };

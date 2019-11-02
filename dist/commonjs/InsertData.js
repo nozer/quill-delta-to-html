@@ -8,7 +8,6 @@ var InsertDataQuill = (function () {
     return InsertDataQuill;
 }());
 exports.InsertDataQuill = InsertDataQuill;
-;
 var InsertDataCustom = (function () {
     function InsertDataCustom(type, value) {
         this.type = type;
@@ -17,4 +16,3 @@ var InsertDataCustom = (function () {
     return InsertDataCustom;
 }());
 exports.InsertDataCustom = InsertDataCustom;
-;

@@ -13,9 +13,11 @@ function makeStartTag(tag, attrs) {
     var attrsStr = '';
     if (attrs) {
         var arrAttrs = [].concat(attrs);
-        attrsStr = arrAttrs.map(function (attr) {
+        attrsStr = arrAttrs
+            .map(function (attr) {
             return attr.key + (attr.value ? '="' + attr.value + '"' : '');
-        }).join(' ');
+        })
+            .join(' ');
     }
     var closing = '>';
     if (tag === 'img' || tag === 'br') {
@@ -26,7 +28,7 @@ function makeStartTag(tag, attrs) {
 exports.makeStartTag = makeStartTag;
 function makeEndTag(tag) {
     if (tag === void 0) { tag = ''; }
-    return tag && "</" + tag + ">" || '';
+    return (tag && "</" + tag + ">") || '';
 }
 exports.makeEndTag = makeEndTag;
 function decodeHtml(str) {
@@ -53,7 +55,7 @@ function encodeMappings(mtype) {
         ['<', '&lt;'],
         ['>', '&gt;'],
         ['"', '&quot;'],
-        ["'", "&#x27;"],
+        ["'", '&#x27;'],
         ['\\/', '&#x2F;'],
         ['\\(', '&#40;'],
         ['\\)', '&#41;']

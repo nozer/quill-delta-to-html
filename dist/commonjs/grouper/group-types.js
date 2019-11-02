@@ -31,7 +31,6 @@ var VideoItem = (function (_super) {
     return VideoItem;
 }(SingleItem));
 exports.VideoItem = VideoItem;
-;
 var BlotBlock = (function (_super) {
     __extends(BlotBlock, _super);
     function BlotBlock() {
@@ -40,7 +39,6 @@ var BlotBlock = (function (_super) {
     return BlotBlock;
 }(SingleItem));
 exports.BlotBlock = BlotBlock;
-;
 var BlockGroup = (function () {
     function BlockGroup(op, ops) {
         this.op = op;
@@ -65,3 +63,24 @@ var ListItem = (function () {
     return ListItem;
 }());
 exports.ListItem = ListItem;
+var TableGroup = (function () {
+    function TableGroup(rows) {
+        this.rows = rows;
+    }
+    return TableGroup;
+}());
+exports.TableGroup = TableGroup;
+var TableRow = (function () {
+    function TableRow(cells) {
+        this.cells = cells;
+    }
+    return TableRow;
+}());
+exports.TableRow = TableRow;
+var TableCell = (function () {
+    function TableCell(item) {
+        this.item = item;
+    }
+    return TableCell;
+}());
+exports.TableCell = TableCell;
