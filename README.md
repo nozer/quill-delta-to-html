@@ -19,7 +19,7 @@ npm install quill-delta-to-html
 ```
 
 Usage
-```javascript(commonJS)
+```javascript
 var QuillDeltaToHtmlConverter = require('quill-delta-to-html').QuillDeltaToHtmlConverter;
 
 // TypeScript / ES6:
@@ -118,7 +118,7 @@ If you are rendering to HTML that you intend to include in an email, using class
 
 You can customize styles by passing an object to `inlineStyles` instead:
 
-```js
+```javascript
 inlineStyles: {
    font: {
       'serif': 'font-family: Georgia, Times New Roman, serif',
