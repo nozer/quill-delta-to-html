@@ -3,7 +3,7 @@ import {
   TableGroup,
   BlockGroup,
   TableRow,
-  TableCell
+  TableCell,
 } from './group-types';
 import { groupConsecutiveElementsWhile } from '../helpers/array';
 
@@ -55,7 +55,7 @@ export class TableGrouper {
     return grouped.map((item: BlockGroup | BlockGroup[]) => {
       return new TableRow(
         Array.isArray(item)
-          ? item.map(it => new TableCell(it))
+          ? item.map((it) => new TableCell(it))
           : [new TableCell(item)]
       );
     });

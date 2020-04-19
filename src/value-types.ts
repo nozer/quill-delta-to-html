@@ -5,30 +5,30 @@ enum ListType {
   Ordered = 'ordered',
   Bullet = 'bullet',
   Checked = 'checked',
-  Unchecked = 'unchecked'
+  Unchecked = 'unchecked',
 }
 
 enum ScriptType {
   Sub = 'sub',
-  Super = 'super'
+  Super = 'super',
 }
 
 enum DirectionType {
-  Rtl = 'rtl'
+  Rtl = 'rtl',
 }
 
 enum AlignType {
   Left = 'left',
   Center = 'center',
   Right = 'right',
-  Justify = 'justify'
+  Justify = 'justify',
 }
 
 enum DataType {
   Image = 'image',
   Video = 'video',
   Formula = 'formula',
-  Text = 'text'
+  Text = 'text',
 }
 
 enum GroupType {
@@ -36,7 +36,7 @@ enum GroupType {
   InlineGroup = 'inline-group',
   List = 'list',
   Video = 'video',
-  Table = 'table'
+  Table = 'table',
 }
 
 export {
@@ -46,5 +46,5 @@ export {
   DirectionType,
   AlignType,
   DataType,
-  GroupType
+  GroupType,
 };

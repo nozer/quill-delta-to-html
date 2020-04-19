@@ -1,6 +1,6 @@
 import {
   IOpAttributeSanitizerOptions,
-  OpAttributeSanitizer
+  OpAttributeSanitizer,
 } from './../OpAttributeSanitizer';
 
 interface IMention {

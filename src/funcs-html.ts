@@ -5,7 +5,7 @@ interface ITagKeyValue {
 
 enum EncodeTarget {
   Html = 0,
-  Url = 1
+  Url = 1,
 }
 
 function makeStartTag(
@@ -20,7 +20,7 @@ function makeStartTag(
   if (attrs) {
     var arrAttrs = ([] as ITagKeyValue[]).concat(attrs);
     attrsStr = arrAttrs
-      .map(function(attr: any) {
+      .map(function (attr: any) {
         return attr.key + (attr.value ? '="' + attr.value + '"' : '');
       })
       .join(' ');
@@ -63,7 +63,7 @@ function encodeMappings(mtype: EncodeTarget) {
     ["'", '&#x27;'],
     ['\\/', '&#x2F;'],
     ['\\(', '&#40;'],
-    ['\\)', '&#41;']
+    ['\\)', '&#41;'],
   ];
   if (mtype === EncodeTarget.Html) {
     return maps.filter(
@@ -86,5 +86,5 @@ export {
   encodeHtml,
   decodeHtml,
   encodeLink,
-  ITagKeyValue
+  ITagKeyValue,
 };

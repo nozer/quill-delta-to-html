@@ -2,7 +2,7 @@ import {
   makeStartTag,
   makeEndTag,
   encodeHtml,
-  ITagKeyValue
+  ITagKeyValue,
 } from './funcs-html';
 import { DeltaInsertOp } from './DeltaInsertOp';
 import { ScriptType, NewLine } from './value-types';
@@ -25,15 +25,15 @@ export interface IInlineStyles {
 
 const DEFAULT_INLINE_FONTS: { [key: string]: string } = {
   serif: 'font-family: Georgia, Times New Roman, serif',
-  monospace: 'font-family: Monaco, Courier New, monospace'
+  monospace: 'font-family: Monaco, Courier New, monospace',
 };
 
 export const DEFAULT_INLINE_STYLES: IInlineStyles = {
-  font: value => DEFAULT_INLINE_FONTS[value] || 'font-family:' + value,
+  font: (value) => DEFAULT_INLINE_FONTS[value] || 'font-family:' + value,
   size: {
     small: 'font-size: 0.75em',
     large: 'font-size: 1.5em',
-    huge: 'font-size: 2.5em'
+    huge: 'font-size: 2.5em',
   },
   indent: (value, op) => {
     var indentSize = parseInt(value, 10) * 3;
@@ -48,7 +48,7 @@ export const DEFAULT_INLINE_STYLES: IInlineStyles = {
     } else {
       return undefined;
     }
-  }
+  },
 };
 
 interface IOpToHtmlConverterOptions {
@@ -81,7 +81,7 @@ class OpToHtmlConverter {
         inlineStyles: undefined,
         encodeHtml: true,
         listItemTag: 'li',
-        paragraphTag: 'p'
+        paragraphTag: 'p',
       },
       options
     );
@@ -133,7 +133,7 @@ class OpToHtmlConverter {
     return {
       openingTag: beginTags.join(''),
       content: this.getContent(),
-      closingTag: endTags.join('')
+      closingTag: endTags.join(''),
     };
   }
 
@@ -166,13 +166,13 @@ class OpToHtmlConverter {
       propsArr.push('background');
     }
     return propsArr
-      .filter(prop => !!attrs[prop])
-      .filter(prop =>
+      .filter((prop) => !!attrs[prop])
+      .filter((prop) =>
         prop === 'background'
           ? OpAttributeSanitizer.IsValidColorLiteral(attrs[prop])
           : true
       )
-      .map(prop => prop + '-' + attrs[prop])
+      .map((prop) => prop + '-' + attrs[prop])
       .concat(this.op.isFormula() ? 'formula' : [])
       .concat(this.op.isVideo() ? 'video' : [])
       .concat(this.op.isImage() ? 'image' : [])
@@ -192,12 +192,12 @@ class OpToHtmlConverter {
         ['align', 'text-align'],
         ['direction'],
         ['font', 'font-family'],
-        ['size']
+        ['size'],
       ]);
     }
 
     return propsArr
-      .filter(item => !!attrs[item[0]])
+      .filter((item) => !!attrs[item[0]])
       .map((item: any[]) => {
         let attribute = item[0];
         let attrValue = attrs[attribute];
@@ -210,16 +210,16 @@ class OpToHtmlConverter {
         if (typeof attributeConverter === 'object') {
           return attributeConverter[attrValue];
         } else if (typeof attributeConverter === 'function') {
-          var converterFn = attributeConverter as ((
+          var converterFn = attributeConverter as (
             value: string,
             op: DeltaInsertOp
-          ) => string);
+          ) => string;
           return converterFn(attrValue, this.op);
         } else {
           return arr.preferSecond(item) + ':' + attrValue;
         }
       })
-      .filter(item => item !== undefined);
+      .filter((item) => item !== undefined);
   }
 
   getTagAttributes(): Array<ITagKeyValue> {
@@ -331,7 +331,7 @@ class OpToHtmlConverter {
     // embeds
     if (!this.op.isText()) {
       return [
-        this.op.isVideo() ? 'iframe' : this.op.isImage() ? 'img' : 'span' // formula
+        this.op.isVideo() ? 'iframe' : this.op.isImage() ? 'img' : 'span', // formula
       ];
     }
 
@@ -345,7 +345,7 @@ class OpToHtmlConverter {
       ['header'],
       ['align', positionTag],
       ['direction', positionTag],
-      ['indent', positionTag]
+      ['indent', positionTag],
     ];
     for (var item of blocks) {
       var firstItem = item[0]!;
@@ -365,10 +365,10 @@ class OpToHtmlConverter {
       ['italic', 'em'],
       ['strike', 's'],
       ['underline', 'u'],
-      ['code']
+      ['code'],
     ]
       .filter((item: string[]) => !!attrs[item[0]])
-      .map(item => {
+      .map((item) => {
         return item[0] === 'script'
           ? attrs[item[0]] === ScriptType.Sub
             ? 'sub'

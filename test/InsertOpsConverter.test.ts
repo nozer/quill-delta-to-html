@@ -28,7 +28,7 @@ var data = [
       { attributes: { link: 'yahoo' }, insert: 'inline' },
       { insert: ' ' },
       { insert: { formula: 'x=data' } },
-      { insert: '  formats.\n' }
+      { insert: '  formats.\n' },
     ],
     html: [
       '<p>',
@@ -52,14 +52,14 @@ var data = [
       '<a href="yahoo">inline</a>',
       ' ',
       '<span class="noz-formula">x=data</span>',
-      ' formats.<br />'
-    ].join('')
-  }
+      ' formats.<br />',
+    ].join(''),
+  },
 ];
 
-describe('InsertOpsConverter', function() {
-  describe('#convert()', function() {
-    it('should transform raw delta ops to DeltaInsertOp[]', function() {
+describe('InsertOpsConverter', function () {
+  describe('#convert()', function () {
+    it('should transform raw delta ops to DeltaInsertOp[]', function () {
       var objs = InsertOpsConverter.convert(data[0].ops, {});
 
       assert.equal(objs[0] instanceof DeltaInsertOp, true);
@@ -75,14 +75,14 @@ describe('InsertOpsConverter', function() {
     });
   });
 
-  describe('#convertInsertVal()', function() {
-    it('should convert raw .insert value to valid TInsert or null', function() {
-      [null, undefined, 3, {}].forEach(v => {
+  describe('#convertInsertVal()', function () {
+    it('should convert raw .insert value to valid TInsert or null', function () {
+      [null, undefined, 3, {}].forEach((v) => {
         var act = InsertOpsConverter.convertInsertVal(v, {});
         assert.equal(act, null);
       });
 
-      ['fdsf', { image: 'ff' }, { video: '' }, { formula: '' }].forEach(v => {
+      ['fdsf', { image: 'ff' }, { video: '' }, { formula: '' }].forEach((v) => {
         var act = InsertOpsConverter.convertInsertVal(v, {});
         assert.notEqual(act, null);
         assert.ok(act instanceof InsertDataQuill);

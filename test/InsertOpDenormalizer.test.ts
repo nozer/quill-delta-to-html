@@ -3,9 +3,9 @@ import * as assert from 'assert';
 
 import { InsertOpDenormalizer } from './../src/InsertOpDenormalizer';
 
-describe('InsertOpDenormalizer', function() {
-  describe('#denormalize()', function() {
-    it('should return denormalized op as array of ops', function() {
+describe('InsertOpDenormalizer', function () {
+  describe('#denormalize()', function () {
+    it('should return denormalized op as array of ops', function () {
       var op = { insert: '\n' };
       var act = InsertOpDenormalizer.denormalize({ insert: '\n' });
       assert.deepEqual(act, [op]);

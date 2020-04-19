@@ -3,7 +3,7 @@ import { DataType } from './value-types';
 import { InsertData, InsertDataCustom, InsertDataQuill } from './InsertData';
 import {
   OpAttributeSanitizer,
-  IOpAttributeSanitizerOptions
+  IOpAttributeSanitizerOptions,
 } from './OpAttributeSanitizer';
 import { InsertOpDenormalizer } from './InsertOpDenormalizer';
 

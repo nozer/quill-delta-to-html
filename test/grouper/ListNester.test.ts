@@ -8,13 +8,13 @@ import {
   ListGroup,
   ListItem,
   InlineGroup,
-  BlockGroup
+  BlockGroup,
 } from './../../src/grouper/group-types';
 import { ListType } from './../../src/value-types';
 
-describe('ListNester', function() {
-  describe('nest()', function() {
-    it('should not nest different types of lists', function() {
+describe('ListNester', function () {
+  describe('nest()', function () {
+    it('should not nest different types of lists', function () {
       var ops = [
         new DeltaInsertOp('ordered list 1 item 1'),
         new DeltaInsertOp('\n', { list: ListType.Ordered }),
@@ -26,7 +26,7 @@ describe('ListNester', function() {
         new DeltaInsertOp('\n'),
         new DeltaInsertOp('\n', { list: ListType.Bullet }),
         new DeltaInsertOp('\n', { list: ListType.Checked }),
-        new DeltaInsertOp('\n', { list: ListType.Unchecked })
+        new DeltaInsertOp('\n', { list: ListType.Unchecked }),
       ];
 
       var groups = Grouper.pairOpsWithTheirBlock(ops);
@@ -37,18 +37,18 @@ describe('ListNester', function() {
         new ListGroup([new ListItem(<BlockGroup>groups[0])]),
         new ListGroup([
           new ListItem(<BlockGroup>groups[1]),
-          new ListItem(<BlockGroup>groups[2])
+          new ListItem(<BlockGroup>groups[2]),
         ]),
         new InlineGroup([ops[6], ops[7]]),
         new ListGroup([new ListItem(new BlockGroup(ops[8], []))]),
         new ListGroup([
           new ListItem(new BlockGroup(ops[9], [])),
-          new ListItem(new BlockGroup(ops[10], []))
-        ])
+          new ListItem(new BlockGroup(ops[10], [])),
+        ]),
       ]);
     });
 
-    it('should nest if lists are same and later ones have higher indent', function() {
+    it('should nest if lists are same and later ones have higher indent', function () {
       var ops = [
         new DeltaInsertOp('item 1'),
         new DeltaInsertOp('\n', { list: ListType.Ordered }),
@@ -63,7 +63,7 @@ describe('ListNester', function() {
         new DeltaInsertOp('haha'),
         new DeltaInsertOp('\n'),
         new DeltaInsertOp('\n', { list: ListType.Ordered, indent: 5 }),
-        new DeltaInsertOp('\n', { list: ListType.Bullet, indent: 4 })
+        new DeltaInsertOp('\n', { list: ListType.Bullet, indent: 4 }),
       ];
       var pairs = Grouper.pairOpsWithTheirBlock(ops);
 
@@ -84,7 +84,7 @@ describe('ListNester', function() {
 
         new InlineGroup([ops[10], ops[11]]),
         new ListGroup([new ListItem(new BlockGroup(ops[12], []))]),
-        new ListGroup([new ListItem(new BlockGroup(ops[13], []))])
+        new ListGroup([new ListItem(new BlockGroup(ops[13], []))]),
       ]);
     });
   });

@@ -3,8 +3,8 @@ import * as assert from 'assert';
 
 import { tokenizeWithNewLines } from './../../src/helpers/string';
 
-describe('String Extensions Module', function() {
-  describe('String#_tokenizeWithNewLines()', function() {
+describe('String Extensions Module', function () {
+  describe('String#_tokenizeWithNewLines()', function () {
     it('should split and return an array of strings ', () => {
       var act = '';
       assert.deepEqual(tokenizeWithNewLines(act), ['']);
@@ -35,7 +35,7 @@ describe('String Extensions Module', function() {
         '\n',
         '\n',
         '6',
-        '\n'
+        '\n',
       ]);
     });
   });
