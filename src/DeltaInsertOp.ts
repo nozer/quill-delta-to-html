@@ -1,6 +1,7 @@
 import { NewLine, ListType, DataType } from './value-types';
 import { IOpAttributes } from './OpAttributeSanitizer';
 import { InsertData, InsertDataCustom, InsertDataQuill } from './InsertData';
+import isEqual from 'lodash.isequal';
 
 class DeltaInsertOp {
   readonly insert: InsertData;
@@ -19,17 +20,20 @@ class DeltaInsertOp {
   }
 
   isContainerBlock() {
-    var attrs = this.attributes;
-    return !!(
-      attrs.blockquote ||
-      attrs.list ||
-      attrs.table ||
-      attrs['code-block'] ||
-      attrs.header ||
-      attrs.align ||
-      attrs.direction ||
-      attrs.indent
+    return (
+      this.isBlockquote() ||
+      this.isList() ||
+      this.isTable() ||
+      this.isCodeBlock() ||
+      this.isHeader() ||
+      this.isBlockAttribute() ||
+      this.isCustomTextBlock()
     );
+  }
+
+  isBlockAttribute() {
+    const attrs = this.attributes;
+    return !!(attrs.align || attrs.direction || attrs.indent);
   }
 
   isBlockquote(): boolean {
@@ -61,6 +65,10 @@ class DeltaInsertOp {
     return this.attributes.indent === op.attributes.indent;
   }
 
+  hasSameAttr(op: DeltaInsertOp) {
+    return isEqual(this.attributes, op.attributes);
+  }
+
   hasHigherIndentThan(op: DeltaInsertOp) {
     return (
       (Number(this.attributes.indent) || 0) >
@@ -69,7 +77,11 @@ class DeltaInsertOp {
   }
 
   isInline() {
-    return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock());
+    return !(
+      this.isContainerBlock() ||
+      this.isVideo() ||
+      this.isCustomEmbedBlock()
+    );
   }
 
   isCodeBlock() {
@@ -152,12 +164,16 @@ class DeltaInsertOp {
     return this.isText() && !!this.attributes.link;
   }
 
-  isCustom() {
+  isCustomEmbed() {
     return this.insert instanceof InsertDataCustom;
   }
 
-  isCustomBlock() {
-    return this.isCustom() && !!this.attributes.renderAsBlock;
+  isCustomEmbedBlock() {
+    return this.isCustomEmbed() && !!this.attributes.renderAsBlock;
+  }
+
+  isCustomTextBlock() {
+    return this.isText() && !!this.attributes.renderAsBlock;
   }
 
   isMentions() {

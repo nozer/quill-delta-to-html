@@ -356,6 +356,10 @@ class OpToHtmlConverter {
       }
     }
 
+    if (this.op.isCustomTextBlock()) {
+      return [positionTag];
+    }
+
     // inlines
     return [
       ['link', 'a'],

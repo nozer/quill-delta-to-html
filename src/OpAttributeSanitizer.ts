@@ -37,6 +37,7 @@ interface IOpAttributes {
 
   // should this custom blot be rendered as block?
   renderAsBlock?: boolean | undefined;
+  [key: string]: any;
 }
 
 interface IUrlSanitizerFn {

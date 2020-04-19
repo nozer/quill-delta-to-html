@@ -20,7 +20,8 @@
       "alwaysStrict": true,
       "noUnusedParameters": true,
       "noUnusedLocals": true,
-      "noFallthroughCasesInSwitch": true
+      "noFallthroughCasesInSwitch": true,
+      "esModuleInterop": true
    },
    "include": [
       "src/**/*.ts"

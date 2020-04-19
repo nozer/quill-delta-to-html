@@ -773,6 +773,93 @@ describe('QuillDeltaToHtmlConverter', function () {
       });
     });
 
+    it('should correctly render custom text block', function () {
+      let ops = [
+        {
+          insert: 'line 1',
+        },
+        {
+          attributes: {
+            renderAsBlock: true,
+            attr1: true,
+          },
+          insert: '\n',
+        },
+        {
+          insert: 'line 2',
+        },
+        {
+          attributes: {
+            renderAsBlock: true,
+            attr1: true,
+          },
+          insert: '\n',
+        },
+        {
+          insert: 'line 3',
+        },
+        {
+          attributes: {
+            renderAsBlock: true,
+            attr2: true,
+          },
+          insert: '\n',
+        },
+        {
+          insert: '<p>line 4</p>',
+        },
+        {
+          attributes: {
+            renderAsBlock: true,
+            attr1: true,
+          },
+          insert: '\n',
+        },
+        {
+          insert: 'line 5',
+        },
+        {
+          attributes: {
+            renderAsBlock: true,
+            attr1: 'test',
+          },
+          insert: '\n',
+        },
+      ];
+      //console.log(encodeHtml("<p>line 4</p>"));
+      var qdc = new QuillDeltaToHtmlConverter(ops);
+      let html = qdc.convert();
+      console.log('html', html);
+      assert.equal(
+        html,
+        [
+          '<p>line 1<br/>line 2</p>',
+          '<p>line 3</p>',
+          '<p>',
+          encodeHtml('<p>line 4</p>'),
+          '</p>',
+          '<p>line 5</p>',
+        ].join('')
+      );
+
+      qdc = new QuillDeltaToHtmlConverter(ops, {
+        multiLineCustomBlock: false,
+      });
+      html = qdc.convert();
+      assert.equal(
+        '<p>line 1</p><p>line 2</p>' +
+          '<p>line 3</p>' +
+          '<p>' +
+          encodeHtml('<p>line 4</p>') +
+          '</p>' +
+          '<p>line 5</p>',
+        html
+      );
+      qdc = new QuillDeltaToHtmlConverter([ops[0], ops[1]]);
+      html = qdc.convert();
+      assert.equal(html, '<p>line 1</p>');
+    });
+
     describe('before n after renders()', function () {
       var ops = [
         { insert: 'hello', attributes: { bold: true } },
