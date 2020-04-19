@@ -4,9 +4,9 @@ import * as assert from 'assert';
 import { OpAttributeSanitizer } from './../src/OpAttributeSanitizer';
 import { ListType, AlignType, DirectionType } from './../src/value-types';
 
-describe('OpAttributeSanitizer', function() {
-  describe('#IsValidHexColor()', function() {
-    it('should return true if hex color is valid', function() {
+describe('OpAttributeSanitizer', function () {
+  describe('#IsValidHexColor()', function () {
+    it('should return true if hex color is valid', function () {
       assert.ok(OpAttributeSanitizer.IsValidHexColor('#234'));
       assert.ok(OpAttributeSanitizer.IsValidHexColor('#f23'));
       assert.ok(OpAttributeSanitizer.IsValidHexColor('#fFe234'));
@@ -17,22 +17,22 @@ describe('OpAttributeSanitizer', function() {
     });
   });
 
-  describe('#IsValidFontName()', function() {
-    it('should return true if font name is valid', function() {
+  describe('#IsValidFontName()', function () {
+    it('should return true if font name is valid', function () {
       assert.ok(OpAttributeSanitizer.IsValidFontName('gooD-ol times 2'));
       assert.equal(OpAttributeSanitizer.IsValidHexColor('bad"times?'), false);
     });
   });
 
-  describe('#IsValidSize()', function() {
-    it('should return true if size is valid', function() {
+  describe('#IsValidSize()', function () {
+    it('should return true if size is valid', function () {
       assert.ok(OpAttributeSanitizer.IsValidSize('bigfaT-size'));
       assert.equal(OpAttributeSanitizer.IsValidSize('small.sizetimes?'), false);
     });
   });
 
-  describe('#IsValidWidth()', function() {
-    it('should return true if width is valid', function() {
+  describe('#IsValidWidth()', function () {
+    it('should return true if width is valid', function () {
       assert.ok(OpAttributeSanitizer.IsValidWidth('150'));
       assert.ok(OpAttributeSanitizer.IsValidWidth('100px'));
       assert.ok(OpAttributeSanitizer.IsValidWidth('150em'));
@@ -44,8 +44,8 @@ describe('OpAttributeSanitizer', function() {
     });
   });
 
-  describe('#IsValidColorLiteral()', function() {
-    it('should return true if color literal is valid', function() {
+  describe('#IsValidColorLiteral()', function () {
+    it('should return true if color literal is valid', function () {
       assert.ok(OpAttributeSanitizer.IsValidColorLiteral('yellow'));
       assert.ok(OpAttributeSanitizer.IsValidColorLiteral('r'));
       assert.equal(OpAttributeSanitizer.IsValidColorLiteral('#234'), false);
@@ -59,8 +59,8 @@ describe('OpAttributeSanitizer', function() {
     });
   });
 
-  describe('#IsValidRGBColor()', function() {
-    it('should return true if rgb color is valid', function() {
+  describe('#IsValidRGBColor()', function () {
+    it('should return true if rgb color is valid', function () {
       assert.ok(OpAttributeSanitizer.IsValidRGBColor('rgb(0,0,0)'));
       assert.ok(OpAttributeSanitizer.IsValidRGBColor('rgb(255, 99, 1)'));
       assert.ok(OpAttributeSanitizer.IsValidRGBColor('RGB(254, 249, 109)'));
@@ -74,8 +74,8 @@ describe('OpAttributeSanitizer', function() {
       );
     });
   });
-  describe('#IsValidRel()', function() {
-    it('should return true if rel is valid', function() {
+  describe('#IsValidRel()', function () {
+    it('should return true if rel is valid', function () {
       assert.ok(OpAttributeSanitizer.IsValidRel('nofollow'));
       assert.ok(OpAttributeSanitizer.IsValidRel('tag'));
       assert.ok(OpAttributeSanitizer.IsValidRel('tag nofollow'));
@@ -84,8 +84,8 @@ describe('OpAttributeSanitizer', function() {
       assert.equal(OpAttributeSanitizer.IsValidRel(''), false);
     });
   });
-  describe('#IsValidLang()', function() {
-    it('should return true if lang is valid', function() {
+  describe('#IsValidLang()', function () {
+    it('should return true if lang is valid', function () {
       assert.ok(OpAttributeSanitizer.IsValidLang('javascript'));
       assert.ok(OpAttributeSanitizer.IsValidLang(true));
       assert.ok(OpAttributeSanitizer.IsValidLang('C++'));
@@ -95,9 +95,9 @@ describe('OpAttributeSanitizer', function() {
     });
   });
 
-  describe('#sanitize()', function() {
-    it('should return empty object', function() {
-      [null, 3, undefined, 'fd'].forEach(v => {
+  describe('#sanitize()', function () {
+    it('should return empty object', function () {
+      [null, 3, undefined, 'fd'].forEach((v) => {
         assert.deepEqual(OpAttributeSanitizer.sanitize(<any>v, {}), {});
       });
     });
@@ -124,10 +124,10 @@ describe('OpAttributeSanitizer', function() {
         target: '_blank',
         avatar: 'http://www.yahoo.com',
         'end-point': 'http://abc.com',
-        slug: 'my-name'
-      }
+        slug: 'my-name',
+      },
     };
-    it('should return sanitized attributes', function() {
+    it('should return sanitized attributes', function () {
       assert.deepEqual(OpAttributeSanitizer.sanitize(<any>attrs, {}), {
         bold: true,
         background: '#333',
@@ -147,15 +147,15 @@ describe('OpAttributeSanitizer', function() {
           target: '_blank',
           avatar: 'http://www.yahoo.com',
           'end-point': 'http://abc.com',
-          slug: 'my-name'
-        }
+          slug: 'my-name',
+        },
       });
 
       assert.deepEqual(
         OpAttributeSanitizer.sanitize(
           <any>{
             mentions: true,
-            mention: 1
+            mention: 1,
           },
           {}
         ),
@@ -163,14 +163,14 @@ describe('OpAttributeSanitizer', function() {
       );
 
       assert.deepEqual(OpAttributeSanitizer.sanitize({ header: 1 }, {}), {
-        header: 1
+        header: 1,
       });
       assert.deepEqual(
         OpAttributeSanitizer.sanitize({ header: undefined }, {}),
         {}
       );
       assert.deepEqual(OpAttributeSanitizer.sanitize({ header: 100 }, {}), {
-        header: 6
+        header: 6,
       });
       assert.deepEqual(
         OpAttributeSanitizer.sanitize({ align: AlignType.Center }, {}),
@@ -181,7 +181,7 @@ describe('OpAttributeSanitizer', function() {
         { direction: 'rtl' }
       );
       assert.deepEqual(OpAttributeSanitizer.sanitize({ indent: 2 }, {}), {
-        indent: 2
+        indent: 2,
       });
     });
   });

@@ -28,7 +28,7 @@ var delta1 = {
     { insert: '\n', attributes: { list: 'checked' } },
     { insert: 'some code', attributes: { code: true, bold: true } },
     { attributes: { italic: true, link: '#top', code: true }, insert: 'Top' },
-    { insert: '\n' }
+    { insert: '\n' },
   ],
   html: [
     '<p>',
@@ -57,8 +57,8 @@ var delta1 = {
     '<ul><li>list</li></ul>',
     '<ul><li data-checked="true">list</li></ul>',
     '<p><strong><code>some code</code></strong>',
-    '<a href="#top" target="_blank"><em><code>Top</code></em></a></p>'
-  ].join('')
+    '<a href="#top" target="_blank"><em><code>Top</code></em></a></p>',
+  ].join(''),
 };
 
 export { delta1 };

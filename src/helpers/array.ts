@@ -51,7 +51,7 @@ function groupConsecutiveElementsWhile(
       groups.push([currElm]);
     }
   }
-  return groups.map(g => (g.length === 1 ? g[0] : g));
+  return groups.map((g) => (g.length === 1 ? g[0] : g));
 }
 
 /**
@@ -65,7 +65,7 @@ function sliceFromReverseWhile(
 ): IArraySlice {
   var result = {
     elements: [] as any[],
-    sliceStartsAt: -1
+    sliceStartsAt: -1,
   };
   for (var i = startIndex; i >= 0; i--) {
     if (!predicate(arr[i])) {
@@ -94,5 +94,5 @@ export {
   groupConsecutiveElementsWhile,
   sliceFromReverseWhile,
   intersperse,
-  find
+  find,
 };

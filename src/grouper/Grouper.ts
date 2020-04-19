@@ -3,7 +3,7 @@ import {
   IArraySlice,
   flatten,
   groupConsecutiveElementsWhile,
-  sliceFromReverseWhile
+  sliceFromReverseWhile,
 } from './../helpers/array';
 
 import {
@@ -11,7 +11,7 @@ import {
   InlineGroup,
   BlockGroup,
   TDataGroup,
-  BlotBlock
+  BlotBlock,
 } from './group-types';
 
 class Grouper {
@@ -58,7 +58,7 @@ class Grouper {
     blocksOf = {
       header: true,
       codeBlocks: true,
-      blockquotes: true
+      blockquotes: true,
     }
   ): Array<TDataGroup | BlockGroup[]> {
     return groupConsecutiveElementsWhile(
@@ -85,7 +85,7 @@ class Grouper {
     groups: Array<TDataGroup | BlockGroup[]>
   ): TDataGroup[] {
     var newLineOp = DeltaInsertOp.createNewLineOp();
-    return groups.map(function(elm: TDataGroup | BlockGroup[]) {
+    return groups.map(function (elm: TDataGroup | BlockGroup[]) {
       if (!Array.isArray(elm)) {
         if (elm instanceof BlockGroup && !elm.ops.length) {
           elm.ops.push(newLineOp);

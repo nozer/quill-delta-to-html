@@ -45,7 +45,7 @@ class InsertOpDenormalizer {
         return nlObj;
       }
       return obj.assign({}, op, {
-        insert: line
+        insert: line,
       });
     });
   }

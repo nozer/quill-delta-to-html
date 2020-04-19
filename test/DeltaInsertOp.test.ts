@@ -5,9 +5,9 @@ import { InsertDataQuill } from './../src/InsertData';
 import { DeltaInsertOp } from './../src/DeltaInsertOp';
 import { DataType, AlignType, ListType } from './../src/value-types';
 
-describe('DeltaInsertOp', function() {
-  describe('constructor()', function() {
-    it('should instantiate', function() {
+describe('DeltaInsertOp', function () {
+  describe('constructor()', function () {
+    it('should instantiate', function () {
       var embed = new InsertDataQuill(DataType.Image, 'https://');
       var t = new DeltaInsertOp(embed);
       assert.equal(t instanceof DeltaInsertOp, true);
@@ -22,8 +22,8 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('isContainerBlock()', function() {
-    it('should successfully check if the op is a block container', function() {
+  describe('isContainerBlock()', function () {
+    it('should successfully check if the op is a block container', function () {
       var op = new DeltaInsertOp('test');
       assert.equal(op.isContainerBlock(), false);
 
@@ -32,8 +32,8 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('hasSameAdiAs()', function() {
-    it('should successfully if two ops have same align indent and direction', function() {
+  describe('hasSameAdiAs()', function () {
+    it('should successfully if two ops have same align indent and direction', function () {
       var op1 = new DeltaInsertOp('\n', { align: AlignType.Right, indent: 2 });
       var op2 = new DeltaInsertOp('\n', { align: AlignType.Right, indent: 2 });
 
@@ -44,8 +44,8 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('hasHigherIndentThan()', function() {
-    it('should successfully if two ops have same align indent and direction', function() {
+  describe('hasHigherIndentThan()', function () {
+    it('should successfully if two ops have same align indent and direction', function () {
       var op1 = new DeltaInsertOp('\n', { indent: undefined });
       var op2 = new DeltaInsertOp('\n', { indent: undefined });
 
@@ -53,15 +53,15 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('isInline()', function() {
-    it('should return true if op is an inline', function() {
+  describe('isInline()', function () {
+    it('should return true if op is an inline', function () {
       var op = new DeltaInsertOp('\n', {});
       assert.equal(op.isInline(), true);
     });
   });
 
-  describe('isJustNewline()', function() {
-    it('should return true if op is a list', function() {
+  describe('isJustNewline()', function () {
+    it('should return true if op is a list', function () {
       var op = new DeltaInsertOp('\n', {});
       assert.equal(op.isJustNewline(), true);
 
@@ -70,8 +70,8 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('isList()', function() {
-    it('should return true if op is a list', function() {
+  describe('isList()', function () {
+    it('should return true if op is a list', function () {
       var op = new DeltaInsertOp('\n', {});
       assert.equal(op.isList(), false);
 
@@ -83,8 +83,8 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('isBulletList()', function() {
-    it('should return true if op is a bullet list', function() {
+  describe('isBulletList()', function () {
+    it('should return true if op is a bullet list', function () {
       var op = new DeltaInsertOp('\n', { list: ListType.Bullet });
       assert.equal(op.isBulletList(), true);
 
@@ -93,8 +93,8 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('isOrderedList()', function() {
-    it('should return true if op is an ordered list', function() {
+  describe('isOrderedList()', function () {
+    it('should return true if op is an ordered list', function () {
       var op = new DeltaInsertOp('\n', { list: ListType.Bullet });
       assert.equal(op.isOrderedList(), false);
 
@@ -103,8 +103,8 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('isCheckedList()', function() {
-    it('should return true if op is an checked list', function() {
+  describe('isCheckedList()', function () {
+    it('should return true if op is an checked list', function () {
       var op = new DeltaInsertOp('\n', { list: ListType.Unchecked });
       assert.equal(op.isCheckedList(), false);
 
@@ -113,8 +113,8 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('isUncheckedList()', function() {
-    it('should return true if op is an unchecked list', function() {
+  describe('isUncheckedList()', function () {
+    it('should return true if op is an unchecked list', function () {
       var op = new DeltaInsertOp('\n', { list: ListType.Bullet });
       assert.equal(op.isUncheckedList(), false);
 
@@ -123,8 +123,8 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('isSameListAs()', function() {
-    it('should return true if op list type same as the comparison', function() {
+  describe('isSameListAs()', function () {
+    it('should return true if op list type same as the comparison', function () {
       var op = new DeltaInsertOp('\n', { list: ListType.Bullet });
       var op2 = new DeltaInsertOp('ds', { list: ListType.Bullet });
       assert.equal(op.isSameListAs(op2), true);
@@ -134,22 +134,22 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('isText()', function() {
-    it('should correctly identify insert type', function() {
+  describe('isText()', function () {
+    it('should correctly identify insert type', function () {
       var op = new DeltaInsertOp('\n', { list: ListType.Bullet });
       assert.equal(op.isVideo(), false);
       assert.equal(op.isText(), true);
 
       op = new DeltaInsertOp(new InsertDataQuill(DataType.Image, 'd'), {
-        list: ListType.Ordered
+        list: ListType.Ordered,
       });
       assert.equal(op.isImage(), true);
       assert.equal(op.isText(), false);
     });
   });
 
-  describe('isVideo()/isImage()/isFormula()', function() {
-    it('should correctly identify embed type', function() {
+  describe('isVideo()/isImage()/isFormula()', function () {
+    it('should correctly identify embed type', function () {
       var op = new DeltaInsertOp(new InsertDataQuill(DataType.Video, ''));
       assert.equal(op.isVideo(), true);
       assert.equal(op.isFormula(), false);
@@ -165,10 +165,10 @@ describe('DeltaInsertOp', function() {
     });
   });
 
-  describe('isLink()', function() {
-    it('should correctly identify if op is a link', function() {
+  describe('isLink()', function () {
+    it('should correctly identify if op is a link', function () {
       var op = new DeltaInsertOp(new InsertDataQuill(DataType.Video, ''), {
-        link: 'http://'
+        link: 'http://',
       });
       assert.equal(op.isLink(), false);
 

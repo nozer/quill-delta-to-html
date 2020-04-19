@@ -59,7 +59,7 @@ class ListNester {
         }
         return item;
       }
-      return new ListGroup(item.map(g => new ListItem(g)));
+      return new ListGroup(item.map((g) => new ListItem(g)));
     });
   }
 
@@ -81,7 +81,7 @@ class ListNester {
       .map(Number)
       .sort()
       .reverse()
-      .forEach(indent => {
+      .forEach((indent) => {
         indentGroups[indent].forEach((lg: ListGroup) => {
           var idx = sectionItems.indexOf(lg);
           if (this.placeUnderParent(lg, sectionItems.slice(0, idx))) {

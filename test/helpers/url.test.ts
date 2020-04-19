@@ -3,9 +3,9 @@ import * as assert from 'assert';
 
 import { sanitize } from './../../src/helpers/url';
 
-describe('Url Helpers Module', function() {
-  describe('String#_sanitizeUrl() ', function() {
-    it('should add unsafe: for invalid protocols', function() {
+describe('Url Helpers Module', function () {
+  describe('String#_sanitizeUrl() ', function () {
+    it('should add unsafe: for invalid protocols', function () {
       var act = "http://www><.yahoo'.com";
       assert.equal(sanitize(act), "http://www><.yahoo'.com");
 

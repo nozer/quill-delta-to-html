@@ -3,9 +3,9 @@ import * as assert from 'assert';
 
 import { MentionSanitizer } from './../../src/mentions/MentionSanitizer';
 
-describe('MentionSanitizer', function() {
-  describe('#sanitize()', function() {
-    it('should return sanitized data', function() {
+describe('MentionSanitizer', function () {
+  describe('#sanitize()', function () {
+    it('should return sanitized data', function () {
       let sanitized = MentionSanitizer.sanitize(
         <any>{
           class: 'A-cls-9',
@@ -13,7 +13,7 @@ describe('MentionSanitizer', function() {
           target: '_blank',
           avatar: 'http://www.yahoo.com',
           'end-point': 'http://abc.com',
-          slug: 'my-name'
+          slug: 'my-name',
         },
         {}
       );
@@ -24,7 +24,7 @@ describe('MentionSanitizer', function() {
         target: '_blank',
         avatar: 'http://www.yahoo.com',
         'end-point': 'http://abc.com',
-        slug: 'my-name'
+        slug: 'my-name',
       });
     });
 

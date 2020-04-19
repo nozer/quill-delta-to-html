@@ -5,7 +5,7 @@ const nonStringSamples: any[] = [
   3,
   [],
   { x: 2 },
-  new Date()
+  new Date(),
 ];
 
 export { nonStringSamples };

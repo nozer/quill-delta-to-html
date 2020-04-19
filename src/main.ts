@@ -7,7 +7,7 @@ export {
   BlockGroup,
   ListGroup,
   ListItem,
-  BlotBlock
+  BlotBlock,
 } from './grouper/group-types';
 export { DeltaInsertOp } from './DeltaInsertOp';
 export { InsertDataQuill, InsertDataCustom } from './InsertData';
@@ -18,5 +18,5 @@ export {
   DirectionType,
   AlignType,
   DataType,
-  GroupType
+  GroupType,
 } from './value-types';

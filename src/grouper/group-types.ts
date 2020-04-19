@@ -82,5 +82,5 @@ export {
   TableGroup,
   TableRow,
   TableCell,
-  TDataGroup
+  TDataGroup,
 };

@@ -4,10 +4,10 @@ import * as assert from 'assert';
 import { InsertDataQuill, InsertDataCustom } from './../src/InsertData';
 import { DataType } from './../src/value-types';
 
-describe('InsertData', function() {
-  describe('InsertDataQuill', function() {
-    describe('constructor()', function() {
-      it('should instantiate', function() {
+describe('InsertData', function () {
+  describe('InsertDataQuill', function () {
+    describe('constructor()', function () {
+      it('should instantiate', function () {
         var t = new InsertDataQuill(DataType.Video, 'https://');
         assert.equal(t.type === 'video', true);
         assert.equal(t.value === 'https://', true);
@@ -19,9 +19,9 @@ describe('InsertData', function() {
     });
   });
 
-  describe('InsertDataCustom', function() {
-    describe('constructor()', function() {
-      it('should instantiate', function() {
+  describe('InsertDataCustom', function () {
+    describe('constructor()', function () {
+      it('should instantiate', function () {
         var t = new InsertDataCustom('biu', {});
         assert.equal(t.type === 'biu', true);
         assert.deepEqual(t.value, {});

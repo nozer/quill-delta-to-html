@@ -7,11 +7,11 @@ import { InsertDataQuill } from './../../src/InsertData';
 import {
   VideoItem,
   InlineGroup,
-  BlockGroup
+  BlockGroup,
 } from './../../src/grouper/group-types';
 import { DataType } from './../../src/value-types';
-describe('Grouper', function() {
-  describe('#pairOpsWithTheirBlock()', function() {
+describe('Grouper', function () {
+  describe('#pairOpsWithTheirBlock()', function () {
     var ops = [
       new DeltaInsertOp(new InsertDataQuill(DataType.Video, 'http://')),
       new DeltaInsertOp('hello'),
@@ -19,21 +19,21 @@ describe('Grouper', function() {
       new DeltaInsertOp('how are you?'),
       new DeltaInsertOp('\n'),
       new DeltaInsertOp('Time is money'),
-      new DeltaInsertOp('\n', { blockquote: true })
+      new DeltaInsertOp('\n', { blockquote: true }),
     ];
-    it('should return ops grouped by group type', function() {
+    it('should return ops grouped by group type', function () {
       var act = Grouper.pairOpsWithTheirBlock(ops);
       var exp = [
         new VideoItem(ops[0]),
         new InlineGroup([ops[1], ops[2], ops[3], ops[4]]),
-        new BlockGroup(ops[6], [ops[5]])
+        new BlockGroup(ops[6], [ops[5]]),
       ];
       assert.deepEqual(act, exp);
     });
   });
 
-  describe('#groupConsecutiveSameStyleBlocks()', function() {
-    it('should compine blocks with same type and style into an []', function() {
+  describe('#groupConsecutiveSameStyleBlocks()', function () {
+    it('should compine blocks with same type and style into an []', function () {
       var ops = [
         new DeltaInsertOp('this is code'),
         new DeltaInsertOp('\n', { 'code-block': true }),
@@ -43,24 +43,24 @@ describe('Grouper', function() {
         new DeltaInsertOp('\n', { blockquote: true }),
         new DeltaInsertOp('\n'),
         new DeltaInsertOp('\n', { header: 1 }),
-        new DeltaInsertOp('\n', { header: 1 })
+        new DeltaInsertOp('\n', { header: 1 }),
       ];
       var pairs = Grouper.pairOpsWithTheirBlock(ops);
       var groups = Grouper.groupConsecutiveSameStyleBlocks(pairs, {
         header: true,
         codeBlocks: true,
-        blockquotes: true
+        blockquotes: true,
       });
       assert.deepEqual(groups, [
         [new BlockGroup(ops[1], [ops[0]]), new BlockGroup(ops[1], [ops[2]])],
         [new BlockGroup(ops[4], []), new BlockGroup(ops[4], [])],
         new InlineGroup([ops[6]]),
-        [new BlockGroup(ops[7], []), new BlockGroup(ops[8], [])]
+        [new BlockGroup(ops[7], []), new BlockGroup(ops[8], [])],
       ]);
     });
   });
-  describe('#reduceConsecutiveSameStyleBlocksToOne()', function() {
-    it('should return ops of combined groups moved to 1st group', function() {
+  describe('#reduceConsecutiveSameStyleBlocksToOne()', function () {
+    it('should return ops of combined groups moved to 1st group', function () {
       var ops = [
         new DeltaInsertOp('this is code'),
         new DeltaInsertOp('\n', { 'code-block': true }),
@@ -69,7 +69,7 @@ describe('Grouper', function() {
         new DeltaInsertOp('\n', { blockquote: true }),
         new DeltaInsertOp('\n', { blockquote: true }),
         new DeltaInsertOp('\n'),
-        new DeltaInsertOp('\n', { header: 1 })
+        new DeltaInsertOp('\n', { header: 1 }),
       ];
       var pairs = Grouper.pairOpsWithTheirBlock(ops);
       var groups = Grouper.groupConsecutiveSameStyleBlocks(pairs);
@@ -81,7 +81,7 @@ describe('Grouper', function() {
         new BlockGroup(ops[1], [ops[0], ops[6], ops[2]]),
         new BlockGroup(ops[4], [ops[6], ops[6]]),
         new InlineGroup([ops[6]]),
-        new BlockGroup(ops[7], [ops[6]])
+        new BlockGroup(ops[7], [ops[6]]),
       ]);
     });
   });
