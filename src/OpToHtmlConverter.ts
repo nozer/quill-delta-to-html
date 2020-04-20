@@ -365,7 +365,10 @@ class OpToHtmlConverter {
       this.options.customCssClasses &&
       typeof this.options.customCssClasses === 'function'
     ) {
-      return this.options.customCssClasses.apply(null, [this.op]);
+      const res = this.options.customCssClasses.apply(null, [this.op]);
+      if (res) {
+        return Array.isArray(res) ? res : [res];
+      }
     }
   }
 
@@ -374,7 +377,10 @@ class OpToHtmlConverter {
       this.options.customCssStyles &&
       typeof this.options.customCssStyles === 'function'
     ) {
-      return this.options.customCssStyles.apply(null, [this.op]);
+      const res = this.options.customCssStyles.apply(null, [this.op]);
+      if (res) {
+        return Array.isArray(res) ? res : [res];
+      }
     }
   }
 

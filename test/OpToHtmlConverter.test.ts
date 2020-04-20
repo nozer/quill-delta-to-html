@@ -49,6 +49,16 @@ describe('OpToHtmlConverter', function () {
       c = new OpToHtmlConverter(o, {
         customCssStyles: (op) => {
           if (op.attributes['attr1']) {
+            return `color:${op.attributes['attr1']}`;
+          }
+        },
+      });
+      assert.deepEqual(c.getCssStyles(), ['color:red', 'background-color:red']);
+
+      new DeltaInsertOp('f', { background: 'red', attr1: 'red' });
+      c = new OpToHtmlConverter(o, {
+        customCssStyles: (op) => {
+          if (op.attributes['attr1']) {
             return [`color:${op.attributes['attr1']}`];
           }
         },
@@ -511,8 +521,15 @@ describe('OpToHtmlConverter', function () {
         var op = new DeltaInsertOp(
           new InsertDataQuill(DataType.Image, 'http://')
         );
-        c1 = new OpToHtmlConverter(op);
-        assert.equal(c1.getHtml(), '<img class="ql-image" src="http://"/>');
+        c1 = new OpToHtmlConverter(op, {
+          customCssClasses: (_) => {
+            return 'ql-custom';
+          },
+        });
+        assert.equal(
+          c1.getHtml(),
+          '<img class="ql-custom ql-image" src="http://"/>'
+        );
       });
     });
   });
