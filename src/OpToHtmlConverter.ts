@@ -444,7 +444,7 @@ class OpToHtmlConverter {
         .map((t) => [t, customTagsMap[t]]),
     ].map((item) => {
       return customTagsMap[item[0]]
-        ? [customTagsMap[item[0]]]
+        ? customTagsMap[item[0]]
         : item[0] === 'script'
         ? attrs[item[0]] === ScriptType.Sub
           ? 'sub'

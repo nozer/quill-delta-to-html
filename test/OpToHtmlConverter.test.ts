@@ -328,10 +328,20 @@ describe('OpToHtmlConverter', function () {
         italic: true,
         strike: true,
         underline: true,
+        attr1: true,
       };
       o = new DeltaInsertOp('', attrs);
-      c = new OpToHtmlConverter(o);
-      assert.deepEqual(c.getTags(), ['a', 'sub', 'strong', 'em', 's', 'u']);
+      c = new OpToHtmlConverter(o, {
+        customTag: (format) => {
+          if (format === 'bold') {
+            return 'b';
+          }
+          if (format === 'attr1') {
+            return 'attr2';
+          }
+        },
+      });
+      assert.deepEqual(c.getTags(), ['a', 'sub', 'b', 'em', 's', 'u', 'attr2']);
     });
   });
 
