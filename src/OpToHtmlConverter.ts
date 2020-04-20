@@ -60,6 +60,7 @@ interface IOpToHtmlConverterOptions {
   linkRel?: string;
   linkTarget?: string;
   allowBackgroundClasses?: boolean;
+  customTag?: (format: string, op: DeltaInsertOp) => string | void;
 }
 
 interface IHtmlParts {
@@ -325,6 +326,15 @@ class OpToHtmlConverter {
       .concat(rel ? this.makeAttr('rel', rel) : []);
   }
 
+  getCustomTag(format: string) {
+    if (
+      this.options.customTag &&
+      typeof this.options.customTag === 'function'
+    ) {
+      return this.options.customTag.apply(null, [format, this.op]);
+    }
+  }
+
   getTags(): string[] {
     var attrs: any = this.op.attributes;
 
@@ -350,18 +360,30 @@ class OpToHtmlConverter {
     for (var item of blocks) {
       var firstItem = item[0]!;
       if (attrs[firstItem]) {
-        return firstItem === 'header'
+        const customTag = this.getCustomTag(firstItem);
+        return customTag
+          ? [customTag]
+          : firstItem === 'header'
           ? ['h' + attrs[firstItem]]
           : [arr.preferSecond(item)!];
       }
     }
 
     if (this.op.isCustomTextBlock()) {
-      return [positionTag];
+      const customTag = this.getCustomTag('renderAsBlock');
+      return customTag ? [customTag] : [positionTag];
     }
 
     // inlines
-    return [
+    const customTagsMap = Object.keys(attrs).reduce((res, it) => {
+      const customTag = this.getCustomTag(it);
+      if (customTag) {
+        res[it] = customTag;
+      }
+      return res;
+    }, {} as any);
+
+    const inlineTags = [
       ['link', 'a'],
       ['mentions', 'a'],
       ['script'],
@@ -370,15 +392,22 @@ class OpToHtmlConverter {
       ['strike', 's'],
       ['underline', 'u'],
       ['code'],
-    ]
-      .filter((item: string[]) => !!attrs[item[0]])
-      .map((item) => {
-        return item[0] === 'script'
-          ? attrs[item[0]] === ScriptType.Sub
-            ? 'sub'
-            : 'sup'
-          : arr.preferSecond(item)!;
-      });
+    ];
+
+    return [
+      ...inlineTags.filter((item: string[]) => !!attrs[item[0]]),
+      ...Object.keys(customTagsMap)
+        .filter((t) => !inlineTags.some((it) => it[0] == t))
+        .map((t) => [t, customTagsMap[t]]),
+    ].map((item) => {
+      return customTagsMap[item[0]]
+        ? [customTagsMap[item[0]]]
+        : item[0] === 'script'
+        ? attrs[item[0]] === ScriptType.Sub
+          ? 'sub'
+          : 'sup'
+        : arr.preferSecond(item)!;
+    });
   }
 }
 

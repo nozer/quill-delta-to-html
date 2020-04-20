@@ -546,6 +546,16 @@ describe('QuillDeltaToHtmlConverter', function () {
       qdc = new QuillDeltaToHtmlConverter(ops);
       qdc.renderCustomWith(renderer);
       assert.equal(qdc.convert(), '<pre>:\ncode1\n:</pre>');
+
+      qdc = new QuillDeltaToHtmlConverter(ops, {
+        customTag: (format) => {
+          if (format === 'code-block') {
+            return 'code';
+          }
+        },
+      });
+      qdc.renderCustomWith(renderer);
+      assert.equal(qdc.convert(), '<code>:\ncode1\n:</code>');
     });
 
     it('should render custom insert types in headers with given renderer', () => {
@@ -611,6 +621,32 @@ describe('QuillDeltaToHtmlConverter', function () {
         assert.equal(
           inlines,
           ['<p>Hello', '<em> my </em><br/> name is joey</p>'].join('')
+        );
+
+        qdc = new QuillDeltaToHtmlConverter([], { paragraphTag: 'div' });
+        var inlines = qdc._renderInlines(ops);
+        assert.equal(
+          inlines,
+          '<div>Hello<em> my </em><br/> name is joey</div>'
+        );
+
+        qdc = new QuillDeltaToHtmlConverter([], { paragraphTag: '' });
+        var inlines = qdc._renderInlines(ops);
+        assert.equal(inlines, 'Hello<em> my </em><br/> name is joey');
+      });
+
+      it('should render inlines custom tag', function () {
+        var qdc = new QuillDeltaToHtmlConverter([], {
+          customTag: (format) => {
+            if (format === 'italic') {
+              return 'i';
+            }
+          },
+        });
+        var inlines = qdc._renderInlines(ops);
+        assert.equal(
+          inlines,
+          ['<p>Hello', '<i> my </i><br/> name is joey</p>'].join('')
         );
 
         qdc = new QuillDeltaToHtmlConverter([], { paragraphTag: 'div' });
@@ -827,9 +863,14 @@ describe('QuillDeltaToHtmlConverter', function () {
         },
       ];
       //console.log(encodeHtml("<p>line 4</p>"));
-      var qdc = new QuillDeltaToHtmlConverter(ops);
+      var qdc = new QuillDeltaToHtmlConverter(ops, {
+        customTag: (format, op) => {
+          if (format === 'renderAsBlock' && op.attributes['attr1'] === 'test') {
+            return 'test';
+          }
+        },
+      });
       let html = qdc.convert();
-      console.log('html', html);
       assert.equal(
         html,
         [
@@ -838,7 +879,7 @@ describe('QuillDeltaToHtmlConverter', function () {
           '<p>',
           encodeHtml('<p>line 4</p>'),
           '</p>',
-          '<p>line 5</p>',
+          '<test>line 5</test>',
         ].join('')
       );
 

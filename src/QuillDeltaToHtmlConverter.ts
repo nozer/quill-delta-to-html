@@ -89,6 +89,7 @@ class QuillDeltaToHtmlConverter {
       linkRel: this.options.linkRel,
       linkTarget: this.options.linkTarget,
       allowBackgroundClasses: this.options.allowBackgroundClasses,
+      customTag: this.options.customTag,
     };
     this.rawDeltaOps = deltaOps;
   }
@@ -253,7 +254,6 @@ class QuillDeltaToHtmlConverter {
   _renderBlock(bop: DeltaInsertOp, ops: DeltaInsertOp[]) {
     var converter = new OpToHtmlConverter(bop, this.converterOptions);
     var htmlParts = converter.getHtmlParts();
-    console.log('htmlParts', htmlParts);
 
     if (bop.isCodeBlock()) {
       return (

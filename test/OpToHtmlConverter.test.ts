@@ -263,6 +263,44 @@ describe('OpToHtmlConverter', function () {
         assert.deepEqual(c.getTags(), [item[1]]);
       });
 
+      [
+        ['blockquote', 'blockquote'],
+        ['code-block', 'div'],
+        ['bold', 'h2'],
+        ['list', 'li'],
+        ['header', 'h2'],
+      ].forEach((item) => {
+        o = new DeltaInsertOp('', { [item[0]]: true, header: 2 });
+        c = new OpToHtmlConverter(o, {
+          customTag: (format) => {
+            if (format === 'code-block') {
+              return 'div';
+            }
+            if (format === 'bold') {
+              return 'b';
+            }
+          },
+        });
+        assert.deepEqual(c.getTags(), [item[1]]);
+      });
+
+      [
+        ['blockquote', 'blockquote'],
+        ['code-block', 'pre'],
+        ['list', 'li'],
+        ['attr1', 'attr1'],
+      ].forEach((item) => {
+        o = new DeltaInsertOp('', { [item[0]]: true, renderAsBlock: true });
+        c = new OpToHtmlConverter(o, {
+          customTag: (format, op) => {
+            if (format === 'renderAsBlock' && op.attributes['attr1']) {
+              return 'attr1';
+            }
+          },
+        });
+        assert.deepEqual(c.getTags(), [item[1]]);
+      });
+
       var attrs = {
         link: 'http',
         script: ScriptType.Sub,
