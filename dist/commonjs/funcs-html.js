@@ -58,7 +58,7 @@ function encodeMappings(mtype) {
         ["'", '&#x27;'],
         ['\\/', '&#x2F;'],
         ['\\(', '&#40;'],
-        ['\\)', '&#41;']
+        ['\\)', '&#41;'],
     ];
     if (mtype === EncodeTarget.Html) {
         return maps.filter(function (_a) {

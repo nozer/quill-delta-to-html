@@ -10,7 +10,7 @@ var Grouper = (function () {
         var result = [];
         var canBeInBlock = function (op) {
             return !(op.isJustNewline() ||
-                op.isCustomBlock() ||
+                op.isCustomEmbedBlock() ||
                 op.isVideo() ||
                 op.isContainerBlock());
         };
@@ -22,7 +22,7 @@ var Grouper = (function () {
             if (op.isVideo()) {
                 result.push(new group_types_1.VideoItem(op));
             }
-            else if (op.isCustomBlock()) {
+            else if (op.isCustomEmbedBlock()) {
                 result.push(new group_types_1.BlotBlock(op));
             }
             else if (op.isContainerBlock()) {
@@ -43,7 +43,8 @@ var Grouper = (function () {
         if (blocksOf === void 0) { blocksOf = {
             header: true,
             codeBlocks: true,
-            blockquotes: true
+            blockquotes: true,
+            customBlocks: true,
         }; }
         return array_1.groupConsecutiveElementsWhile(groups, function (g, gPrev) {
             if (!(g instanceof group_types_1.BlockGroup) || !(gPrev instanceof group_types_1.BlockGroup)) {
@@ -53,7 +54,10 @@ var Grouper = (function () {
                 Grouper.areBothCodeblocksWithSameLang(g, gPrev)) ||
                 (blocksOf.blockquotes &&
                     Grouper.areBothBlockquotesWithSameAdi(g, gPrev)) ||
-                (blocksOf.header && Grouper.areBothSameHeadersWithSameAdi(g, gPrev)));
+                (blocksOf.header &&
+                    Grouper.areBothSameHeadersWithSameAdi(g, gPrev)) ||
+                (blocksOf.customBlocks &&
+                    Grouper.areBothCustomBlockWithSameAttr(g, gPrev)));
         });
     };
     Grouper.reduceConsecutiveSameStyleBlocksToOne = function (groups) {
@@ -87,6 +91,11 @@ var Grouper = (function () {
         return (g.op.isBlockquote() &&
             gOther.op.isBlockquote() &&
             g.op.hasSameAdiAs(gOther.op));
+    };
+    Grouper.areBothCustomBlockWithSameAttr = function (g, gOther) {
+        return (g.op.isCustomTextBlock() &&
+            gOther.op.isCustomTextBlock() &&
+            g.op.hasSameAttr(gOther.op));
     };
     return Grouper;
 }());

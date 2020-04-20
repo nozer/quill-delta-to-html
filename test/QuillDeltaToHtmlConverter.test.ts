@@ -12,7 +12,7 @@ import { encodeHtml } from './../src/funcs-html';
 describe('QuillDeltaToHtmlConverter', function () {
   describe('constructor()', function () {
     var hugeOps = [
-      { insert: 'huge', attributes: { size: 'huge' } },
+      { insert: 'huge', attributes: { size: 'huge', attr1: 'red' } },
       { insert: '\n' },
     ];
 
@@ -25,10 +25,17 @@ describe('QuillDeltaToHtmlConverter', function () {
     });
 
     it('should set default inline styles for `inlineStyles: true`', function () {
-      var qdc = new QuillDeltaToHtmlConverter(hugeOps, { inlineStyles: true });
+      var qdc = new QuillDeltaToHtmlConverter(hugeOps, {
+        inlineStyles: true,
+        customCssStyles: (op) => {
+          if (op.attributes['attr1'] === 'red') {
+            return ['color:red'];
+          }
+        },
+      });
       var html = qdc.convert();
       assert.equal(
-        html.includes('<span style="font-size: 2.5em">huge</span>'),
+        html.includes('<span style="color:red;font-size: 2.5em">huge</span>'),
         true,
         html
       );
@@ -869,6 +876,23 @@ describe('QuillDeltaToHtmlConverter', function () {
             return 'test';
           }
         },
+        customTagAttributes: (op) => {
+          if (op.attributes['attr1'] === 'test') {
+            return {
+              attr1: op.attributes['attr1'],
+            };
+          }
+        },
+        customCssClasses: (op) => {
+          if (op.attributes['attr1'] === 'test') {
+            return ['ql-test'];
+          }
+        },
+        customCssStyles: (op) => {
+          if (op.attributes['attr1'] === 'test') {
+            return ['color:red'];
+          }
+        },
       });
       let html = qdc.convert();
       assert.equal(
@@ -879,7 +903,7 @@ describe('QuillDeltaToHtmlConverter', function () {
           '<p>',
           encodeHtml('<p>line 4</p>'),
           '</p>',
-          '<test>line 5</test>',
+          '<test attr1="test" class="ql-test" style="color:red">line 5</test>',
         ].join('')
       );
 

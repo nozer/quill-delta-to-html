@@ -61,6 +61,9 @@ interface IOpToHtmlConverterOptions {
   linkTarget?: string;
   allowBackgroundClasses?: boolean;
   customTag?: (format: string, op: DeltaInsertOp) => string | void;
+  customTagAttributes?: (op: DeltaInsertOp) => { [key: string]: string } | void;
+  customCssClasses?: (op: DeltaInsertOp) => string | string[] | void;
+  customCssStyles?: (op: DeltaInsertOp) => string | string[] | void;
 }
 
 interface IHtmlParts {
@@ -166,18 +169,20 @@ class OpToHtmlConverter {
     if (this.options.allowBackgroundClasses) {
       propsArr.push('background');
     }
-    return propsArr
-      .filter((prop) => !!attrs[prop])
-      .filter((prop) =>
-        prop === 'background'
-          ? OpAttributeSanitizer.IsValidColorLiteral(attrs[prop])
-          : true
-      )
-      .map((prop) => prop + '-' + attrs[prop])
-      .concat(this.op.isFormula() ? 'formula' : [])
-      .concat(this.op.isVideo() ? 'video' : [])
-      .concat(this.op.isImage() ? 'image' : [])
-      .map(<Str2StrType>this.prefixClass.bind(this));
+    return (this.getCustomCssClasses() || []).concat(
+      propsArr
+        .filter((prop) => !!attrs[prop])
+        .filter((prop) =>
+          prop === 'background'
+            ? OpAttributeSanitizer.IsValidColorLiteral(attrs[prop])
+            : true
+        )
+        .map((prop) => prop + '-' + attrs[prop])
+        .concat(this.op.isFormula() ? 'formula' : [])
+        .concat(this.op.isVideo() ? 'video' : [])
+        .concat(this.op.isImage() ? 'image' : [])
+        .map(<Str2StrType>this.prefixClass.bind(this))
+    );
   }
 
   getCssStyles(): string[] {
@@ -197,30 +202,33 @@ class OpToHtmlConverter {
       ]);
     }
 
-    return propsArr
-      .filter((item) => !!attrs[item[0]])
-      .map((item: any[]) => {
-        let attribute = item[0];
-        let attrValue = attrs[attribute];
+    return (this.getCustomCssStyles() || [])
+      .concat(
+        propsArr
+          .filter((item) => !!attrs[item[0]])
+          .map((item: any[]) => {
+            let attribute = item[0];
+            let attrValue = attrs[attribute];
 
-        let attributeConverter: InlineStyleType =
-          (this.options.inlineStyles &&
-            (this.options.inlineStyles as any)[attribute]) ||
-          (DEFAULT_INLINE_STYLES as any)[attribute];
+            let attributeConverter: InlineStyleType =
+              (this.options.inlineStyles &&
+                (this.options.inlineStyles as any)[attribute]) ||
+              (DEFAULT_INLINE_STYLES as any)[attribute];
 
-        if (typeof attributeConverter === 'object') {
-          return attributeConverter[attrValue];
-        } else if (typeof attributeConverter === 'function') {
-          var converterFn = attributeConverter as (
-            value: string,
-            op: DeltaInsertOp
-          ) => string;
-          return converterFn(attrValue, this.op);
-        } else {
-          return arr.preferSecond(item) + ':' + attrValue;
-        }
-      })
-      .filter((item) => item !== undefined);
+            if (typeof attributeConverter === 'object') {
+              return attributeConverter[attrValue];
+            } else if (typeof attributeConverter === 'function') {
+              var converterFn = attributeConverter as (
+                value: string,
+                op: DeltaInsertOp
+              ) => string;
+              return converterFn(attrValue, this.op);
+            } else {
+              return arr.preferSecond(item) + ':' + attrValue;
+            }
+          })
+      )
+      .filter((item: any) => item !== undefined);
   }
 
   getTagAttributes(): Array<ITagKeyValue> {
@@ -229,8 +237,16 @@ class OpToHtmlConverter {
     }
 
     const makeAttr = this.makeAttr.bind(this);
+    const customTagAttributes = this.getCustomTagAttributes();
+    const customAttr = customTagAttributes
+      ? Object.keys(this.getCustomTagAttributes()).map((k) =>
+          makeAttr(k, customTagAttributes[k])
+        )
+      : [];
     var classes = this.getCssClasses();
-    var tagAttrs = classes.length ? [makeAttr('class', classes.join(' '))] : [];
+    var tagAttrs = classes.length
+      ? customAttr.concat([makeAttr('class', classes.join(' '))])
+      : customAttr;
 
     if (this.op.isImage()) {
       this.op.attributes.width &&
@@ -332,6 +348,33 @@ class OpToHtmlConverter {
       typeof this.options.customTag === 'function'
     ) {
       return this.options.customTag.apply(null, [format, this.op]);
+    }
+  }
+
+  getCustomTagAttributes() {
+    if (
+      this.options.customTagAttributes &&
+      typeof this.options.customTagAttributes === 'function'
+    ) {
+      return this.options.customTagAttributes.apply(null, [this.op]);
+    }
+  }
+
+  getCustomCssClasses() {
+    if (
+      this.options.customCssClasses &&
+      typeof this.options.customCssClasses === 'function'
+    ) {
+      return this.options.customCssClasses.apply(null, [this.op]);
+    }
+  }
+
+  getCustomCssStyles() {
+    if (
+      this.options.customCssStyles &&
+      typeof this.options.customCssStyles === 'function'
+    ) {
+      return this.options.customCssStyles.apply(null, [this.op]);
     }
   }
 

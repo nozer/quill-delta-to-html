@@ -90,6 +90,9 @@ class QuillDeltaToHtmlConverter {
       linkTarget: this.options.linkTarget,
       allowBackgroundClasses: this.options.allowBackgroundClasses,
       customTag: this.options.customTag,
+      customTagAttributes: this.options.customTagAttributes,
+      customCssClasses: this.options.customCssClasses,
+      customCssStyles: this.options.customCssStyles,
     };
     this.rawDeltaOps = deltaOps;
   }

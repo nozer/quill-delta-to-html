@@ -1,8 +1,15 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
 var MentionSanitizer_1 = require("./mentions/MentionSanitizer");
-var url = require("./helpers/url");
+var url = __importStar(require("./helpers/url"));
 var funcs_html_1 = require("./funcs-html");
 var array_1 = require("./helpers/array");
 var OpAttributeSanitizer = (function () {
@@ -21,7 +28,7 @@ var OpAttributeSanitizer = (function () {
             'code',
             'blockquote',
             'code-block',
-            'renderAsBlock'
+            'renderAsBlock',
         ];
         var colorAttrs = ['background', 'color'];
         var font = dirtyAttrs.font, size = dirtyAttrs.size, link = dirtyAttrs.link, script = dirtyAttrs.script, list = dirtyAttrs.list, header = dirtyAttrs.header, align = dirtyAttrs.align, direction = dirtyAttrs.direction, indent = dirtyAttrs.indent, mentions = dirtyAttrs.mentions, mention = dirtyAttrs.mention, width = dirtyAttrs.width, target = dirtyAttrs.target, rel = dirtyAttrs.rel;
@@ -41,7 +48,7 @@ var OpAttributeSanitizer = (function () {
             'width',
             'target',
             'rel',
-            'code-block'
+            'code-block',
         ]);
         booleanAttrs.forEach(function (prop) {
             var v = dirtyAttrs[prop];
