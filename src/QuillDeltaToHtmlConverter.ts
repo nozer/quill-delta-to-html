@@ -35,6 +35,7 @@ interface IQuillDeltaToHtmlConverterOptions
   multiLineHeader?: boolean;
   multiLineCodeblock?: boolean;
   multiLineParagraph?: boolean;
+  multiLineCustomBlock?: boolean;
 }
 
 const BrTag = '<br/>';
@@ -58,6 +59,7 @@ class QuillDeltaToHtmlConverter {
         multiLineHeader: true,
         multiLineCodeblock: true,
         multiLineParagraph: true,
+        multiLineCustomBlock: true,
         allowBackgroundClasses: false,
         linkTarget: '_blank',
       },
@@ -87,6 +89,10 @@ class QuillDeltaToHtmlConverter {
       linkRel: this.options.linkRel,
       linkTarget: this.options.linkTarget,
       allowBackgroundClasses: this.options.allowBackgroundClasses,
+      customTag: this.options.customTag,
+      customTagAttributes: this.options.customTagAttributes,
+      customCssClasses: this.options.customCssClasses,
+      customCssStyles: this.options.customCssStyles,
     };
     this.rawDeltaOps = deltaOps;
   }
@@ -114,6 +120,7 @@ class QuillDeltaToHtmlConverter {
         blockquotes: !!this.options.multiLineBlockquote,
         header: !!this.options.multiLineHeader,
         codeBlocks: !!this.options.multiLineCodeblock,
+        customBlocks: !!this.options.multiLineCustomBlock,
       }
     );
 
@@ -257,7 +264,9 @@ class QuillDeltaToHtmlConverter {
         encodeHtml(
           ops
             .map((iop) =>
-              iop.isCustom() ? this._renderCustom(iop, bop) : iop.insert.value
+              iop.isCustomEmbed()
+                ? this._renderCustom(iop, bop)
+                : iop.insert.value
             )
             .join('')
         ) +
@@ -301,7 +310,7 @@ class QuillDeltaToHtmlConverter {
   }
 
   _renderInline(op: DeltaInsertOp, contextOp: DeltaInsertOp | null) {
-    if (op.isCustom()) {
+    if (op.isCustomEmbed()) {
       return this._renderCustom(op, contextOp);
     }
     var converter = new OpToHtmlConverter(op, this.converterOptions);

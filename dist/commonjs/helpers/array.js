@@ -43,7 +43,7 @@ exports.groupConsecutiveElementsWhile = groupConsecutiveElementsWhile;
 function sliceFromReverseWhile(arr, startIndex, predicate) {
     var result = {
         elements: [],
-        sliceStartsAt: -1
+        sliceStartsAt: -1,
     };
     for (var i = startIndex; i >= 0; i--) {
         if (!predicate(arr[i])) {

@@ -1,8 +1,15 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
-var str = require("./helpers/string");
-var obj = require("./helpers/object");
+var str = __importStar(require("./helpers/string"));
+var obj = __importStar(require("./helpers/object"));
 var InsertOpDenormalizer = (function () {
     function InsertOpDenormalizer() {
     }
@@ -23,7 +30,7 @@ var InsertOpDenormalizer = (function () {
                 return nlObj;
             }
             return obj.assign({}, op, {
-                insert: line
+                insert: line,
             });
         });
     };

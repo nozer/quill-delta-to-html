@@ -5,7 +5,6 @@ import {
   groupConsecutiveElementsWhile,
   sliceFromReverseWhile,
 } from './../helpers/array';
-
 import {
   VideoItem,
   InlineGroup,
@@ -21,7 +20,7 @@ class Grouper {
     const canBeInBlock = (op: DeltaInsertOp) => {
       return !(
         op.isJustNewline() ||
-        op.isCustomBlock() ||
+        op.isCustomEmbedBlock() ||
         op.isVideo() ||
         op.isContainerBlock()
       );
@@ -36,7 +35,7 @@ class Grouper {
 
       if (op.isVideo()) {
         result.push(new VideoItem(op));
-      } else if (op.isCustomBlock()) {
+      } else if (op.isCustomEmbedBlock()) {
         result.push(new BlotBlock(op));
       } else if (op.isContainerBlock()) {
         opsSlice = sliceFromReverseWhile(ops, i - 1, canBeInBlock);
@@ -59,6 +58,7 @@ class Grouper {
       header: true,
       codeBlocks: true,
       blockquotes: true,
+      customBlocks: true,
     }
   ): Array<TDataGroup | BlockGroup[]> {
     return groupConsecutiveElementsWhile(
@@ -73,7 +73,10 @@ class Grouper {
             Grouper.areBothCodeblocksWithSameLang(g, gPrev)) ||
           (blocksOf.blockquotes &&
             Grouper.areBothBlockquotesWithSameAdi(g, gPrev)) ||
-          (blocksOf.header && Grouper.areBothSameHeadersWithSameAdi(g, gPrev))
+          (blocksOf.header &&
+            Grouper.areBothSameHeadersWithSameAdi(g, gPrev)) ||
+          (blocksOf.customBlocks &&
+            Grouper.areBothCustomBlockWithSameAttr(g, gPrev))
         );
       }
     );
@@ -122,6 +125,14 @@ class Grouper {
       g.op.isBlockquote() &&
       gOther.op.isBlockquote() &&
       g.op.hasSameAdiAs(gOther.op)
+    );
+  }
+
+  static areBothCustomBlockWithSameAttr(g: BlockGroup, gOther: BlockGroup) {
+    return (
+      g.op.isCustomTextBlock() &&
+      gOther.op.isCustomTextBlock() &&
+      g.op.hasSameAttr(gOther.op)
     );
   }
 }

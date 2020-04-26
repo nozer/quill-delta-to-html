@@ -1,4 +1,11 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var InsertOpsConverter_1 = require("./InsertOpsConverter");
 var OpToHtmlConverter_1 = require("./OpToHtmlConverter");
@@ -6,7 +13,7 @@ var Grouper_1 = require("./grouper/Grouper");
 var group_types_1 = require("./grouper/group-types");
 var ListNester_1 = require("./grouper/ListNester");
 var funcs_html_1 = require("./funcs-html");
-var obj = require("./helpers/object");
+var obj = __importStar(require("./helpers/object"));
 var value_types_1 = require("./value-types");
 var TableGrouper_1 = require("./grouper/TableGrouper");
 var BrTag = '<br/>';
@@ -23,12 +30,13 @@ var QuillDeltaToHtmlConverter = (function () {
             multiLineHeader: true,
             multiLineCodeblock: true,
             multiLineParagraph: true,
+            multiLineCustomBlock: true,
             allowBackgroundClasses: false,
-            linkTarget: '_blank'
+            linkTarget: '_blank',
         }, options, {
             orderedListTag: 'ol',
             bulletListTag: 'ul',
-            listItemTag: 'li'
+            listItemTag: 'li',
         });
         var inlineStyles;
         if (!this.options.inlineStyles) {
@@ -48,7 +56,11 @@ var QuillDeltaToHtmlConverter = (function () {
             paragraphTag: this.options.paragraphTag,
             linkRel: this.options.linkRel,
             linkTarget: this.options.linkTarget,
-            allowBackgroundClasses: this.options.allowBackgroundClasses
+            allowBackgroundClasses: this.options.allowBackgroundClasses,
+            customTag: this.options.customTag,
+            customTagAttributes: this.options.customTagAttributes,
+            customCssClasses: this.options.customCssClasses,
+            customCssStyles: this.options.customCssStyles,
         };
         this.rawDeltaOps = deltaOps;
     }
@@ -69,7 +81,8 @@ var QuillDeltaToHtmlConverter = (function () {
         var groupedSameStyleBlocks = Grouper_1.Grouper.groupConsecutiveSameStyleBlocks(pairedOps, {
             blockquotes: !!this.options.multiLineBlockquote,
             header: !!this.options.multiLineHeader,
-            codeBlocks: !!this.options.multiLineCodeblock
+            codeBlocks: !!this.options.multiLineCodeblock,
+            customBlocks: !!this.options.multiLineCustomBlock,
         });
         var groupedOps = Grouper_1.Grouper.reduceConsecutiveSameStyleBlocksToOne(groupedSameStyleBlocks);
         var tableGrouper = new TableGrouper_1.TableGrouper();
@@ -170,7 +183,7 @@ var QuillDeltaToHtmlConverter = (function () {
         var cellElementsHtml = this._renderInlines(cell.item.ops, false);
         return (funcs_html_1.makeStartTag('td', {
             key: 'data-row',
-            value: cell.item.op.attributes.table
+            value: cell.item.op.attributes.table,
         }) +
             parts.openingTag +
             cellElementsHtml +
@@ -185,7 +198,9 @@ var QuillDeltaToHtmlConverter = (function () {
             return (htmlParts.openingTag +
                 funcs_html_1.encodeHtml(ops
                     .map(function (iop) {
-                    return iop.isCustom() ? _this._renderCustom(iop, bop) : iop.insert.value;
+                    return iop.isCustomEmbed()
+                        ? _this._renderCustom(iop, bop)
+                        : iop.insert.value;
                 })
                     .join('')) +
                 htmlParts.closingTag);
@@ -223,7 +238,7 @@ var QuillDeltaToHtmlConverter = (function () {
             endParaTag);
     };
     QuillDeltaToHtmlConverter.prototype._renderInline = function (op, contextOp) {
-        if (op.isCustom()) {
+        if (op.isCustomEmbed()) {
             return this._renderCustom(op, contextOp);
         }
         var converter = new OpToHtmlConverter_1.OpToHtmlConverter(op, this.converterOptions);

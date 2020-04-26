@@ -1,4 +1,7 @@
-import { OpToHtmlConverter } from './../src/OpToHtmlConverter';
+import {
+  OpToHtmlConverter,
+  IOpToHtmlConverterOptions,
+} from './../src/OpToHtmlConverter';
 import { DeltaInsertOp } from './../src/DeltaInsertOp';
 import { InsertDataQuill } from './../src/InsertData';
 import {
@@ -42,9 +45,25 @@ describe('OpToHtmlConverter', function () {
       var c = new OpToHtmlConverter(op);
       assert.deepEqual(c.getCssStyles(), []);
 
-      var o = new DeltaInsertOp('f', { background: 'red' });
-      c = new OpToHtmlConverter(o);
-      assert.deepEqual(c.getCssStyles(), ['background-color:red']);
+      var o = new DeltaInsertOp('f', { background: 'red', attr1: 'red' });
+      c = new OpToHtmlConverter(o, {
+        customCssStyles: (op) => {
+          if (op.attributes['attr1']) {
+            return `color:${op.attributes['attr1']}`;
+          }
+        },
+      });
+      assert.deepEqual(c.getCssStyles(), ['color:red', 'background-color:red']);
+
+      new DeltaInsertOp('f', { background: 'red', attr1: 'red' });
+      c = new OpToHtmlConverter(o, {
+        customCssStyles: (op) => {
+          if (op.attributes['attr1']) {
+            return [`color:${op.attributes['attr1']}`];
+          }
+        },
+      });
+      assert.deepEqual(c.getCssStyles(), ['color:red', 'background-color:red']);
 
       o = new DeltaInsertOp('f', { background: 'red', color: 'blue' });
       c = new OpToHtmlConverter(o);
@@ -178,7 +197,14 @@ describe('OpToHtmlConverter', function () {
   describe('getCssClasses()', function () {
     it('should return prefixed classes', () => {
       var op = new DeltaInsertOp('hello');
-      var c = new OpToHtmlConverter(op);
+      const options: IOpToHtmlConverterOptions = {
+        customCssClasses: (op) => {
+          if (op.attributes.size === 'small') {
+            return ['small-size'];
+          }
+        },
+      };
+      var c = new OpToHtmlConverter(op, options);
       assert.deepEqual(c.getCssClasses(), []);
 
       var attrs = {
@@ -190,8 +216,9 @@ describe('OpToHtmlConverter', function () {
         background: 'red',
       };
       var o = new DeltaInsertOp('f', attrs);
-      c = new OpToHtmlConverter(o);
+      c = new OpToHtmlConverter(o, options);
       var classes = [
+        'small-size',
         'ql-indent-1',
         'ql-align-center',
         'ql-direction-rtl',
@@ -201,19 +228,22 @@ describe('OpToHtmlConverter', function () {
       assert.deepEqual(c.getCssClasses(), classes);
 
       o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, ''), attrs);
-      c = new OpToHtmlConverter(o);
+      c = new OpToHtmlConverter(o, options);
       assert.deepEqual(c.getCssClasses(), classes.concat('ql-image'));
 
       o = new DeltaInsertOp(new InsertDataQuill(DataType.Video, ''), attrs);
-      c = new OpToHtmlConverter(o);
+      c = new OpToHtmlConverter(o, options);
       assert.deepEqual(c.getCssClasses(), classes.concat('ql-video'));
 
       o = new DeltaInsertOp(new InsertDataQuill(DataType.Formula, ''), attrs);
-      c = new OpToHtmlConverter(o);
+      c = new OpToHtmlConverter(o, options);
       assert.deepEqual(c.getCssClasses(), classes.concat('ql-formula'));
 
       o = new DeltaInsertOp('f', attrs);
-      c = new OpToHtmlConverter(o, { allowBackgroundClasses: true });
+      c = new OpToHtmlConverter(o, {
+        ...options,
+        allowBackgroundClasses: true,
+      });
       assert.deepEqual(c.getCssClasses(), classes.concat('ql-background-red'));
     });
 
@@ -263,6 +293,44 @@ describe('OpToHtmlConverter', function () {
         assert.deepEqual(c.getTags(), [item[1]]);
       });
 
+      [
+        ['blockquote', 'blockquote'],
+        ['code-block', 'div'],
+        ['bold', 'h2'],
+        ['list', 'li'],
+        ['header', 'h2'],
+      ].forEach((item) => {
+        o = new DeltaInsertOp('', { [item[0]]: true, header: 2 });
+        c = new OpToHtmlConverter(o, {
+          customTag: (format) => {
+            if (format === 'code-block') {
+              return 'div';
+            }
+            if (format === 'bold') {
+              return 'b';
+            }
+          },
+        });
+        assert.deepEqual(c.getTags(), [item[1]]);
+      });
+
+      [
+        ['blockquote', 'blockquote'],
+        ['code-block', 'pre'],
+        ['list', 'li'],
+        ['attr1', 'attr1'],
+      ].forEach((item) => {
+        o = new DeltaInsertOp('', { [item[0]]: true, renderAsBlock: true });
+        c = new OpToHtmlConverter(o, {
+          customTag: (format, op) => {
+            if (format === 'renderAsBlock' && op.attributes['attr1']) {
+              return 'attr1';
+            }
+          },
+        });
+        assert.deepEqual(c.getTags(), [item[1]]);
+      });
+
       var attrs = {
         link: 'http',
         script: ScriptType.Sub,
@@ -270,10 +338,20 @@ describe('OpToHtmlConverter', function () {
         italic: true,
         strike: true,
         underline: true,
+        attr1: true,
       };
       o = new DeltaInsertOp('', attrs);
-      c = new OpToHtmlConverter(o);
-      assert.deepEqual(c.getTags(), ['a', 'sub', 'strong', 'em', 's', 'u']);
+      c = new OpToHtmlConverter(o, {
+        customTag: (format) => {
+          if (format === 'bold') {
+            return 'b';
+          }
+          if (format === 'attr1') {
+            return 'attr2';
+          }
+        },
+      });
+      assert.deepEqual(c.getTags(), ['a', 'sub', 'b', 'em', 's', 'u', 'attr2']);
     });
   });
 
@@ -290,8 +368,17 @@ describe('OpToHtmlConverter', function () {
       var o = new DeltaInsertOp(new InsertDataQuill(DataType.Image, 'http:'), {
         color: 'red',
       });
-      var c = new OpToHtmlConverter(o);
+      var c = new OpToHtmlConverter(o, {
+        customTagAttributes: (op) => {
+          if (op.attributes.color) {
+            return {
+              'data-color': op.attributes.color,
+            };
+          }
+        },
+      });
       assert.deepEqual(c.getTagAttributes(), [
+        { key: 'data-color', value: 'red' },
         { key: 'class', value: 'ql-image' },
         { key: 'src', value: 'http:' },
       ]);
@@ -434,8 +521,15 @@ describe('OpToHtmlConverter', function () {
         var op = new DeltaInsertOp(
           new InsertDataQuill(DataType.Image, 'http://')
         );
-        c1 = new OpToHtmlConverter(op);
-        assert.equal(c1.getHtml(), '<img class="ql-image" src="http://"/>');
+        c1 = new OpToHtmlConverter(op, {
+          customCssClasses: (_) => {
+            return 'ql-custom';
+          },
+        });
+        assert.equal(
+          c1.getHtml(),
+          '<img class="ql-custom ql-image" src="http://"/>'
+        );
       });
     });
   });

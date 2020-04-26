@@ -44,18 +44,26 @@ describe('Grouper', function () {
         new DeltaInsertOp('\n'),
         new DeltaInsertOp('\n', { header: 1 }),
         new DeltaInsertOp('\n', { header: 1 }),
+        new DeltaInsertOp('\n', { attr1: true, renderAsBlock: true }),
+        new DeltaInsertOp('\n', { attr1: true, renderAsBlock: true }),
+        new DeltaInsertOp('\n', { attr1: 'test', renderAsBlock: true }),
+        new DeltaInsertOp('\n', { attr2: 'test', renderAsBlock: true }),
       ];
       var pairs = Grouper.pairOpsWithTheirBlock(ops);
       var groups = Grouper.groupConsecutiveSameStyleBlocks(pairs, {
         header: true,
         codeBlocks: true,
         blockquotes: true,
+        customBlocks: true,
       });
       assert.deepEqual(groups, [
         [new BlockGroup(ops[1], [ops[0]]), new BlockGroup(ops[1], [ops[2]])],
         [new BlockGroup(ops[4], []), new BlockGroup(ops[4], [])],
         new InlineGroup([ops[6]]),
         [new BlockGroup(ops[7], []), new BlockGroup(ops[8], [])],
+        [new BlockGroup(ops[9], []), new BlockGroup(ops[10], [])],
+        new BlockGroup(ops[11], []),
+        new BlockGroup(ops[12], []),
       ]);
     });
   });

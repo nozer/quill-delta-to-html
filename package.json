@@ -4,8 +4,11 @@
   "description": "Converts Quill's delta ops to HTML",
   "main": "./dist/commonjs/main.js",
   "types": "./dist/commonjs/main.d.ts",
-  "dependencies": {},
+  "dependencies": {
+    "lodash.isequal": "^4.5.0"
+  },
   "devDependencies": {
+    "@types/lodash.isequal": "^4.5.5",
     "@types/mocha": "^2",
     "@types/node": "^7.0",
     "browserify": "^16.2",

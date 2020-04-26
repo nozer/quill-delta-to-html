@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var value_types_1 = require("./value-types");
 var InsertData_1 = require("./InsertData");
+var lodash_isequal_1 = __importDefault(require("lodash.isequal"));
 var DeltaInsertOp = (function () {
     function DeltaInsertOp(insertVal, attrs) {
         if (typeof insertVal === 'string') {
@@ -14,15 +18,17 @@ var DeltaInsertOp = (function () {
         return new DeltaInsertOp(value_types_1.NewLine);
     };
     DeltaInsertOp.prototype.isContainerBlock = function () {
+        return (this.isBlockquote() ||
+            this.isList() ||
+            this.isTable() ||
+            this.isCodeBlock() ||
+            this.isHeader() ||
+            this.isBlockAttribute() ||
+            this.isCustomTextBlock());
+    };
+    DeltaInsertOp.prototype.isBlockAttribute = function () {
         var attrs = this.attributes;
-        return !!(attrs.blockquote ||
-            attrs.list ||
-            attrs.table ||
-            attrs['code-block'] ||
-            attrs.header ||
-            attrs.align ||
-            attrs.direction ||
-            attrs.indent);
+        return !!(attrs.align || attrs.direction || attrs.indent);
     };
     DeltaInsertOp.prototype.isBlockquote = function () {
         return !!this.attributes.blockquote;
@@ -44,12 +50,17 @@ var DeltaInsertOp = (function () {
     DeltaInsertOp.prototype.hasSameIndentationAs = function (op) {
         return this.attributes.indent === op.attributes.indent;
     };
+    DeltaInsertOp.prototype.hasSameAttr = function (op) {
+        return lodash_isequal_1.default(this.attributes, op.attributes);
+    };
     DeltaInsertOp.prototype.hasHigherIndentThan = function (op) {
         return ((Number(this.attributes.indent) || 0) >
             (Number(op.attributes.indent) || 0));
     };
     DeltaInsertOp.prototype.isInline = function () {
-        return !(this.isContainerBlock() || this.isVideo() || this.isCustomBlock());
+        return !(this.isContainerBlock() ||
+            this.isVideo() ||
+            this.isCustomEmbedBlock());
     };
     DeltaInsertOp.prototype.isCodeBlock = function () {
         return !!this.attributes['code-block'];
@@ -107,11 +118,14 @@ var DeltaInsertOp = (function () {
     DeltaInsertOp.prototype.isLink = function () {
         return this.isText() && !!this.attributes.link;
     };
-    DeltaInsertOp.prototype.isCustom = function () {
+    DeltaInsertOp.prototype.isCustomEmbed = function () {
         return this.insert instanceof InsertData_1.InsertDataCustom;
     };
-    DeltaInsertOp.prototype.isCustomBlock = function () {
-        return this.isCustom() && !!this.attributes.renderAsBlock;
+    DeltaInsertOp.prototype.isCustomEmbedBlock = function () {
+        return this.isCustomEmbed() && !!this.attributes.renderAsBlock;
+    };
+    DeltaInsertOp.prototype.isCustomTextBlock = function () {
+        return this.isText() && !!this.attributes.renderAsBlock;
     };
     DeltaInsertOp.prototype.isMentions = function () {
         return this.isText() && !!this.attributes.mentions;
