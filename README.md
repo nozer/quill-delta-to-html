@@ -54,7 +54,7 @@ var html = converter.convert();
 |`linkRel`| string | none generated | Specifies a value to put on the `rel` attr on all links. This can be overridden by an individual link op by specifying the `rel` attribute in the respective op's attributes|
 |`linkTarget`| string | '_blank' | Specifies target for all links; use `''` (empty string) to not generate `target` attribute. This can be overridden by an individual link op by specifiying the `target` with a value in the respective op's attributes.|
 |`allowBackgroundClasses`| boolean | false | If true, css classes will be added for background attr|
-|`urlSanitizer`| function `(url: string): string \| undefined` | undefined | A function that is called multiple times for each  url in the ops (image, video, link) for you to do custom sanitization. If your function returns a string, it will mean that you sanitized the url and no further sanitization will be done by the library; when `undefined` (well, anything other than a string) is returned, module will assume that no sanitization is done and will use its own function to clean up the url|
+|`urlSanitizer`| function `(url: string): string \| undefined` | undefined | A function that is called once per url in the ops (image, video, link) for you to do custom sanitization. If your function returns a string, it is assumed that you sanitized the url and no further sanitization will be done by the library; when anything other than a string is returned (e.g. `undefined`), it is assumed that no sanitization has been done and the library's own function will be used to clean up the url|
 
 
 ## Rendering Quill Formats ##
