@@ -255,13 +255,19 @@ var OpToHtmlConverter = (function () {
     OpToHtmlConverter.prototype.getCustomCssClasses = function () {
         if (this.options.customCssClasses &&
             typeof this.options.customCssClasses === 'function') {
-            return this.options.customCssClasses.apply(null, [this.op]);
+            var res = this.options.customCssClasses.apply(null, [this.op]);
+            if (res) {
+                return Array.isArray(res) ? res : [res];
+            }
         }
     };
     OpToHtmlConverter.prototype.getCustomCssStyles = function () {
         if (this.options.customCssStyles &&
             typeof this.options.customCssStyles === 'function') {
-            return this.options.customCssStyles.apply(null, [this.op]);
+            var res = this.options.customCssStyles.apply(null, [this.op]);
+            if (res) {
+                return Array.isArray(res) ? res : [res];
+            }
         }
     };
     OpToHtmlConverter.prototype.getTags = function () {
@@ -319,7 +325,7 @@ var OpToHtmlConverter = (function () {
             .filter(function (t) { return !inlineTags.some(function (it) { return it[0] == t; }); })
             .map(function (t) { return [t, customTagsMap[t]]; })).map(function (item) {
             return customTagsMap[item[0]]
-                ? [customTagsMap[item[0]]]
+                ? customTagsMap[item[0]]
                 : item[0] === 'script'
                     ? attrs[item[0]] === value_types_1.ScriptType.Sub
                         ? 'sub'

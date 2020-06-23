@@ -51,8 +51,8 @@ declare class OpToHtmlConverter {
   getLinkAttrs(): Array<ITagKeyValue>;
   getCustomTag(format: string): any;
   getCustomTagAttributes(): any;
-  getCustomCssClasses(): any;
-  getCustomCssStyles(): any;
+  getCustomCssClasses(): any[] | undefined;
+  getCustomCssStyles(): any[] | undefined;
   getTags(): string[];
 }
 export { OpToHtmlConverter, IOpToHtmlConverterOptions, IHtmlParts };
