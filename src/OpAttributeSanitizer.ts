@@ -1,9 +1,8 @@
 import { ListType, AlignType, DirectionType, ScriptType } from './value-types';
 import { MentionSanitizer } from './mentions/MentionSanitizer';
-import * as url from './helpers/url';
-import { encodeLink } from './funcs-html';
 import { IMention } from './mentions/MentionSanitizer';
 import { find } from './helpers/array';
+import { OpLinkSanitizer } from './OpLinkSanitizer';
 
 interface IOpAttributes {
   background?: string | undefined;
@@ -139,10 +138,7 @@ class OpAttributeSanitizer {
     }
 
     if (link) {
-      cleanAttrs.link = OpAttributeSanitizer.sanitizeLinkUsingOptions(
-        link + '',
-        sanitizeOptions
-      );
+      cleanAttrs.link = OpLinkSanitizer.sanitize(link + '', sanitizeOptions);
     }
     if (target && OpAttributeSanitizer.isValidTarget(target)) {
       cleanAttrs.target = target;
@@ -213,19 +209,6 @@ class OpAttributeSanitizer {
     }, cleanAttrs);
   }
 
-  static sanitizeLinkUsingOptions(
-    link: string,
-    options: IOpAttributeSanitizerOptions
-  ) {
-    let sanitizerFn: IUrlSanitizerFn = () => {
-      return undefined;
-    };
-    if (options && typeof options.urlSanitizer === 'function') {
-      sanitizerFn = options.urlSanitizer;
-    }
-    let result = sanitizerFn(link);
-    return typeof result === 'string' ? result : encodeLink(url.sanitize(link));
-  }
   static IsValidHexColor(colorStr: string) {
     return !!colorStr.match(/^#([0-9A-F]{6}|[0-9A-F]{3})$/i);
   }
@@ -267,4 +250,9 @@ class OpAttributeSanitizer {
   }
 }
 
-export { OpAttributeSanitizer, IOpAttributes, IOpAttributeSanitizerOptions };
+export {
+  OpAttributeSanitizer,
+  IOpAttributes,
+  IOpAttributeSanitizerOptions,
+  IUrlSanitizerFn,
+};

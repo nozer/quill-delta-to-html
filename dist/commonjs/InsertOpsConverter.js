@@ -5,6 +5,7 @@ var value_types_1 = require("./value-types");
 var InsertData_1 = require("./InsertData");
 var OpAttributeSanitizer_1 = require("./OpAttributeSanitizer");
 var InsertOpDenormalizer_1 = require("./InsertOpDenormalizer");
+var OpLinkSanitizer_1 = require("./OpLinkSanitizer");
 var InsertOpsConverter = (function () {
     function InsertOpsConverter() {
     }
@@ -41,9 +42,9 @@ var InsertOpsConverter = (function () {
             return null;
         }
         return value_types_1.DataType.Image in insertPropVal
-            ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Image, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Image] + '', sanitizeOptions))
+            ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Image, OpLinkSanitizer_1.OpLinkSanitizer.sanitize(insertPropVal[value_types_1.DataType.Image] + '', sanitizeOptions))
             : value_types_1.DataType.Video in insertPropVal
-                ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Video, OpAttributeSanitizer_1.OpAttributeSanitizer.sanitizeLinkUsingOptions(insertPropVal[value_types_1.DataType.Video] + '', sanitizeOptions))
+                ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Video, OpLinkSanitizer_1.OpLinkSanitizer.sanitize(insertPropVal[value_types_1.DataType.Video] + '', sanitizeOptions))
                 : value_types_1.DataType.Formula in insertPropVal
                     ? new InsertData_1.InsertDataQuill(value_types_1.DataType.Formula, insertPropVal[value_types_1.DataType.Formula])
                     :

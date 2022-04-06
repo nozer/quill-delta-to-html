@@ -6,6 +6,7 @@ import {
   IOpAttributeSanitizerOptions,
 } from './OpAttributeSanitizer';
 import { InsertOpDenormalizer } from './InsertOpDenormalizer';
+import { OpLinkSanitizer } from './OpLinkSanitizer';
 
 /**
  * Converts raw delta insert ops to array of denormalized DeltaInsertOp objects
@@ -64,7 +65,7 @@ class InsertOpsConverter {
     return DataType.Image in insertPropVal
       ? new InsertDataQuill(
           DataType.Image,
-          OpAttributeSanitizer.sanitizeLinkUsingOptions(
+          OpLinkSanitizer.sanitize(
             insertPropVal[DataType.Image] + '',
             sanitizeOptions
           )
@@ -72,7 +73,7 @@ class InsertOpsConverter {
       : DataType.Video in insertPropVal
       ? new InsertDataQuill(
           DataType.Video,
-          OpAttributeSanitizer.sanitizeLinkUsingOptions(
+          OpLinkSanitizer.sanitize(
             insertPropVal[DataType.Video] + '',
             sanitizeOptions
           )
