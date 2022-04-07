@@ -39,10 +39,6 @@ declare class OpAttributeSanitizer {
     dirtyAttrs: IOpAttributes,
     sanitizeOptions: IOpAttributeSanitizerOptions
   ): IOpAttributes;
-  static sanitizeLinkUsingOptions(
-    link: string,
-    options: IOpAttributeSanitizerOptions
-  ): string;
   static IsValidHexColor(colorStr: string): boolean;
   static IsValidColorLiteral(colorStr: string): boolean;
   static IsValidRGBColor(colorStr: string): boolean;
@@ -53,4 +49,9 @@ declare class OpAttributeSanitizer {
   static IsValidRel(relStr: string): boolean;
   static IsValidLang(lang: string | boolean): boolean;
 }
-export { OpAttributeSanitizer, IOpAttributes, IOpAttributeSanitizerOptions };
+export {
+  OpAttributeSanitizer,
+  IOpAttributes,
+  IOpAttributeSanitizerOptions,
+  IUrlSanitizerFn,
+};

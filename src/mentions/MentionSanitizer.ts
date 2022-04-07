@@ -1,7 +1,5 @@
-import {
-  IOpAttributeSanitizerOptions,
-  OpAttributeSanitizer,
-} from './../OpAttributeSanitizer';
+import { OpLinkSanitizer } from '../OpLinkSanitizer';
+import { IOpAttributeSanitizerOptions } from './../OpAttributeSanitizer';
 
 interface IMention {
   [index: string]: string | undefined;
@@ -38,14 +36,14 @@ class MentionSanitizer {
     }
 
     if (dirtyObj.avatar) {
-      cleanObj.avatar = OpAttributeSanitizer.sanitizeLinkUsingOptions(
+      cleanObj.avatar = OpLinkSanitizer.sanitize(
         dirtyObj.avatar + '',
         sanitizeOptions
       );
     }
 
     if (dirtyObj['end-point']) {
-      cleanObj['end-point'] = OpAttributeSanitizer.sanitizeLinkUsingOptions(
+      cleanObj['end-point'] = OpLinkSanitizer.sanitize(
         dirtyObj['end-point'] + '',
         sanitizeOptions
       );
