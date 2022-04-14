@@ -232,7 +232,7 @@ describe('QuillDeltaToHtmlConverter', function () {
           '<li data-checked="true">hello</li>',
           '<li data-checked="false">there</li>',
           '<li data-checked="true">man',
-          '<ul><li data-checked="false">not done</li></ul>',
+          '<ul><li class="ql-indent-1" data-checked="false">not done</li></ul>',
           '</li>',
           '</ul>',
         ].join('')
