@@ -218,7 +218,7 @@ class OpAttributeSanitizer {
   }
 
   static IsValidRGBColor(colorStr: string) {
-    const re = /^rgb\(((0|25[0-5]|2[0-4]\d|1\d\d|0?\d?\d),\s*){2}(0|25[0-5]|2[0-4]\d|1\d\d|0?\d?\d)\)$/i;
+    const re = /^rgba?\(\d+(?:(?:\s*,\s*\d+){2}(?:\s*,\s*(?:\d*\.\d+|\d+)%?)?)|(?:(?:\s+\d+){2}(?:\s*\/\s*(?:\d*\.\d+|\d+)%?)?)\)$/;
     return !!colorStr.match(re);
   }
 
