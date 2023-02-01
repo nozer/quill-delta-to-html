@@ -42,8 +42,10 @@ interface IOpAttributes {
 interface IUrlSanitizerFn {
   (url: string): string | undefined;
 }
+
 interface IOpAttributeSanitizerOptions {
   urlSanitizer?: IUrlSanitizerFn;
+  urlProtocolWhitelist?: string[];
 }
 
 class OpAttributeSanitizer {
