@@ -41,24 +41,25 @@ var html = converter.convert();
 
 `QuillDeltaToHtmlConverter` accepts a few configuration options as shown below:
 
-|Option | Type | Default | Description 
-|---|---|---|---|
-|`paragraphTag`| string |  'p' | Custom tag to wrap inline html elements|
-|`encodeHtml`| boolean | true | If true, `<, >, /, ', ", &` characters in content will be encoded.|
-|`classPrefix`| string | 'ql' | A css class name to prefix class generating styles such as `size`, `font`, etc. |
-|`inlineStyles`| boolean or object | false | If true or an object, use inline styles instead of classes. See Rendering Inline Styles section below for using an object |
-|`multiLineBlockquote`| boolean | true | Instead of rendering multiple `blockquote` elements for quotes that are consecutive and have same styles(`align`, `indent`, and `direction`), it renders them into only one|
-|`multiLineHeader`| boolean | true | Same deal as `multiLineBlockquote` for headers|
-|`multiLineCodeblock`| boolean | true | Same deal as `multiLineBlockquote` for code-blocks|
-|`multiLineParagraph`| boolean | true | Set to false to generate a new paragraph tag after each enter press (new line)|
-|`linkRel`| string | none generated | Specifies a value to put on the `rel` attr on all links. This can be overridden by an individual link op by specifying the `rel` attribute in the respective op's attributes|
-|`linkTarget`| string | '_blank' | Specifies target for all links; use `''` (empty string) to not generate `target` attribute. This can be overridden by an individual link op by specifiying the `target` with a value in the respective op's attributes.|
-|`allowBackgroundClasses`| boolean | false | If true, css classes will be added for background attr|
-|`urlSanitizer`| function `(url: string): string \| undefined` | undefined | A function that is called once per url in the ops (image, video, link) for you to do custom sanitization. If your function returns a string, it is assumed that you sanitized the url and no further sanitization will be done by the library; when anything other than a string is returned (e.g. `undefined`), it is assumed that no sanitization has been done and the library's own function will be used to clean up the url|
-|`customTag`| function `(format: string, op: DeltaInsertOp): string \| undefined` | undefined | Callback allows to provide custom html tag for some format|
-|`customTagAttributes`| function `(op: DeltaInsertOp): { [key: string]: string } \| undefined` | undefined | Allows to provide custom html tag attributes|
-|`customCssClasses`| function `(op: DeltaInsertOp): string \| string[] \| undefined` | undefined | Allows to provide custom css classes|
-|`customCssStyles`| function `(op: DeltaInsertOp): string \| string[] \| undefined` | undefined | Allows to provide custom css styles|
+| Option                   | Type                                                       | Default      | Description 
+|--------------------------|------------------------------------------------------------|--------------|---|
+| `paragraphTag`           | string                                                     | 'p'          | Custom tag to wrap inline html elements|
+| `encodeHtml`             | boolean                                                    | true         | If true, `<, >, /, ', ", &` characters in content will be encoded.|
+| `classPrefix`            | string                                                     | 'ql'         | A css class name to prefix class generating styles such as `size`, `font`, etc. |
+| `inlineStyles`           | boolean or object                                          | false        | If true or an object, use inline styles instead of classes. See Rendering Inline Styles section below for using an object |
+| `multiLineBlockquote`    | boolean                                                    | true         | Instead of rendering multiple `blockquote` elements for quotes that are consecutive and have same styles(`align`, `indent`, and `direction`), it renders them into only one|
+| `multiLineHeader`        | boolean                                                    | true         | Same deal as `multiLineBlockquote` for headers|
+| `multiLineCodeblock`     | boolean                                                    | true         | Same deal as `multiLineBlockquote` for code-blocks|
+| `multiLineParagraph`     | boolean                                                    | true         | Set to false to generate a new paragraph tag after each enter press (new line)|
+| `linkRel`                | string                                                     | none generated | Specifies a value to put on the `rel` attr on all links. This can be overridden by an individual link op by specifying the `rel` attribute in the respective op's attributes|
+| `linkTarget`             | string                                                     | '_blank'     | Specifies target for all links; use `''` (empty string) to not generate `target` attribute. This can be overridden by an individual link op by specifiying the `target` with a value in the respective op's attributes.|
+| `allowBackgroundClasses` | boolean                                                    | false        | If true, css classes will be added for background attr|
+| `urlSanitizer`           | function `(url: string): string \                          | undefined`   | undefined | A function that is called once per url in the ops (image, video, link) for you to do custom sanitization. If your function returns a string, it is assumed that you sanitized the url and no further sanitization will be done by the library; when anything other than a string is returned (e.g. `undefined`), it is assumed that no sanitization has been done and the library's own function will be used to clean up the url|
+| `urlProtocolWhitelist`   | string[]                                                   | []           | undefined | A protocol whitelist for the embedded url sanitizer|
+| `customTag`              | function `(format: string, op: DeltaInsertOp): string \    | undefined`   | undefined | Callback allows to provide custom html tag for some format|
+| `customTagAttributes`    | function `(op: DeltaInsertOp): { [key: string]: string } \ | undefined`   | undefined | Allows to provide custom html tag attributes|
+| `customCssClasses`       | function `(op: DeltaInsertOp): string \                    | string[] \   | undefined` | undefined | Allows to provide custom css classes|
+| `customCssStyles`        | function `(op: DeltaInsertOp): string \                    | string[] \   | undefined` | undefined | Allows to provide custom css styles|
 
 
 ## Rendering Quill Formats ##

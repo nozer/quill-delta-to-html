@@ -41,6 +41,15 @@ describe('Url Helpers Module', function () {
 
       act = "javascript:alert('hi')";
       assert.equal(sanitize(act), "unsafe:javascript:alert('hi')");
+
+      act = 'customprotocol://given/path';
+      assert.equal(sanitize(act), 'unsafe:customprotocol://given/path');
+
+      act = 'customprotocol://given/path';
+      assert.equal(
+        sanitize(act, ['customprotocol']),
+        'customprotocol://given/path'
+      );
     });
   });
 });
