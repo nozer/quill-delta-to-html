@@ -88,9 +88,18 @@ class Grouper {
     groups: Array<TDataGroup | BlockGroup[]>
   ): TDataGroup[] {
     var newLineOp = DeltaInsertOp.createNewLineOp();
+    const isHeaderWithText = (e: TDataGroup) => {
+      return (
+        e instanceof BlockGroup &&
+        e.op instanceof DeltaInsertOp &&
+        e.op.isHeaderWithContent()
+      );
+    };
     return groups.map(function (elm: TDataGroup | BlockGroup[]) {
       if (!Array.isArray(elm)) {
-        if (elm instanceof BlockGroup && !elm.ops.length) {
+        if (elm instanceof BlockGroup && isHeaderWithText(elm)) {
+          elm.ops.push(elm.op);
+        } else if (elm instanceof BlockGroup && !elm.ops.length) {
           elm.ops.push(newLineOp);
         }
         return elm;
@@ -99,7 +108,11 @@ class Grouper {
       elm[0].ops = flatten(
         elm.map((g: BlockGroup, i: number) => {
           if (!g.ops.length) {
-            return [newLineOp];
+            if (isHeaderWithText(g)) {
+              return [g.op];
+            } else {
+              return [newLineOp];
+            }
           }
           return g.ops.concat(i < groupsLastInd ? [newLineOp] : []);
         })

@@ -45,7 +45,13 @@ function encodeHtml(str: string, preventDoubleEncoding = true) {
   if (preventDoubleEncoding) {
     str = decodeHtml(str);
   }
-  return encodeMappings(EncodeTarget.Html).reduce(encodeMapping, str);
+  // Restore &nbsp; characters after the mapping corrupts them
+  var __encodedStr = encodeMappings(EncodeTarget.Html).reduce(
+    encodeMapping,
+    str
+  );
+  __encodedStr = __encodedStr.replace(new RegExp('&amp;nbsp;', 'g'), '&nbsp;');
+  return __encodedStr;
 }
 
 function encodeLink(str: string) {

@@ -179,6 +179,15 @@ class DeltaInsertOp {
   isMentions() {
     return this.isText() && !!this.attributes.mentions;
   }
+
+  isHeaderWithContent(): boolean {
+    return (
+      !!this.attributes &&
+      !!this.attributes.header &&
+      this.insert &&
+      this.insert.type == 'text'
+    );
+  }
 }
 
 export { DeltaInsertOp };

@@ -177,6 +177,10 @@ class QuillDeltaToHtmlConverter {
     myRenderFn: () => string
   ) {
     var html = '';
+    var beforeBeforeCb = this.callbacks['beforeBeforeRender_cb'];
+    typeof beforeBeforeCb === 'function'
+      ? beforeBeforeCb.apply(null, [groupType, group])
+      : undefined;
     var beforeCb = this.callbacks['beforeRender_cb'];
     html =
       typeof beforeCb === 'function'
@@ -274,7 +278,13 @@ class QuillDeltaToHtmlConverter {
       );
     }
 
-    var inlines = ops.map((op) => this._renderInline(op, bop)).join('');
+    var inlines = ops
+      .map((op) =>
+        op.isHeaderWithContent() && op.insert.value != ''
+          ? op.insert.value
+          : this._renderInline(op, bop)
+      )
+      .join('');
     return htmlParts.openingTag + (inlines || BrTag) + htmlParts.closingTag;
   }
 
@@ -323,6 +333,12 @@ class QuillDeltaToHtmlConverter {
       return renderCb.apply(null, [op, contextOp]);
     }
     return '';
+  }
+
+  beforeBeforeRender(cb: (group: GroupType, data: TDataGroup) => TDataGroup) {
+    if (typeof cb === 'function') {
+      this.callbacks['beforeBeforeRender_cb'] = cb;
+    }
   }
 
   beforeRender(cb: (group: GroupType, data: TDataGroup) => string) {
