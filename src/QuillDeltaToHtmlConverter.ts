@@ -62,6 +62,7 @@ class QuillDeltaToHtmlConverter {
         multiLineCustomBlock: true,
         allowBackgroundClasses: false,
         linkTarget: '_blank',
+        formulaDelimiters: { left: '$', right: '$' },
       },
       options,
       {
