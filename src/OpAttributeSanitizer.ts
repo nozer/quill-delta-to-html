@@ -44,6 +44,7 @@ interface IUrlSanitizerFn {
 }
 interface IOpAttributeSanitizerOptions {
   urlSanitizer?: IUrlSanitizerFn;
+  formulaDelimiters: { left: string; right: string };
 }
 
 class OpAttributeSanitizer {

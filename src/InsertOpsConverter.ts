@@ -79,7 +79,12 @@ class InsertOpsConverter {
           )
         )
       : DataType.Formula in insertPropVal
-      ? new InsertDataQuill(DataType.Formula, insertPropVal[DataType.Formula])
+      ? new InsertDataQuill(
+          DataType.Formula,
+          sanitizeOptions.formulaDelimiters.left +
+            insertPropVal[DataType.Formula] +
+            sanitizeOptions.formulaDelimiters.right
+        )
       : // custom
         new InsertDataCustom(keys[0], insertPropVal[keys[0]]);
   }
